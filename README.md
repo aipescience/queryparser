@@ -4,9 +4,23 @@ Let's parse some MySQL (and ADQL)!
 ## Generate parser
 First the grammar files need to be passed through antlr4 for the
 parser to be built. Run
-
 ```
-$ make
+$ make python
 ```
+Alternatively, you can also make the java version and then use PyCharm
+with the antlr plugin to parse interactively (watch the parse tree
+change as you type). 
+```
+$ make java
+```
+Get pycharm from [Jetbrains](www.jetbrain.com). Once installed, go to File -
+Settings - Plugins - Browse Repositories and find the antlr plugin. Then open
+the parser grammar file, find the query rule, right click on it and
+choose Test Rule query.
 
-That's it.
+
+## Parsing
+To run the parser you have to install the python3 runtime for antlr4
+```
+$ pip install antlr4-python3-runtime.
+```
