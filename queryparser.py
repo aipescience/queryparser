@@ -5,6 +5,9 @@ from MySQLLexer import MySQLLexer
 from MySQLParser import MySQLParser
 from MySQLParserListener import MySQLParserListener
 
+import test_queries
+import time
+
 
 def parse_alias(alias):
     if alias:
@@ -43,7 +46,7 @@ class RemoveSubqueriesListener(MySQLParserListener):
                 alias = None
             alias = parse_alias(alias)
             self.subquery_aliases.append(alias)
-            print('removing', ctx.getText())
+            #  print('removing', ctx.getText())
             ctx.parentCtx.removeLastChild()
 
 
@@ -53,9 +56,10 @@ class ColumnNameListener(MySQLParserListener):
 
     def enterColumn_spec(self, ctx:MySQLParser.Column_specContext):
         self.column_name = ctx.getText()
+        print(self.column_name)
 
 
-class SelectExpressionListener(MySQLParserListener):
+class TableColumnKeywordListener(MySQLParserListener):
     """
     Extract table_names, column_names, and their aliases.
 
@@ -63,8 +67,32 @@ class SelectExpressionListener(MySQLParserListener):
     def __init__(self):
         self.tables = []
         self.columns = []
+        self.keywords = []
         self.column_name_listener = ColumnNameListener()
         self.walker = antlr4.ParseTreeWalker()
+    
+    def _process_column_name(self, ctx):
+        cn = ctx.getText()
+        self.column_name_listener.column_name = None
+        self.walker.walk(self.column_name_listener, ctx)
+        if self.column_name_listener.column_name:
+            cn = self.column_name_listener.column_name.replace('`', '')
+        else:
+            cn = ctx.getText()
+        return cn
+
+    def _process_alias(self, ctx):
+        try:
+            alias = ctx.alias()
+        except AttributeError:
+            alias = None
+        alias = parse_alias(alias)
+        return alias
+    
+    def _extract_column(self, ctx):
+        cn = self._process_column_name(ctx)
+        alias = self._process_alias(ctx)
+        self.columns.append((cn, alias))
 
     def enterTable_atom(self, ctx:MySQLParser.Table_atomContext):
         alias = parse_alias(ctx.alias())
@@ -73,20 +101,23 @@ class SelectExpressionListener(MySQLParserListener):
             self.tables.append((ts.getText().replace('`',''), alias))
 
     def enterDisplayed_column(self, ctx:MySQLParser.Displayed_columnContext):
-        try:
-            alias = ctx.alias()
-        except AttributeError:
-            alias = None
-        alias = parse_alias(alias)
+        self._extract_column(ctx)
 
-        cn = ctx.getText()
-        self.column_name_listener.column_name = None
-        self.walker.walk(self.column_name_listener, ctx)
-        if self.column_name_listener.column_name:
-            cn = self.column_name_listener.column_name.replace('`', '')
-        else:
-            cn = ctx.getText()
-        self.columns.append((cn, alias))
+    def enterWhere_clause(self, ctx:MySQLParser.Where_clauseContext):
+        self.keywords.append('where')
+        print(ctx.getText())
+        self._extract_column(ctx)
+
+    def enterOrderby_clause(self, ctx:MySQLParser.Orderby_clauseContext):
+        self.keywords.append('order by')
+        self._extract_column(ctx)
+
+    def enterLimit_clause(self, ctx:MySQLParser.Limit_clauseContext):
+        self.keywords.append('limit')
+
+    def enterJoin_condition(self, ctx:MySQLParser.Join_conditionContext):
+        self.keywords.append('join')
+        self._extract_column(ctx)
 
 
 class MyErrorListener(ErrorListener):
@@ -109,37 +140,94 @@ class MyErrorListener(ErrorListener):
         raise Exception("sensitivity")
 
 
-def main(argv):
-    input = antlr4.FileStream(argv[1])
-    lexer = MySQLLexer(input)
+def process_query(query):
+    inpt = antlr4.InputStream(query)
+    lexer = MySQLLexer(inpt)
     stream = antlr4.CommonTokenStream(lexer)
     parser = MySQLParser(stream)
     # parser._listeners = [MyErrorListener()]
 
     try:
         tree = parser.query()
+        #  print(tree.toStringTree(recog=parser))
     except:
         raise
 
     walker = antlr4.ParseTreeWalker()
     query_listener = QueryListener()
     subquery_aliases = []
+    query_names = []
+    keywords = []
 
     walker.walk(query_listener, tree)
+
     for ctx in query_listener.select_expressions:
         remove_subquieries_listener = RemoveSubqueriesListener(ctx.depth())
-        select_expression_listener = SelectExpressionListener()
+        table_column_keyword_listener= TableColumnKeywordListener()
 
+        # Remove nested subqueries from select_expressions
         walker.walk(remove_subquieries_listener, ctx)
         subquery_aliases.extend(remove_subquieries_listener.subquery_aliases)
 
-        walker.walk(select_expression_listener, ctx)
-        print(select_expression_listener.tables)
-        print(select_expression_listener.columns)
-        print()
+        # Extract table and column names and keywords
+        walker.walk(table_column_keyword_listener, ctx)
 
-    print(subquery_aliases)
+        query_names.append([table_column_keyword_listener.tables,
+                            table_column_keyword_listener.columns])
+        keywords.extend(table_column_keyword_listener.keywords)
+
+    columns = []
+    for qn in query_names:
+        tab_dict = {}
+        tab = []
+        for i in qn[0]:
+            if i[1]:
+                tab_dict[i[1]] = i[0]
+            else:
+                tab.append(i[0])
+        for i in qn[1]:
+            parts = i[0].split('.')
+
+            if len(parts) == 3:
+                columns.append(i[0])
+
+            if len(parts) == 2 and parts[0] not in subquery_aliases:
+                # we need to replace the table name alias
+                try:
+                    update = tab_dict[parts[0]]
+                    columns.append('%s.%s' % (update, parts[1]))
+                except KeyError:
+                    pass
+
+            if len(parts) == 1:
+                dvs = list(tab_dict.values())
+                if len(dvs) > 1 or len(tab) > 1:
+                    #  raise Exception("Not sure from which table I am suppose" +\
+                            #  " to get the columns... %s" % str(dvs or tab))
+                    for k in dvs:
+                        columns.append('%s.%s' % (k, parts[0]))
+                    for k in tab:
+                        columns.append('%s.%s' % (k, parts[0]))
+
+                else:
+                    if len(dvs):
+                        columns.append('%s.%s' % (dvs[0], parts[0]))
+                    else:
+                        columns.append('%s.%s' % (tab[0], parts[0]))
+
+    columns = set(columns)
+    keywords = set(keywords)
+    return columns, keywords
 
 
 if __name__ == '__main__':
-    main(sys.argv)
+    for q in test_queries.queries[-1:]:
+        s = time.time()
+        cols, keys = process_query(q[0])
+        s = time.time() - s
+        for i in cols:
+            print(i)
+        print(cols.symmetric_difference(q[1]))
+        print(keys.symmetric_difference(q[2]))
+        print('Done in %.2fs' % s)
+        print()
