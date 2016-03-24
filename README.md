@@ -13,7 +13,7 @@ change as you type).
 ```
 $ make java
 ```
-Get pycharm from [Jetbrains](www.jetbrain.com). Once installed, go to File -
+Get pycharm from [Jetbrains](www.jetbrains.com). Once installed, go to File -
 Settings - Plugins - Browse Repositories and find the antlr plugin. Then open
 the parser grammar file, find the query rule, right click on it and
 choose Test Rule query.
