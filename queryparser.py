@@ -52,11 +52,10 @@ class RemoveSubqueriesListener(MySQLParserListener):
 
 class ColumnNameListener(MySQLParserListener):
     def __init__(self):
-        self.column_name = None
+        self.column_name = []
 
     def enterColumn_spec(self, ctx:MySQLParser.Column_specContext):
-        self.column_name = ctx.getText()
-        print(self.column_name)
+        self.column_name.append(ctx.getText())
 
 
 class TableColumnKeywordListener(MySQLParserListener):
@@ -72,13 +71,15 @@ class TableColumnKeywordListener(MySQLParserListener):
         self.walker = antlr4.ParseTreeWalker()
     
     def _process_column_name(self, ctx):
-        cn = ctx.getText()
-        self.column_name_listener.column_name = None
+        #  cn = [ctx.getText()]
+        cn = []
+        self.column_name_listener.column_name = []
         self.walker.walk(self.column_name_listener, ctx)
         if self.column_name_listener.column_name:
-            cn = self.column_name_listener.column_name.replace('`', '')
+            for i in self.column_name_listener.column_name:
+                cn.append(i.replace('`', ''))
         else:
-            cn = ctx.getText()
+            cn = [ctx.getText()]
         return cn
 
     def _process_alias(self, ctx):
@@ -92,7 +93,10 @@ class TableColumnKeywordListener(MySQLParserListener):
     def _extract_column(self, ctx):
         cn = self._process_column_name(ctx)
         alias = self._process_alias(ctx)
-        self.columns.append((cn, alias))
+        if len(cn) > 1:
+            self.columns.extend([(i, None) for i in cn])
+        else:
+            self.columns.append((cn[0], alias))
 
     def enterTable_atom(self, ctx:MySQLParser.Table_atomContext):
         alias = parse_alias(ctx.alias())
@@ -105,7 +109,6 @@ class TableColumnKeywordListener(MySQLParserListener):
 
     def enterWhere_clause(self, ctx:MySQLParser.Where_clauseContext):
         self.keywords.append('where')
-        print(ctx.getText())
         self._extract_column(ctx)
 
     def enterOrderby_clause(self, ctx:MySQLParser.Orderby_clauseContext):
@@ -221,7 +224,7 @@ def process_query(query):
 
 
 if __name__ == '__main__':
-    for q in test_queries.queries[-1:]:
+    for q in test_queries.queries[-4:-3]:
         s = time.time()
         cols, keys = process_query(q[0])
         s = time.time() - s
