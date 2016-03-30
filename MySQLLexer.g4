@@ -817,6 +817,7 @@ TEXT_STRING:
 // themselves. Backtick unicode is \u0060 which is why we exclude it.
 ID:
 	(( 'A'..'Z' | 'a'..'z' | '_' | '$') ( 'A'..'Z' | 'a'..'z' | '_' | '$' | '0'..'9' )*) |
+	//('`' (('\u0020' .. '\u005F') | ('\u0061' .. '\u007f'))+ '`')
 	('`' (('\u0020' .. '\u005F') | ('\u0061' .. '\uabff'))+ '`')
 ;
 

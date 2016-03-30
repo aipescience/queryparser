@@ -6,6 +6,7 @@ from MySQLParser import MySQLParser
 from MySQLParserListener import MySQLParserListener
 
 import test_queries
+import broken_queries
 import time
 
 
@@ -22,6 +23,11 @@ class QueryListener(MySQLParserListener):
     """
     def __init__(self):
         self.select_expressions = []
+        self.keywords = []
+
+    def enterSelect_statement(self, ctx:MySQLParser.Select_statementContext):
+        if ctx.UNION_SYM():
+            self.keywords.append('union')
 
     def enterSelect_expression(self, ctx:MySQLParser.Select_expressionContext):
         self.select_expressions.append(ctx)
@@ -123,114 +129,170 @@ class TableColumnKeywordListener(MySQLParserListener):
         self._extract_column(ctx)
 
 
-class MyErrorListener(ErrorListener):
+class SyntaxErrorListener(ErrorListener):
     def __init__(self):
-        super(MyErrorListener, self).__init__()
+        super(SyntaxErrorListener, self).__init__()
+        self.syntax_errors = []
 
     def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
-        raise Exception("syntax: %s" % (offendingSymbol))
-
-    def reportAmbiguity(self, recognizer, dfa, startIndex, stopIndex, exact,
-                        ambigAlts, configs):
-        raise Exception("ambiguity")
-
-    def reportAttemptingFullContext(self, recognizer, dfa, startIndex,
-                                    stopIndex, conflictingAlts, configs):
-        raise Exception("fullcontext: %d:%d" % (startIndex, stopIndex))
-
-    def reportContextSensitivity(self, recognizer, dfa, startIndex, stopIndex,
-                                 prediction, configs):
-        raise Exception("sensitivity")
+        self.syntax_errors.append((line, column, offendingSymbol.text))
 
 
-def process_query(query):
-    inpt = antlr4.InputStream(query)
-    lexer = MySQLLexer(inpt)
-    stream = antlr4.CommonTokenStream(lexer)
-    parser = MySQLParser(stream)
-    # parser._listeners = [MyErrorListener()]
+class QueryProcessor(object):
+    def __init__(self, query=None):
+        self.columns = set()
+        self.keywords = set()
+        self.syntax_error_listener = SyntaxErrorListener()
+        self.syntax_errors = []
+        if query is not None:
+            self.query = query
+            self.process_query()
 
-    try:
-        tree = parser.query()
-        #  print(tree.toStringTree(recog=parser))
-    except:
-        raise
+    def process_query(self):
+        inpt = antlr4.InputStream(self.query)
+        lexer = MySQLLexer(inpt)
+        stream = antlr4.CommonTokenStream(lexer)
+        parser = MySQLParser(stream)
+        parser._listeners = [self.syntax_error_listener]
 
-    walker = antlr4.ParseTreeWalker()
-    query_listener = QueryListener()
-    subquery_aliases = []
-    query_names = []
-    keywords = []
+        try:
+            tree = parser.query()
+        except:
+            raise
 
-    walker.walk(query_listener, tree)
+        walker = antlr4.ParseTreeWalker()
+        query_listener = QueryListener()
+        subquery_aliases = []
+        query_names = []
+        keywords = []
 
-    for ctx in query_listener.select_expressions:
-        remove_subquieries_listener = RemoveSubqueriesListener(ctx.depth())
-        table_column_keyword_listener= TableColumnKeywordListener()
+        walker.walk(query_listener, tree)
+        keywords.extend(query_listener.keywords)
 
-        # Remove nested subqueries from select_expressions
-        walker.walk(remove_subquieries_listener, ctx)
-        subquery_aliases.extend(remove_subquieries_listener.subquery_aliases)
+        for ctx in query_listener.select_expressions:
+            remove_subquieries_listener = RemoveSubqueriesListener(ctx.depth())
+            table_column_keyword_listener= TableColumnKeywordListener()
 
-        # Extract table and column names and keywords
-        walker.walk(table_column_keyword_listener, ctx)
+            # Remove nested subqueries from select_expressions
+            walker.walk(remove_subquieries_listener, ctx)
+            subquery_aliases.extend(
+                    remove_subquieries_listener.subquery_aliases)
 
-        query_names.append([table_column_keyword_listener.tables,
-                            table_column_keyword_listener.columns])
-        keywords.extend(table_column_keyword_listener.keywords)
+            # Extract table and column names and keywords
+            walker.walk(table_column_keyword_listener, ctx)
 
-    columns = []
-    for qn in query_names:
-        tab_dict = {}
-        tab = []
-        for i in qn[0]:
-            if i[1]:
-                tab_dict[i[1]] = i[0]
-            else:
-                tab.append(i[0])
-        for i in qn[1]:
-            parts = i[0].split('.')
+            query_names.append([table_column_keyword_listener.tables,
+                                table_column_keyword_listener.columns])
+            keywords.extend(table_column_keyword_listener.keywords)
 
-            if len(parts) == 3:
-                columns.append(i[0])
-
-            if len(parts) == 2 and parts[0] not in subquery_aliases:
-                # we need to replace the table name alias
-                try:
-                    update = tab_dict[parts[0]]
-                    columns.append('%s.%s' % (update, parts[1]))
-                except KeyError:
-                    pass
-
-            if len(parts) == 1:
-                dvs = list(tab_dict.values())
-                if len(dvs) > 1 or len(tab) > 1:
-                    #  raise Exception("Not sure from which table I am suppose" +\
-                            #  " to get the columns... %s" % str(dvs or tab))
-                    for k in dvs:
-                        columns.append('%s.%s' % (k, parts[0]))
-                    for k in tab:
-                        columns.append('%s.%s' % (k, parts[0]))
-
+        columns = []
+        for qn in query_names:
+            tab_dict = {}
+            tab = []
+            for i in qn[0]:
+                if i[1]:
+                    tab_dict[i[1]] = i[0]
                 else:
-                    if len(dvs):
-                        columns.append('%s.%s' % (dvs[0], parts[0]))
-                    else:
-                        columns.append('%s.%s' % (tab[0], parts[0]))
+                    tab.append(i[0])
+            for i in qn[1]:
+                parts = i[0].split('.')
 
-    columns = set(columns)
-    keywords = set(keywords)
-    return columns, keywords
+                if len(parts) == 3:
+                    columns.append(i[0])
+
+                if len(parts) == 2 and parts[0] not in subquery_aliases:
+                    # we need to replace the table name alias
+                    try:
+                        update = tab_dict[parts[0]]
+                        columns.append('%s.%s' % (update, parts[1]))
+                    except KeyError:
+                        pass
+
+                if len(parts) == 1:
+                    dvs = list(tab_dict.values())
+                    if len(dvs) > 1 or len(tab) > 1:
+                        #  raise Exception("Not sure from which table I am suppose" +\
+                                #  " to get the columns... %s" % str(dvs or tab))
+                        for k in dvs:
+                            columns.append('%s.%s' % (k, parts[0]))
+                        for k in tab:
+                            columns.append('%s.%s' % (k, parts[0]))
+
+                    else:
+                        if len(dvs):
+                            columns.append('%s.%s' % (dvs[0], parts[0]))
+                        elif len(tab):
+                            columns.append('%s.%s' % (tab[0], parts[0]))
+
+        if not len(self.syntax_error_listener.syntax_errors):
+            self.columns = set(columns)
+            self.keywords = set(keywords)
+        else:
+            self.syntax_errors = self.syntax_error_listener.syntax_errors
+
+
+def pretty_print(q, columns, keywords, process_time, syntax=None):
+
+    print('+' + '=' * 78 + '+')
+    sq = q[0].split('\n')
+
+    proc = '\033[92m\033[1mDone\033[0m'
+    offset = [0] * len(sq)
+    if len(syntax):
+        for se in syntax:
+            rep = "\033[91m\033[1m%s\033[0m" % se[2]
+            k = se[0] - 1
+            orig = sq[k]
+            sq[k] = ((orig[:se[1] + offset[k]] + rep + '\033[100m' +
+                      orig[se[1] + len(se[2]) + offset[k]:]))
+
+            proc = '\033[91m\033[1mFailed\033[0m'
+            offset[se[0] - 1] += 19
+
+    for k, i in enumerate(sq):
+        print('|\033[100m' + i + ' ' * (78 - len(i) + offset[k]) + '\033[49m|')
+
+    if not len(syntax):
+        print('|' + ' ' * 78 + '|')
+        print('|  Columns:' + ' ' * 68 + '|')
+        for i in sorted(columns):
+            print('|\t' + i + ' ' * (71 - len(i)) + '|')
+
+        if len(keywords):
+            print('|' + ' ' * 78 + '|')
+            print('|  Keywords:' + ' ' * 67 + '|')
+            for i in sorted(keywords):
+                print('|\t' + i + ' ' * (71 - len(i)) + '|')
+
+        print('|' + ' ' * 78 + '|')
+
+        if cols.symmetric_difference(q[1]) != set():
+            print('|  Missing columns:' + ' ' * 60 + '|')
+            for i in cols.symmetric_difference(q[1]):
+                print('|\t' + i + ' ' * (71 - len(i)) + '|')
+            print('|' + ' ' * 78 + '|')
+            proc = '\033[91m\033[1mFailed\033[0m'
+        if keys.symmetric_difference(q[2]) != set():
+            print('|  Missing keywords:' + ' ' * 59 + '|')
+            for i in keys.symmetric_difference(q[2]):
+                print('|\t' + i + ' ' * (71 - len(i)) + '|')
+            print('|' + ' ' * 78 + '|')
+            proc = '\033[91m\033[1mFailed\033[0m'
+    else:
+        print('|' + ' ' * 78 + '|')
+
+    tm = '%s in %.2fs' % (proc, process_time)
+    print('|  %s' % tm + ' ' * (89 - len(tm)) + '|')
+    print('|' + ' ' * 78 + '|')
+    print('+' + '-' * 78 + '+')
+    print()
 
 
 if __name__ == '__main__':
-    for q in test_queries.queries[-4:-3]:
+    for q in broken_queries.queries[:]:
         s = time.time()
-        cols, keys = process_query(q[0])
+        qp = QueryProcessor(q[0])
+        cols, keys = qp.columns, qp.keywords
+
         s = time.time() - s
-        for i in cols:
-            print(i)
-        print(cols.symmetric_difference(q[1]))
-        print(keys.symmetric_difference(q[2]))
-        print('Done in %.2fs' % s)
-        print()
+        pretty_print(q, cols, keys, s, qp.syntax_errors)
