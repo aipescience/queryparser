@@ -6,7 +6,7 @@ import time
 
 import test.test_queries
 import test.broken_queries
-from mysql.queryparser import QueryProcessor
+from mysql.mysqlparser import MySQLQueryProcessor
 
 
 def pretty_print(q, columns, keywords, process_time, syntax=None,
@@ -46,15 +46,15 @@ def pretty_print(q, columns, keywords, process_time, syntax=None,
         print('|' + ' ' * 78 + '|')
 
         if show_diff:
-            if cols.symmetric_difference(q[1]) != set():
+            if columns.symmetric_difference(q[1]) != set():
                 print('|  Missing columns:' + ' ' * 60 + '|')
-                for i in cols.symmetric_difference(q[1]):
+                for i in columns.symmetric_difference(q[1]):
                     print('|\t' + i + ' ' * (71 - len(i)) + '|')
                 print('|' + ' ' * 78 + '|')
                 proc = '\033[91m\033[1mFailed\033[0m'
-            if keys.symmetric_difference(q[2]) != set():
+            if keywords.symmetric_difference(q[2]) != set():
                 print('|  Missing keywords:' + ' ' * 59 + '|')
-                for i in keys.symmetric_difference(q[2]):
+                for i in keywords.symmetric_difference(q[2]):
                     print('|\t' + i + ' ' * (71 - len(i)) + '|')
                 print('|' + ' ' * 78 + '|')
                 proc = '\033[91m\033[1mFailed\033[0m'
@@ -73,12 +73,27 @@ def pretty_print(q, columns, keywords, process_time, syntax=None,
     print()
 
 
-if __name__ == '__main__':
-    for q in test.test_queries.queries[-1:]:
+def test_good():
+    for q in test.test_queries.queries:
         s = time.time()
-        qp = QueryProcessor(q[0])
+        qp = MySQLQueryProcessor(q[0])
         cols, keys = qp.columns, qp.keywords
 
         s = time.time() - s
         
         pretty_print(q, cols, keys, s, qp.syntax_errors, show_diff=True)
+
+
+def test_broken():
+    for q in test.broken_queries.queries:
+        s = time.time()
+        qp = MySQLQueryProcessor(q[0])
+        cols, keys = qp.columns, qp.keywords
+
+        s = time.time() - s
+        
+        pretty_print(q, cols, keys, s, qp.syntax_errors, show_diff=True)
+
+
+if __name__ == '__main__':
+    test_broken()
