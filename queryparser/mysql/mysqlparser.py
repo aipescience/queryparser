@@ -76,6 +76,7 @@ class TableColumnKeywordListener(MySQLParserListener):
         self.tables = []
         self.columns = []
         self.keywords = []
+        self.functions = []
         self.column_name_listener = ColumnNameListener()
         self.walker = antlr4.ParseTreeWalker()
     
@@ -88,7 +89,10 @@ class TableColumnKeywordListener(MySQLParserListener):
             for i in self.column_name_listener.column_name:
                 cn.append(i.replace('`', ''))
         else:
-            cn = [ctx.getText()]
+            if ctx.ASTERISK():
+                cn = [ctx.getText()]
+            else:
+                cn = ['NULL']
         return cn
 
     def _process_alias(self, ctx):
@@ -123,6 +127,12 @@ class TableColumnKeywordListener(MySQLParserListener):
             self.columns.append(('*', None))
             self.keywords.append('*')
 
+    def enterFunctionList(self, ctx:MySQLParser.FunctionListContext):
+        self.functions.append(ctx.getText())
+
+    def enterGroup_functions(self, ctx:MySQLParser.Group_functionsContext):
+        self.functions.append(ctx.getText())
+
     def enterWhere_clause(self, ctx:MySQLParser.Where_clauseContext):
         self.keywords.append('where')
         self._extract_column(ctx)
@@ -152,6 +162,7 @@ class MySQLQueryProcessor(object):
     def __init__(self, query=None):
         self.columns = set()
         self.keywords = set()
+        self.functions = set()
         self.syntax_error_listener = SyntaxErrorListener()
         self.syntax_errors = []
         if query is not None:
@@ -175,6 +186,7 @@ class MySQLQueryProcessor(object):
         subquery_aliases = []
         query_names = []
         keywords = []
+        functions = []
 
         walker.walk(query_listener, tree)
         keywords.extend(query_listener.keywords)
@@ -194,6 +206,7 @@ class MySQLQueryProcessor(object):
             query_names.append([table_column_keyword_listener.tables,
                                 table_column_keyword_listener.columns])
             keywords.extend(table_column_keyword_listener.keywords)
+            functions.extend(table_column_keyword_listener.functions)
 
         columns = []
 
@@ -251,5 +264,11 @@ class MySQLQueryProcessor(object):
         if not len(self.syntax_error_listener.syntax_errors):
             self.columns = set(columns).difference(del_columns)
             self.keywords = set(keywords)
+            self.functions = set(functions)
         else:
             self.syntax_errors = self.syntax_error_listener.syntax_errors
+
+
+if __name__ == '__main__':
+    sql = 'SELECT MAX(a) FROM b;'
+    qp = MySQLQueryProcessor(sql)

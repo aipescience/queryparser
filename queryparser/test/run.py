@@ -1,16 +1,19 @@
 # -*- coding: utf-8 -*-
 
-from __future__ import absolute_import
-
 import time
+#  import sys
+#  import os
+#  print('/'.join(os.path.realpath(__file__).split('/')[:-2]))
+#  sys.path.append('/'.join(os.path.realpath(__file__).split('/')[:-2]))
 
 import test_queries
 import broken_queries
-from mysql.mysqlparser import * 
+from mysql.mysqlparser import MySQLQueryProcessor
 
 
 
-def pretty_print(q, columns, keywords, process_time, syntax=None,
+
+def pretty_print(q, columns, keywords, functions, process_time, syntax=None,
                  show_diff=True):
 
     print('+' + '=' * 78 + '+')
@@ -42,6 +45,12 @@ def pretty_print(q, columns, keywords, process_time, syntax=None,
             print('|' + ' ' * 78 + '|')
             print('|  Keywords:' + ' ' * 67 + '|')
             for i in sorted(keywords):
+                print('|\t' + i.upper() + ' ' * (71 - len(i)) + '|')
+
+        if len(functions):
+            print('|' + ' ' * 78 + '|')
+            print('|  Functions:' + ' ' * 66 + '|')
+            for i in sorted(functions):
                 print('|\t' + i + ' ' * (71 - len(i)) + '|')
 
         print('|' + ' ' * 78 + '|')
@@ -56,6 +65,12 @@ def pretty_print(q, columns, keywords, process_time, syntax=None,
             if keywords.symmetric_difference(q[2]) != set():
                 print('|  Missing keywords:' + ' ' * 59 + '|')
                 for i in keywords.symmetric_difference(q[2]):
+                    print('|\t' + i + ' ' * (71 - len(i)) + '|')
+                print('|' + ' ' * 78 + '|')
+                proc = '\033[91m\033[1mFailed\033[0m'
+            if functions.symmetric_difference(q[3]) != set():
+                print('|  Missing functions:' + ' ' * 59 + '|')
+                for i in functions.symmetric_difference(q[3]):
                     print('|\t' + i + ' ' * (71 - len(i)) + '|')
                 print('|' + ' ' * 78 + '|')
                 proc = '\033[91m\033[1mFailed\033[0m'
@@ -74,25 +89,15 @@ def pretty_print(q, columns, keywords, process_time, syntax=None,
     print()
 
 
-def test_good():
-    for q in test_queries.queries:
+def test_parsing(qs):
+    for q in qs:
         s = time.time()
         qp = MySQLQueryProcessor(q[0])
         s = time.time() - s
 
-        cols, keys = qp.columns, qp.keywords
-        pretty_print(q, cols, keys, s, qp.syntax_errors, show_diff=True)
-
-
-def test_broken():
-    for q in broken_queries.queries:
-        s = time.time()
-        qp = MySQLQueryProcessor(q[0])
-        s = time.time() - s
-
-        cols, keys = qp.columns, qp.keywords
-        pretty_print(q, cols, keys, s, qp.syntax_errors, show_diff=True)
+        cols, keys, funcs = qp.columns, qp.keywords, qp.functions
+        pretty_print(q, cols, keys, funcs, s, qp.syntax_errors, show_diff=True)
 
 
 if __name__ == '__main__':
-    test_broken()
+    test_parsing(broken_queries.queries[:])

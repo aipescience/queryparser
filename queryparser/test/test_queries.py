@@ -6,17 +6,27 @@
 queries = [
     (
         """
-        SELECT a,b FROM db.tab;
+        SELECT a*2,b,100 FROM db.tab;
+        """,
+        ('db.tab.a', 'db.tab.b', 'db.tab.NULL'),
+        (),
+        ()
+    ),
+    (
+        """
+        SELECT a,AVG(b) FROM db.tab;
         """,
         ('db.tab.a', 'db.tab.b'),
-        ()
+        (),
+        ('AVG',)
     ),
     (
         """
         SELECT A.a,B.* FROM db.tab1 A,db.tab2 AS B LIMIT 10;
         """,
         ('db.tab1.a', 'db.tab2.*'),
-        ('limit', '*')
+        ('limit', '*'),
+        ()
     ),
     (
         """
@@ -29,7 +39,8 @@ queries = [
         ('MDR1.FOF.fofid', 'MDR1.FOF.x', 'MDR1.FOF.y', 'MDR1.FOF.z',
          'MDR1.FOF.vx', 'MDR1.FOF.vy', 'MDR1.FOF.vz', 'MDR1.FOF.snapnum',
          'MDR1.FOF.mass'),
-        ('where', 'order by', 'limit')
+        ('where', 'order by', 'limit'),
+        ()
     ),
     (
         """
@@ -39,7 +50,8 @@ queries = [
         """,
         ('world.shop.article', 'world.shop.dealer', 'world.shop.price',
          'universe.shop.price'),
-        ('where',)
+        ('where',),
+        ('MAX', )
     ),
     (
         """
@@ -50,7 +62,8 @@ queries = [
                       WHERE s1.article = s2.article);
         """,
         ('db.shop.article','db.shop.dealer', 'db.shop.price'),
-        ('where',)
+        ('where',),
+        ('MAX', )
     ),
     (
         """
@@ -58,7 +71,8 @@ queries = [
         ON A.id = B.id;
         """,
         ('db1.table1.*', 'db2.table1.*'),
-        ('join', '*')
+        ('join', '*'),
+        ()
     ),
     (
         """
@@ -67,7 +81,8 @@ queries = [
               (quantity BETWEEN 1000 AND 2000);
         """,
         ('mmm.products.*',),
-        ('where', '*')
+        ('where', '*'),
+        ()
     ),
     (
         """
@@ -79,7 +94,8 @@ queries = [
         """,
         ('db.test_table.fi@1', 'db.test_table.fi2', 'bd.test_table.fi1',
          'bd.test_table.fi2', 'db.test_table.foo', 'bd.test_table.bar'),
-        ('where', 'union')
+        ('where', 'union'),
+        ()
     ),
     (
         """
@@ -103,7 +119,8 @@ queries = [
          'tap_schema.cols.table_name', 'tap_schema.cols.column_name',
          'tap_schema.cols.ucd', 'db.tab.a', 'db.tab.b',
          'tap_schema.cols.a'),
-        ('join', 'where')
+        ('join', 'where'),
+        ()
     ),
     (
         """
@@ -115,7 +132,8 @@ queries = [
         """,
         ('tap_schema.tabs.table_name', 'tap_schema.cols.table_name',
          'tap_schema.tabs.description', 'tap_schema.cols.ucd'),
-        ('join', 'where')
+        ('join', 'where'),
+        ()
     ),
     (
         """
@@ -125,6 +143,7 @@ queries = [
            AND s.color <> 'white';
         """,
         ('db.shirt.*', 'db.person.id', 'db.person.name'),
-        ('join', 'where', '*')
+        ('join', 'where', '*'),
+        ()
     )
 ]
