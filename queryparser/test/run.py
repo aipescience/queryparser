@@ -8,9 +8,9 @@ import time
 
 import test_queries
 import broken_queries
+import mysql
+print dir(mysql)
 from mysql.mysqlparser import MySQLQueryProcessor
-
-
 
 
 def pretty_print(q, columns, keywords, functions, process_time, syntax=None,

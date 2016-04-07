@@ -6,12 +6,19 @@ MySQL parser.
 
 __all__ = ["MySQLQueryProcessor"]
 
+import sys
+
 import antlr4
 from antlr4.error.ErrorListener import ErrorListener
 
-from .MySQLLexer import MySQLLexer
-from .MySQLParser import MySQLParser
-from .MySQLParserListener import MySQLParserListener
+if sys.version_info.major == 2:
+    from MySQLLexer2 import MySQLLexer
+    from MySQLParser2 import MySQLParser
+    from MySQLParserListener2 import MySQLParserListener
+if sys.version_info.major == 3:
+    from MySQLLexer import MySQLLexer
+    from MySQLParser import MySQLParser
+    from MySQLParserListener import MySQLParserListener
 
 
 def parse_alias(alias):
@@ -28,12 +35,12 @@ class QueryListener(MySQLParserListener):
     def __init__(self):
         self.select_expressions = []
         self.keywords = []
-        
-    def enterSelect_statement(self, ctx:MySQLParser.Select_statementContext):
+
+    def enterSelect_statement(self, ctx):
         if ctx.UNION_SYM():
             self.keywords.append('union')
 
-    def enterSelect_expression(self, ctx:MySQLParser.Select_expressionContext):
+    def enterSelect_expression(self, ctx):
         self.select_expressions.append(ctx)
 
 
@@ -46,7 +53,7 @@ class RemoveSubqueriesListener(MySQLParserListener):
         self.depth = depth
         self.subquery_aliases = []
 
-    def enterSelect_expression(self, ctx:MySQLParser.Select_expressionContext):
+    def enterSelect_expression(self, ctx):
         parent = ctx.parentCtx.parentCtx
         if isinstance(parent, MySQLParser.SubqueryContext) and ctx.depth() >\
                 self.depth:
@@ -63,7 +70,7 @@ class ColumnNameListener(MySQLParserListener):
     def __init__(self):
         self.column_name = []
 
-    def enterColumn_spec(self, ctx:MySQLParser.Column_specContext):
+    def enterColumn_spec(self, ctx):
         self.column_name.append(ctx.getText())
 
 
@@ -79,7 +86,7 @@ class TableColumnKeywordListener(MySQLParserListener):
         self.functions = []
         self.column_name_listener = ColumnNameListener()
         self.walker = antlr4.ParseTreeWalker()
-    
+
     def _process_column_name(self, ctx):
         #  cn = [ctx.getText()]
         cn = []
@@ -102,7 +109,7 @@ class TableColumnKeywordListener(MySQLParserListener):
             alias = None
         alias = parse_alias(alias)
         return alias
-    
+
     def _extract_column(self, ctx):
         cn = self._process_column_name(ctx)
         alias = self._process_alias(ctx)
@@ -111,40 +118,40 @@ class TableColumnKeywordListener(MySQLParserListener):
         else:
             self.columns.append((cn[0], alias))
 
-    def enterTable_atom(self, ctx:MySQLParser.Table_atomContext):
+    def enterTable_atom(self, ctx):
         alias = parse_alias(ctx.alias())
         ts = ctx.table_spec()
         if ts:
-            self.tables.append((ts.getText().replace('`',''), alias))
+            self.tables.append((ts.getText().replace('`', ''), alias))
 
-    def enterDisplayed_column(self, ctx:MySQLParser.Displayed_columnContext):
+    def enterDisplayed_column(self, ctx):
         self._extract_column(ctx)
         if ctx.ASTERISK():
             self.keywords.append('*')
 
-    def enterSelect_list(self, ctx:MySQLParser.Select_listContext):
+    def enterSelect_list(self, ctx):
         if ctx.ASTERISK():
             self.columns.append(('*', None))
             self.keywords.append('*')
 
-    def enterFunctionList(self, ctx:MySQLParser.FunctionListContext):
+    def enterFunctionList(self, ctx):
         self.functions.append(ctx.getText())
 
-    def enterGroup_functions(self, ctx:MySQLParser.Group_functionsContext):
+    def enterGroup_functions(self, ctx):
         self.functions.append(ctx.getText())
 
-    def enterWhere_clause(self, ctx:MySQLParser.Where_clauseContext):
+    def enterWhere_clause(self, ctx):
         self.keywords.append('where')
         self._extract_column(ctx)
 
-    def enterOrderby_clause(self, ctx:MySQLParser.Orderby_clauseContext):
+    def enterOrderby_clause(self, ctx):
         self.keywords.append('order by')
         self._extract_column(ctx)
 
-    def enterLimit_clause(self, ctx:MySQLParser.Limit_clauseContext):
+    def enterLimit_clause(self, ctx):
         self.keywords.append('limit')
 
-    def enterJoin_condition(self, ctx:MySQLParser.Join_conditionContext):
+    def enterJoin_condition(self, ctx):
         self.keywords.append('join')
         self._extract_column(ctx)
 
@@ -193,12 +200,12 @@ class MySQLQueryProcessor(object):
 
         for ctx in query_listener.select_expressions:
             remove_subquieries_listener = RemoveSubqueriesListener(ctx.depth())
-            table_column_keyword_listener= TableColumnKeywordListener()
+            table_column_keyword_listener = TableColumnKeywordListener()
 
             # Remove nested subqueries from select_expressions
             walker.walk(remove_subquieries_listener, ctx)
             subquery_aliases.extend(
-                    remove_subquieries_listener.subquery_aliases)
+                remove_subquieries_listener.subquery_aliases)
 
             # Extract table and column names and keywords
             walker.walk(table_column_keyword_listener, ctx)
@@ -235,8 +242,6 @@ class MySQLQueryProcessor(object):
                 if len(parts) == 1:
                     dvs = list(tab_dict.values())
                     if len(dvs) > 1 or len(tab) > 1:
-                        #  raise Exception("Not sure from which table I am suppose" +\
-                                #  " to get the columns... %s" % str(dvs or tab))
                         for k in dvs:
                             columns.append('%s.%s' % (k, parts[0]))
                         for k in tab:
@@ -272,3 +277,4 @@ class MySQLQueryProcessor(object):
 if __name__ == '__main__':
     sql = 'SELECT MAX(a) FROM b;'
     qp = MySQLQueryProcessor(sql)
+    print(qp.columns)
