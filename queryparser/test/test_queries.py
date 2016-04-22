@@ -347,4 +347,38 @@ queries = [
         ('order by', 'where'),
         ()
     ),
+    (
+        """
+        SELECT x, y, mass
+        FROM MDR1.FOF
+        WHERE snapnum <= 1
+        """,
+        ('MDR1.FOF.x', 'MDR1.FOF.y', 'MDR1.FOF.snapnum', 'MDR1.FOF.mass'),
+        ('where',),
+        ()
+    ),
+    (
+        """
+        SELECT bdmId, Rbin, mass, dens FROM Bolshoi.BDMVProf
+        WHERE bdmId =
+                (SELECT bdmId FROM Bolshoi.BDMV
+                 WHERE snapnum=416 ORDER BY Mvir DESC LIMIT 1)
+              OR
+              bdmId = 
+                (SELECT bdmId FROM Bolshoi.BDMV
+                 WHERE bdmId =
+                         (SELECT bdmId FROM Bolshoi.BDMV
+                          WHERE snapnum=416 ORDER BY Mvir DESC LIMIT 1)
+                       OR
+                       bdmId = 
+                         (SELECT bdmId FROM Bolshoi.BDMV
+                          WHERE snapnum=416 ORDER BY Mvir DESC LIMIT 1,2))
+        ORDER BY Rbin 
+        """,
+        ('Bolshoi.BDMVProf.bdmId', 'Bolshoi.BDMVProf.Rbin',
+         'Bolshoi.BDMVProf.mass', 'Bolshoi.BDMVProf.dens',
+         'Bolshoi.BDMV.bdmId','Bolshoi.BDMV.snapnum','Bolshoi.BDMV.Mvir'),
+        ('where', 'order by', 'limit'),
+        ()
+    ),
 ]

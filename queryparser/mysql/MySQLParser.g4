@@ -203,13 +203,12 @@ row_count:	            INTEGER_NUM ;
 orderby_clause:         ORDER_SYM BY_SYM orderby_item ( COMMA orderby_item )* ;
 orderby_item:	        groupby_item ( ASC | DESC )? ;
 
-bit_fac1:               ( NOT_SYM )? ( (IN_SYM ( subquery | expression_list )) | (LIKE_SYM simple_expr ( ESCAPE_SYM simple_expr )?) | (REGEXP bit_expr) | (BETWEEN bit_expr AND_SYM predicate)) ;
-bit_fac2:               SOUNDS_SYM LIKE_SYM bit_expr;
-
 partition_clause:       PARTITION_SYM LPAREN partition_names RPAREN ;
 partition_name:         ID ;
 partition_names:	    partition_name ( COMMA partition_name )* ;
 
+bit_fac1:               ( NOT_SYM )? ( (IN_SYM ( subquery | expression_list )) | (LIKE_SYM simple_expr ( ESCAPE_SYM simple_expr )?) | (REGEXP bit_expr) | (BETWEEN bit_expr AND_SYM predicate)) ;
+bit_fac2:               SOUNDS_SYM LIKE_SYM bit_expr;
 predicate:
 	  bit_expr (( bit_fac1 | bit_fac2)?) ;
       /*
