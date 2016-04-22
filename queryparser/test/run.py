@@ -9,6 +9,7 @@ import test_queries
 import broken_queries
 import sys
 import os
+print('/'.join(os.path.realpath(__file__).split('/')[:-2]))
 sys.path.append('/'.join(os.path.realpath(__file__).split('/')[:-2]))
 from mysql.mysqlparser import MySQLQueryProcessor
 
