@@ -112,4 +112,4 @@ def test_parsing(qs):
 
 
 if __name__ == '__main__':
-    test_parsing(broken_queries.queries[:])
+    test_parsing(test_queries.queries[:1])

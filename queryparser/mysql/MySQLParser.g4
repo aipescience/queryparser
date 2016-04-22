@@ -117,7 +117,7 @@ select_expression:
 
     ( orderby_clause )?
     ( limit_clause )?
-	/* ( ( FOR_SYM UPDATE ) | ( LOCK IN_SYM SHARE_SYM MODE_SYM ) )? */
+	( ( FOR_SYM UPDATE ) | ( LOCK IN_SYM SHARE_SYM MODE_SYM ) )?
     SEMI?
 ;
 
@@ -145,6 +145,7 @@ case_when_statement2:   bit_expr ( WHEN_SYM bit_expr THEN_SYM bit_expr )+ ;
 column_list:            LPAREN column_spec ( COMMA column_spec )* RPAREN ;
 column_name:            ID ;
 column_spec:            ( ( schema_name DOT )? table_name DOT )? column_name ;
+
 
 //displayed_column :      ( table_spec DOT ASTERISK ) | ( column_spec ( alias )? ) | ( bit_expr ( alias )? ) ;
 displayed_column :      ( table_spec DOT ASTERISK ) | ( bit_expr ( alias )? ) ;
