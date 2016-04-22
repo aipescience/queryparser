@@ -14,3 +14,7 @@ python2: MySQLLexer.g4 MySQLParser.g4
 java: MySQLLexer.g4 MySQLParser.g4
 	java -jar /usr/local/lib/antlr-4.5.3-complete.jar MySQLLexer.g4
 	java -jar /usr/local/lib/antlr-4.5.3-complete.jar MySQLParser.g4
+
+javascript: MySQLLexer.g4 MySQLParser.g4
+	java -jar /usr/local/lib/antlr-4.5.3-complete.jar -Dlanguage=JavaScript MySQLLexer.g4
+	java -jar /usr/local/lib/antlr-4.5.3-complete.jar -Dlanguage=JavaScript MySQLParser.g4

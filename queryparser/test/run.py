@@ -4,13 +4,25 @@ import time
 #  import sys
 #  import os
 #  print('/'.join(os.path.realpath(__file__).split('/')[:-2]))
-#  sys.path.append('/'.join(os.path.realpath(__file__).split('/')[:-2]))
 
 import test_queries
 import broken_queries
-import mysql
-print dir(mysql)
+import sys
+import os
+sys.path.append('/'.join(os.path.realpath(__file__).split('/')[:-2]))
 from mysql.mysqlparser import MySQLQueryProcessor
+
+
+def not_so_pretty_print(q, columns, keywords, functions, process_time,
+        syntax=None):
+    print(q)
+    if syntax:
+        print('  Query has syntax error(s).')
+    else:
+        print("  Columns: ", columns)
+        print("  Keywords: ", keywords)
+        print("  Functions: ", functions)
+    print()
 
 
 def pretty_print(q, columns, keywords, functions, process_time, syntax=None,
@@ -51,7 +63,7 @@ def pretty_print(q, columns, keywords, functions, process_time, syntax=None,
             print('|' + ' ' * 78 + '|')
             print('|  Functions:' + ' ' * 66 + '|')
             for i in sorted(functions):
-                print('|\t' + i + ' ' * (71 - len(i)) + '|')
+                print('|\t' + i.upper() + ' ' * (71 - len(i)) + '|')
 
         print('|' + ' ' * 78 + '|')
 
@@ -69,7 +81,7 @@ def pretty_print(q, columns, keywords, functions, process_time, syntax=None,
                 print('|' + ' ' * 78 + '|')
                 proc = '\033[91m\033[1mFailed\033[0m'
             if functions.symmetric_difference(q[3]) != set():
-                print('|  Missing functions:' + ' ' * 59 + '|')
+                print('|  Missing functions:' + ' ' * 58 + '|')
                 for i in functions.symmetric_difference(q[3]):
                     print('|\t' + i + ' ' * (71 - len(i)) + '|')
                 print('|' + ' ' * 78 + '|')
@@ -96,8 +108,9 @@ def test_parsing(qs):
         s = time.time() - s
 
         cols, keys, funcs = qp.columns, qp.keywords, qp.functions
+        #  not_so_pretty_print(q[0], cols, keys, funcs, s, qp.syntax_errors)
         pretty_print(q, cols, keys, funcs, s, qp.syntax_errors, show_diff=True)
 
 
 if __name__ == '__main__':
-    test_parsing(broken_queries.queries[:])
+    test_parsing(test_queries.queries[:])

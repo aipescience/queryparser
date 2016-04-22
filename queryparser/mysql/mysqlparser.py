@@ -16,9 +16,9 @@ if sys.version_info.major == 2:
     from MySQLParser2 import MySQLParser
     from MySQLParserListener2 import MySQLParserListener
 if sys.version_info.major == 3:
-    from MySQLLexer import MySQLLexer
-    from MySQLParser import MySQLParser
-    from MySQLParserListener import MySQLParserListener
+    from .MySQLLexer import MySQLLexer
+    from .MySQLParser import MySQLParser
+    from .MySQLParserListener import MySQLParserListener
 
 
 def parse_alias(alias):
@@ -139,6 +139,11 @@ class TableColumnKeywordListener(MySQLParserListener):
 
     def enterGroup_functions(self, ctx):
         self.functions.append(ctx.getText())
+
+    def enterGroupby_clause(self, ctx):
+        self.keywords.append('group by')
+        self._extract_column(ctx)
+        #  self.functions.append(ctx.getText())
 
     def enterWhere_clause(self, ctx):
         self.keywords.append('where')
