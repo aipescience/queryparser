@@ -99,7 +99,7 @@ def pretty_print(q, columns, keywords, functions, process_time, syntax=None,
     print('|  %s' % tm + ' ' * (89 - len(tm)) + '|')
     print('|' + ' ' * 78 + '|')
     print('+' + '-' * 78 + '+')
-    print()
+    print('')
 
 
 def test_parsing(qs):
