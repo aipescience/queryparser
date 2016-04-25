@@ -33,6 +33,8 @@ interval_unit:
 transcoding_name:
 	  LATIN1 | UTF8 ;
 
+
+
 // LITERALS
 
 bit_literal:		    BIT_NUM ;
@@ -40,6 +42,7 @@ boolean_literal:	    TRUE_SYM | FALSE_SYM ;
 hex_literal:		    HEX_DIGIT ;
 number_literal:		    ( PLUS | MINUS )? ( INTEGER_NUM | REAL_NUMBER ) ;
 string_literal:		    TEXT_STRING ;
+
 
 
 // FUNCTIONS
@@ -96,6 +99,8 @@ literal_value:
 
 
 
+// MAIN
+
 select_expression:
 	SELECT 
 
@@ -118,6 +123,7 @@ select_expression:
     ( orderby_clause )?
     ( limit_clause )?
 	( ( FOR_SYM UPDATE ) | ( LOCK IN_SYM SHARE_SYM MODE_SYM ) )?
+
     SEMI?
 ;
 
@@ -126,9 +132,8 @@ bit_expr:               factor1 ( VERTBAR factor1 )? ;
 
 bool_primary:
       // Make sure this really work!!!
+      predicate ( relational_op predicate )? | ( ( NOT_SYM )? EXISTS subquery);
       //predicate ( relational_op (predicate | (( ALL | ANY )? subquery)) )?
-      predicate ( relational_op predicate )?
-	| ( ( NOT_SYM )? EXISTS subquery );
 /* done
 	  ( predicate relational_op predicate )
 	| ( predicate relational_op ( ALL | ANY )? subquery )
@@ -156,7 +161,7 @@ displayed_column :      ( table_spec DOT ASTERISK ) | ( bit_expr ( alias )? ) ;
 exp_factor1:	        exp_factor2 ( XOR exp_factor2 )* ;
 exp_factor2:	        exp_factor3 ( AND_SYM exp_factor3 )* ;
 exp_factor3:	        ( NOT_SYM )? exp_factor4 ;
-exp_factor4:	        bool_primary ( IS_SYM ( NOT_SYM )? ( boolean_literal | NULL_SYM ) )? ;
+exp_factor4:	        bool_primary ( IS_SYM ( NOT_SYM )? (boolean_literal | NULL_SYM) )? ;
 // expression:	            ( LPAREN )? exp_factor1 ( OR_SYM exp_factor1 )* ( RPAREN )? ;
 expression:	            exp_factor1 ( OR_SYM exp_factor1 )* ;
 expression_list:        LPAREN expression ( COMMA expression )* RPAREN ;
@@ -164,7 +169,6 @@ expression_list:        LPAREN expression ( COMMA expression )* RPAREN ;
 factor1:                factor2 ( BITAND factor2 )? ;
 factor2:                factor3 ( ( SHIFT_LEFT | SHIFT_RIGHT ) factor3 )? ;
 factor3:                factor4 ( ( PLUS | MINUS ) factor4 )* ;
-//factor4:                factor5 ( ( ASTERISK | DIVIDE | MOD_SYM | POWER_OP ) factor5 )* ;
 factor4:                factor5 ( ( ASTERISK | DIVIDE | MOD_SYM | POWER_OP ) factor5 )* ;
 factor5:                ( PLUS | MINUS | NEGATION | BINARY )? simple_expr ( ( PLUS | MINUS ) interval_expr )? ;
 

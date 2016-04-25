@@ -74,7 +74,7 @@ class ColumnNameListener(MySQLParserListener):
         self.column_name.append(ctx.getText())
 
 
-class TableColumnKeywordListener(MySQLParserListener):
+class ColumnKeywordFunctionListener(MySQLParserListener):
     """
     Extract table_names, column_names, and their aliases.
 
@@ -205,7 +205,7 @@ class MySQLQueryProcessor(object):
 
         for ctx in query_listener.select_expressions:
             remove_subquieries_listener = RemoveSubqueriesListener(ctx.depth())
-            table_column_keyword_listener = TableColumnKeywordListener()
+            column_keyword_function_listener = ColumnKeywordFunctionListener()
 
             # Remove nested subqueries from select_expressions
             walker.walk(remove_subquieries_listener, ctx)
@@ -213,12 +213,12 @@ class MySQLQueryProcessor(object):
                 remove_subquieries_listener.subquery_aliases)
 
             # Extract table and column names and keywords
-            walker.walk(table_column_keyword_listener, ctx)
+            walker.walk(column_keyword_function_listener, ctx)
 
-            query_names.append([table_column_keyword_listener.tables,
-                                table_column_keyword_listener.columns])
-            keywords.extend(table_column_keyword_listener.keywords)
-            functions.extend(table_column_keyword_listener.functions)
+            query_names.append([column_keyword_function_listener.tables,
+                                column_keyword_function_listener.columns])
+            keywords.extend(column_keyword_function_listener.keywords)
+            functions.extend(column_keyword_function_listener.functions)
 
         columns = []
 
