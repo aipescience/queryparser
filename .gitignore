@@ -1,0 +1,16 @@
+*.swp
+
+*.pyc
+*.tokens
+*.java
+
+ADQLLexer.py
+ADQLParser.py
+ADQLParserListener.py
+
+MySQLLexer.py
+MySQLParser.py
+MySQLParserListener.py
+MySQLLexer2.py
+MySQLParser2.py
+MySQLParserListener2.py
