@@ -6,7 +6,6 @@
 queries = [
     (
         """
-        # blablabla
         SELECT COUNT(*), a*2,b,100 FROM db.tab;
         """,
         ('db.tab.a', 'db.tab.b', 'db.tab.NULL'),
@@ -368,6 +367,9 @@ queries = [
     ),
     (
         """
+        # This is a shit query but it demonstrates how comments are
+        # ignored and that it's possible to parse nested queries in
+        # a reasonable amount of time.
         SELECT bdmId, Rbin, mass, dens FROM Bolshoi.BDMVProf
         WHERE bdmId =
                 (SELECT bdmId FROM Bolshoi.BDMV

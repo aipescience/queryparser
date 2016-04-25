@@ -125,7 +125,9 @@ alias:                  ( AS_SYM )? ID ;
 bit_expr:               factor1 ( VERTBAR factor1 )? ;
 
 bool_primary:
-      predicate ( relational_op (predicate | (( ALL | ANY )? subquery)) )?
+      // Make sure this really work!!!
+      //predicate ( relational_op (predicate | (( ALL | ANY )? subquery)) )?
+      predicate ( relational_op predicate )?
 	| ( ( NOT_SYM )? EXISTS subquery );
 /* done
 	  ( predicate relational_op predicate )
