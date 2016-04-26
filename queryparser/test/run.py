@@ -8,7 +8,7 @@ import test_queries
 import broken_queries
 import sys
 import os
-sys.path.append('/'.join(os.path.realpath(__file__).split('/')[:-2]))
+sys.path.insert(0, '/'.join(os.path.realpath(__file__).split('/')[:-2]))
 from mysql.mysqlparser import MySQLQueryProcessor
 
 
@@ -101,9 +101,11 @@ def pretty_print(q, columns, keywords, functions, process_time, syntax=None,
 
 
 def test_parsing(qs):
+    qp = MySQLQueryProcessor()
     for q in qs:
+        qp.set_query(q[0])
         s = time.time()
-        qp = MySQLQueryProcessor(q[0])
+        qp.process_query()
         s = time.time() - s
 
         cols, keys, funcs = qp.columns, qp.keywords, qp.functions
@@ -112,4 +114,4 @@ def test_parsing(qs):
 
 
 if __name__ == '__main__':
-    test_parsing(test_queries.queries[:])
+    test_parsing(test_queries.queries[:1])

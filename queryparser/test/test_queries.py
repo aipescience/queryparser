@@ -6,6 +6,14 @@
 queries = [
     (
         """
+        SELECT (((((((1+2)*3)/4)^5)%6)&7)>>8) FROM tab;
+        """,
+        ('tab.NULL',),
+        (),
+        ()
+    ),
+    (
+        """
         SELECT COUNT(*), a*2,b,100 FROM db.tab;
         """,
         ('db.tab.a', 'db.tab.b', 'db.tab.NULL'),
@@ -378,9 +386,10 @@ queries = [
               bdmId = 
                 (SELECT bdmId FROM Bolshoi.BDMV
                  WHERE bdmId =
-                         (SELECT bdmId FROM Bolshoi.BDMV
+                         (SELECT bdmId FROM Bolshoi.BDMV #comment
                           WHERE snapnum=416 ORDER BY Mvir DESC LIMIT 1)
                        OR
+                       #comment
                        bdmId = 
                          (SELECT bdmId FROM Bolshoi.BDMV
                           WHERE snapnum=STD(Mvir))

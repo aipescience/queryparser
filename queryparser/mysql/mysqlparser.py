@@ -172,6 +172,8 @@ class SyntaxErrorListener(ErrorListener):
 
 class MySQLQueryProcessor(object):
     def __init__(self, query=None):
+        self.walker = antlr4.ParseTreeWalker()
+
         self.columns = set()
         self.keywords = set()
         self.functions = set()
@@ -193,14 +195,13 @@ class MySQLQueryProcessor(object):
         except:
             raise
 
-        walker = antlr4.ParseTreeWalker()
         query_listener = QueryListener()
         subquery_aliases = []
         query_names = []
         keywords = []
         functions = []
 
-        walker.walk(query_listener, tree)
+        self.walker.walk(query_listener, tree)
         keywords.extend(query_listener.keywords)
 
         for ctx in query_listener.select_expressions:
@@ -208,12 +209,12 @@ class MySQLQueryProcessor(object):
             column_keyword_function_listener = ColumnKeywordFunctionListener()
 
             # Remove nested subqueries from select_expressions
-            walker.walk(remove_subquieries_listener, ctx)
+            self.walker.walk(remove_subquieries_listener, ctx)
             subquery_aliases.extend(
                 remove_subquieries_listener.subquery_aliases)
 
             # Extract table and column names and keywords
-            walker.walk(column_keyword_function_listener, ctx)
+            self.walker.walk(column_keyword_function_listener, ctx)
 
             query_names.append([column_keyword_function_listener.tables,
                                 column_keyword_function_listener.columns])
@@ -278,8 +279,15 @@ class MySQLQueryProcessor(object):
         else:
             self.syntax_errors = self.syntax_error_listener.syntax_errors
 
+    def set_query(self, query):
+        self.columns = set()
+        self.keywords = set()
+        self.functions = set()
+        self.syntax_errors = []
+        self.query = query
+
 
 if __name__ == '__main__':
-    sql = 'SELECT MAX(a) FROM b;'
+    sql = 'SELECT MAX((a + 1.123) ^ 2) FROM b;'
     qp = MySQLQueryProcessor(sql)
     print(qp.columns)
