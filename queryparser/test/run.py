@@ -1,15 +1,13 @@
 # -*- coding: utf-8 -*-
 
-from __future__ import absolute_import
-
 import time
-
-import test_queries
-import broken_queries
 import sys
 import os
-sys.path.insert(0, '/'.join(os.path.realpath(__file__).split('/')[:-2]))
-from mysql.mysqlparser import MySQLQueryProcessor
+
+from queryparser import MySQLQueryProcessor
+
+from queryparser.test import test_queries
+from queryparser.test import broken_queries
 
 
 def not_so_pretty_print(q, columns, keywords, functions, process_time,
@@ -114,4 +112,4 @@ def test_parsing(qs):
 
 
 if __name__ == '__main__':
-    test_parsing(test_queries.queries[:1])
+    test_parsing(broken_queries.queries[:])

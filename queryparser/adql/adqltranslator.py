@@ -2,10 +2,16 @@
 import antlr4
 from antlr4.error.ErrorListener import ErrorListener
 
-from ADQLLexer import ADQLLexer
-from ADQLParser import ADQLParser
-from ADQLParserVisitor import ADQLParserVisitor
-from ADQLParserListener import ADQLParserListener
+if sys.version_info.major == 2:
+    from ADQLLexer import ADQLLexer
+    from ADQLParser import ADQLParser
+    from ADQLParserVisitor import ADQLParserVisitor
+    from ADQLParserListener import ADQLParserListener
+if sys.version_info.major == 3:
+    from .ADQLLexer import ADQLLexer
+    from .ADQLParser import ADQLParser
+    from .ADQLParserVisitor import ADQLParserVisitor
+    from .ADQLParserListener import ADQLParserListener
 
 from itertools import chain
 
@@ -215,6 +221,7 @@ class ADQLQueryTranslator(object):
 
         try:
             self.tree = self.parser.query_expression()
+            print(self.syntax_error_listener.syntax_errors)
             self.parsed = True
         except:
             self.parsed = False

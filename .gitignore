@@ -3,6 +3,10 @@
 *.pyc
 *.tokens
 *.java
+*.egg-info
+
+build
+dist
 
 ADQLLexer.py
 ADQLParser.py
