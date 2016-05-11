@@ -12,9 +12,9 @@ import antlr4
 from antlr4.error.ErrorListener import ErrorListener
 
 if sys.version_info.major == 2:
-    from MySQLLexer2 import MySQLLexer
-    from MySQLParser2 import MySQLParser
-    from MySQLParserListener2 import MySQLParserListener
+    from MySQLLexer import MySQLLexer
+    from MySQLParser import MySQLParser
+    from MySQLParserListener import MySQLParserListener
 if sys.version_info.major == 3:
     from .MySQLLexer import MySQLLexer
     from .MySQLParser import MySQLParser

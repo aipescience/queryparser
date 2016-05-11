@@ -2,6 +2,8 @@
 import antlr4
 from antlr4.error.ErrorListener import ErrorListener
 
+import sys
+
 if sys.version_info.major == 2:
     from ADQLLexer import ADQLLexer
     from ADQLParser import ADQLParser
