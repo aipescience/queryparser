@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import time
-import sys
-import os
 
 from queryparser import MySQLQueryProcessor
+from queryparser import ADQLQueryTranslator
 
 from queryparser.test import test_queries
 from queryparser.test import broken_queries
@@ -111,5 +110,13 @@ def test_parsing(qs):
         pretty_print(q, cols, keys, funcs, s, qp.syntax_errors, show_diff=True)
 
 
+def test_translation():
+    query = """SELECT POLYGON(icrs, 10, -10.5, 20, 20.6, 30, 30.7) FROM b"""
+    adql_translator = ADQLQueryTranslator(query)
+    print(adql_translator.to_mysql())
+
+
 if __name__ == '__main__':
-    test_parsing(broken_queries.queries[:])
+    test_parsing(test_queries.queries[:2])
+    test_parsing(broken_queries.queries[1:2])
+    test_translation()
