@@ -66,6 +66,21 @@ class ADQLtoMySQLGeometryTranslationVisitor(ADQLParserVisitor):
                 units.append('')
 
         return tuple(chain(*zip(pars, units)))
+
+    def _convert_values(self, ctx, cidx):
+        vals = []
+        for i in ctx.children[cidx].getText().split(','):
+            try:
+                v = float(i)
+            except ValueError:
+                try:
+                    v = float(eval(i))
+                except (AttributeError, ValueError):
+                    v = i.replace('"', '`')
+
+            vals.append(v)
+
+        return vals
         
     def visitSet_limit(self, ctx):
         """
@@ -80,8 +95,10 @@ class ADQLtoMySQLGeometryTranslationVisitor(ADQLParserVisitor):
     def visitPoint(self, ctx):
         cc = ctx.getChildCount()
         coords = []
-        coords.extend(ctx.children[2].getText().split(','))
-        coords.extend(ctx.children[4].getText().split(','))
+        coords.extend(self._convert_values(ctx, 2))
+        coords.extend(self._convert_values(ctx, 4))
+        #  coords.extend(ctx.children[2].getText().split(','))
+        #  coords.extend(ctx.children[4].getText().split(','))
         if len(coords) == 3:
             coords = coords[1:]
 
@@ -95,9 +112,10 @@ class ADQLtoMySQLGeometryTranslationVisitor(ADQLParserVisitor):
         cc = ctx.getChildCount()
         s = 4
         pars = []
-        for i in range(0, 5, 2):
-            pars.extend([float(i) for i in
-                         ctx.children[s + i].getText().split(',')])
+        for j in range(0, 5, 2):
+            #  pars.extend([float(eval(i)) for i in
+                         #  ctx.children[s + j].getText().split(',')])
+            pars.extend(self._convert_values(ctx, s + j))
         nc = [pars[0] - pars[2] / 2, pars[1] - pars[3] / 2,
               pars[0] + pars[2]/ 2, pars[1] + pars[3]] 
         wunits = self._determine_units(pars)
@@ -110,9 +128,10 @@ class ADQLtoMySQLGeometryTranslationVisitor(ADQLParserVisitor):
         cc = ctx.getChildCount()
         s = 4
         pars = []
-        for i in range(0, 3, 2):
-            pars.extend([float(i) for i in
-                         ctx.children[s + i].getText().split(',')])
+        for j in range(0, 3, 2):
+            #  pars.extend([float(eval(i)) for i in
+                         #  ctx.children[s + j].getText().split(',')])
+            pars.extend(self._convert_values(ctx, s + j))
         wunits = self._determine_units(pars)
         ctx_text = "scircle( '< (%s%s, %s%s), %s%s >' )" % wunits
 
@@ -123,9 +142,10 @@ class ADQLtoMySQLGeometryTranslationVisitor(ADQLParserVisitor):
         cc = ctx.getChildCount()
         s = 4
         pars = []
-        for i in range(0, cc - 5, 2):
-            pars.extend([float(i) for i in
-                         ctx.children[s + i].getText().split(',')])
+        for j in range(0, cc - 5, 2):
+            pars.extend(self._convert_values(ctx, s + j))
+            #  pars.extend([float(eval(i)) for i in
+                         #  ctx.children[s + j].getText().split(',')])
 
         wunits = self._determine_units(pars)
         poly = "spoly( '{"

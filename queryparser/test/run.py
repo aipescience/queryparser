@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import print_function
+
 import time
 
 from queryparser import MySQLQueryProcessor
@@ -10,7 +12,7 @@ from queryparser.test import broken_queries
 
 
 def not_so_pretty_print(q, columns, keywords, functions, process_time,
-        syntax=None):
+                        syntax=None):
     print(q)
     if syntax:
         print('  Query has syntax error(s).')
@@ -111,12 +113,22 @@ def test_parsing(qs):
 
 
 def test_translation():
-    query = """SELECT POLYGON(icrs, 10, -10.5, 20, 20.6, 30, 30.7) FROM b"""
+    #  query = """SELECT POLYGON(icrs, 10, -10.5, 20, 20.6, 30/60., 30.7) FROM b"""
+    query = """
+    SELECT *
+    FROM SSTGC,glimpse
+    WHERE 1=CONTAINS(POINT('ICRS',"II/295/SSTGC".RAJ2000,"II/295/SSTGC".DEJ2000), BOX('GALACTIC', 0, 0, 30/60., 10/60.)) 
+      AND 1=CONTAINS(POINT('ICRS',"II/295/SSTGC".RAJ2000,"II/295/SSTGC".DEJ2000), CIRCLE('ICRS',"II/293/glimpse".RAJ2000,"II/293/glimpse".DEJ2000, 2/3600.))
+    """
     adql_translator = ADQLQueryTranslator(query)
-    print(adql_translator.to_mysql())
+    
+    print("ADQL translation")
+    print('input:  ', query)
+    print('output: ', adql_translator.to_mysql())
+    print()
 
 
 if __name__ == '__main__':
-    test_parsing(test_queries.queries[:2])
-    test_parsing(broken_queries.queries[1:2])
+    #  test_parsing(test_queries.queries[:2])
+    #  test_parsing(broken_queries.queries[1:2])
     test_translation()
