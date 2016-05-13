@@ -52,34 +52,36 @@ def build_adql_translator(antlr_path, major):
     subprocess.call(ca + ["./queryparser/adql/ADQLParser.g4"])
 
 
-if __name__ == "__main__":
-    jv = get_java_version()
-    if not len(jv):
-        raise RuntimeError("No Java found.")
-    try:
-        if int(jv[0].split('.')[1]) < 7:
-            raise RuntimeError("You need a newer version of Java.")
-    except (AttributeError, IndexError):
-        print('No Java found.')
-        raise
+jv = get_java_version()
 
-    antlr_path = find_antlr()
-    if antlr_path is None:
-        raise RuntimeError("Please download Antlr4.")
+if not len(jv):
+    raise RuntimeError("No Java found.")
 
-    major, _, _, _, _ = sys.version_info
-    build_mysql_parser(antlr_path, major)
-    build_adql_translator(antlr_path, major)
+try:
+    if int(jv[0].split('.')[1]) < 7:
+        raise RuntimeError("You need a newer version of Java.")
+except (AttributeError, IndexError):
+    print('No Java found.')
+    raise
 
-    setup(
-        name="queryparser",
-        version="0.0.1",
-        author="Gal Matijevic / AIP",
-        author_email="gmatijevic@aip.de",
-        packages=["queryparser", "queryparser.adql", "queryparser.mysql",
-                  "queryparser.test"],
-        license="MIT",
-        description="Parses MySQL and does some other stuff...",
-        include_package_data=True,
-        install_requires=["antlr4_python%d_runtime" % major]
-    )
+antlr_path = find_antlr()
+if antlr_path is None:
+    raise RuntimeError("Please download Antlr4.")
+
+major, _, _, _, _ = sys.version_info
+
+build_mysql_parser(antlr_path, major)
+build_adql_translator(antlr_path, major)
+
+setup(
+    name="queryparser",
+    version="0.0.1",
+    author="Gal Matijevic / AIP",
+    author_email="gmatijevic@aip.de",
+    packages=["queryparser", "queryparser.adql", "queryparser.mysql",
+              "queryparser.test"],
+    license="MIT",
+    description="Parses MySQL and does some other stuff...",
+    include_package_data=True,
+    install_requires=["antlr4_python%d_runtime" % major]
+)
