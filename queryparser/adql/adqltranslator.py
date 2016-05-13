@@ -76,11 +76,14 @@ class ADQLtoMySQLGeometryTranslationVisitor(ADQLParserVisitor):
                 try:
                     v = float(eval(i))
                 except (AttributeError, ValueError):
-                    v = i.replace('"', '`')
+                    v = i.replace('"', '')
 
             vals.append(v)
 
         return vals
+
+    def visitRegular_identifier(self, ctx):
+        self.contexts[ctx] = ctx.getText().replace("'", "`").replace('"', "`")
         
     def visitSet_limit(self, ctx):
         """
@@ -95,10 +98,8 @@ class ADQLtoMySQLGeometryTranslationVisitor(ADQLParserVisitor):
     def visitPoint(self, ctx):
         cc = ctx.getChildCount()
         coords = []
-        coords.extend(self._convert_values(ctx, 2))
-        coords.extend(self._convert_values(ctx, 4))
-        #  coords.extend(ctx.children[2].getText().split(','))
-        #  coords.extend(ctx.children[4].getText().split(','))
+        for j in (2, 4):
+            coords.extend(self._convert_values(ctx, j))
         if len(coords) == 3:
             coords = coords[1:]
 
@@ -243,7 +244,7 @@ class ADQLQueryTranslator(object):
 
         try:
             self.tree = self.parser.query_expression()
-            print(self.syntax_error_listener.syntax_errors)
+            #  print(self.syntax_error_listener.syntax_errors)
             self.parsed = True
         except:
             self.parsed = False
