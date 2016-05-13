@@ -1,28 +1,48 @@
 # Queryparser
-Let's parse some MySQL (and ADQL)!
+Let's parse some MySQL and ADQL!
 
-## Generate parser
-First the grammar files need to be passed through antlr4 for the
-parser to be built. Run
-```
-$ make python
-```
-inside the mysql or adql directory. You have to have antrl4 inside the
-/usr/local/lib/ directory (get the 4.5.3 version from [here](http://www.antlr.org)).
-Alternatively, you can also make the java version and then use PyCharm
-with the antlr plugin to parse interactively (watch the parse tree
-change as you type):
-```
-$ make java
-```
-Get pycharm from [Jetbrains](http://www.jetbrains.com). Once installed, go to
-File - Settings - Plugins - Browse Repositories and find the antlr plugin.
-Then open the parser grammar file, find the query rule, right click on it and
-choose Test Rule query.
+## Requirements
+To generate the parsers you need python (either 2 or 3), java and antlr4 (which
+has to be installed inside the /usr/local/lib/ or /usr/local/bin/ directories). 
 
+## Instalation
+After cloning the project, run
+```
+python setup.py install
+```
+This also takes care of installing the required antlr runtime package.
 
 ## Parsing
-To run the parser you have to install the python3 runtime for antlr4
+Processing of MySQL queries is done by first creating an instance of the
 ```
-$ pip install antlr4-python3-runtime
+qp = MySQLQueryProcessor()
 ```
+feeding it a MySQL query
+```
+sql = "SELECT a FROM b;"
+qp.set_query(sql)
+```
+and running it
+```
+qp.process_query()
+```
+After the processing, the processor object will include columns, functions,
+and keywords used in the query.
+
+Alternatively, passing the query at initialization automatically processes it.
+
+
+Translation of ADQL queries is done similarly by first creating and instance
+of the translator object,
+```
+query = ...
+adt = ADQLQueryTranslator(query)
+```
+and calling
+```
+adt.to_mysql()
+```
+which returns a translated string.
+
+## TODO
+ADQL coordinate systems
