@@ -4,6 +4,8 @@ Let's parse some MySQL and ADQL!
 ## Requirements
 To generate the parsers you need python (either 2 or 3), java and antlr4 (which
 has to be installed inside the /usr/local/lib/ or /usr/local/bin/ directories). 
+For running the parsers, only runtime libraries that are installed
+automatically are needed.
 
 ## Instalation
 After cloning the project, run
