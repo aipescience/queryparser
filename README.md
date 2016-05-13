@@ -13,6 +13,7 @@ python setup.py install
 This also takes care of installing the required antlr runtime package.
 
 ## Parsing
+### MySQL
 Processing of MySQL queries is done by first creating an instance of the
 ```
 qp = MySQLQueryProcessor()
@@ -31,7 +32,7 @@ and keywords used in the query.
 
 Alternatively, passing the query at initialization automatically processes it.
 
-
+### ADQL
 Translation of ADQL queries is done similarly by first creating and instance
 of the translator object,
 ```
