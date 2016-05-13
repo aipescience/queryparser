@@ -35,7 +35,7 @@ and keywords used in the query.
 Alternatively, passing the query at initialization automatically processes it.
 
 ### ADQL
-Translation of ADQL queries is done similarly by first creating and instance
+Translation of ADQL queries is done similarly by first creating an instance
 of the translator object,
 ```
 query = ...
