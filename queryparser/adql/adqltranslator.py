@@ -46,10 +46,15 @@ class ADQLtoMySQLGeometryTranslationVisitor(ADQLParserVisitor):
        as a hash. This way we can return the hashed string instead the 
        token so we effectively translate the rule.
 
+    :param conunits:
+        What should we be converting the units to. If no conversion is
+        necessary, just pass an empty string.
+
     """
-    def __init__(self):
+    def __init__(self, conunits="RADIANS"):
         self.contexts= {}
         self.limit = None
+        self.conunits = conunits
 
     def _determine_units(self, pars):
         """
@@ -68,6 +73,13 @@ class ADQLtoMySQLGeometryTranslationVisitor(ADQLParserVisitor):
         return tuple(chain(*zip(pars, units)))
 
     def _convert_values(self, ctx, cidx):
+        """
+        Values inside the ADQL functions can be floats, expressions, or
+        strings. Strings need to be treated differently because
+        mysql-sphere syntax differs slightly if we pass a column name
+        instead of a value.
+
+        """
         vals = []
         for i in ctx.children[cidx].getText().split(','):
             try:
@@ -79,8 +91,22 @@ class ADQLtoMySQLGeometryTranslationVisitor(ADQLParserVisitor):
                     v = i.replace('"', '')
 
             vals.append(v)
-
+        
         return vals
+
+    def _wrap_strings(self, pars):
+        """
+        Check if all...
+
+        """
+        wpars = []
+        for i in pars:
+            if type(i) in (unicode, str):
+                wpars.append('`' + i + '`')
+            else:
+                wpars.append(i)
+
+        return wpars
 
     def visitRegular_identifier(self, ctx):
         self.contexts[ctx] = ctx.getText().replace("'", "`").replace('"', "`")
@@ -102,9 +128,14 @@ class ADQLtoMySQLGeometryTranslationVisitor(ADQLParserVisitor):
             coords.extend(self._convert_values(ctx, j))
         if len(coords) == 3:
             coords = coords[1:]
+        coords = self._wrap_strings(coords)
 
-        wunits = self._determine_units(coords)
-        ctx_text = "spoint( '(%s%s,%s%s)' )" % wunits
+        #  wraps = self._check_types(coords)
+        #  wunits = self._determine_units(coords)
+        #  ctx_text = "spoint( %s%s%s,%s%s%s )" % ((wraps[0],) + wunits + (wraps[1],))
+
+        ctx_text = "spoint( %s(%s),%s(%s) )" % (self.conunits, coords[0],
+                                                self.conunits, coords[1])
 
         _remove_children(ctx)
         self.contexts[ctx] = ctx_text
@@ -114,13 +145,14 @@ class ADQLtoMySQLGeometryTranslationVisitor(ADQLParserVisitor):
         s = 4
         pars = []
         for j in range(0, 5, 2):
-            #  pars.extend([float(eval(i)) for i in
-                         #  ctx.children[s + j].getText().split(',')])
             pars.extend(self._convert_values(ctx, s + j))
         nc = [pars[0] - pars[2] / 2, pars[1] - pars[3] / 2,
               pars[0] + pars[2]/ 2, pars[1] + pars[3]] 
-        wunits = self._determine_units(pars)
-        ctx_text = "sbox( '((%s%s,%s%s),(%s%s,%s%s))' )" % wunits
+        pars = self._wrap_strings(pars)
+
+        ctx_text = "sbox( spoint(%s(%s),%s(%s)),spoint(%s(%s),%s(%s)) )" %\
+            (self.conunits, pars[0], self.conunits, pars[1],
+             self.conunits, pars[2], self.conunits, pars[3])
 
         _remove_children(ctx)
         self.contexts[ctx] = ctx_text
@@ -130,32 +162,32 @@ class ADQLtoMySQLGeometryTranslationVisitor(ADQLParserVisitor):
         s = 4
         pars = []
         for j in range(0, 3, 2):
-            #  pars.extend([float(eval(i)) for i in
-                         #  ctx.children[s + j].getText().split(',')])
             pars.extend(self._convert_values(ctx, s + j))
-        wunits = self._determine_units(pars)
-        ctx_text = "scircle( '< (%s%s, %s%s), %s%s >' )" % wunits
+        pars = self._wrap_strings(pars)
+
+        ctx_text = "scircle( spoint(%s(%s), %s(%s)), %s(%s) )" %\
+            (self.conunits, pars[0], self.conunits, pars[1],
+             self.conunits, pars[2])
 
         _remove_children(ctx)
         self.contexts[ctx] = ctx_text
 
     def visitPolygon(self, ctx):
-        cc = ctx.getChildCount()
-        s = 4
-        pars = []
-        for j in range(0, cc - 5, 2):
-            pars.extend(self._convert_values(ctx, s + j))
-            #  pars.extend([float(eval(i)) for i in
-                         #  ctx.children[s + j].getText().split(',')])
+        raise AttributeError("Polygons are not supported.")
+        #  cc = ctx.getChildCount()
+        #  s = 4
+        #  pars = []
+        #  for j in range(0, cc - 5, 2):
+            #  pars.extend(self._convert_values(ctx, s + j))
+        #  pars = self._wrap_strings(pars)
 
-        wunits = self._determine_units(pars)
-        poly = "spoly( '{"
-        for i in range(0, len(wunits), 4):
-            poly += '(%s%s,%s%s),' % wunits[i:i + 4]
-        ctx_text = poly[:-1] + "}' )"
+        #  poly = "spoly( '{"
+        #  for i in range(0, len(wunits), 4):
+            #  poly += '(%s%s,%s%s),' % wunits[i:i + 4]
+        #  ctx_text = poly[:-1] + "}' )"
 
-        _remove_children(ctx)
-        self.contexts[ctx] = ctx_text
+        #  _remove_children(ctx)
+        #  self.contexts[ctx] = ctx_text
 
 
 class ADQLtoMySQLFunctionsTranslationVisitor(ADQLParserVisitor):
@@ -244,12 +276,14 @@ class ADQLQueryTranslator(object):
 
         try:
             self.tree = self.parser.query_expression()
-            #  print(self.syntax_error_listener.syntax_errors)
             self.parsed = True
         except:
             self.parsed = False
-            raise
+            raise RuntimeError("Could not parse the query.")
         #  print(self.tree.toStringTree(recog=self.parser))
+        if len(self.syntax_error_listener.syntax_errors):
+            print (self.syntax_error_listener.syntax_errors)
+            raise RuntimeError("ADQL query has errors.")
         self.walker = antlr4.ParseTreeWalker()
 
     @property
@@ -292,15 +326,15 @@ class ADQLQueryTranslator(object):
 
 
 if __name__ == '__main__':
-    #  query = """SELECT POINT(icrs, 0, 0) FROM b"""
-    #  query = """SELECT TOP 10 AREA(BOX( 25.4, -20, 1, 1)) FROM b"""
-    #  query = """SELECT TOP 10 AREA(CIRCLE( 25.4, -20, 1)) FROM b"""
-    #  query = """SELECT CENTROID(CIRCLE( 25.4, -20, 1)) FROM b"""
-    #  query = """SELECT TOP 10 CONTAINS(POINT(ICRS, 0, 0), CIRCLE( 0, 0, 1)) FROM b"""
-    #  query = """SELECT DISTANCE(POINT(ICRS, 0, 0), POINT(ICRS, 0, 1)) FROM b"""
-    #  query = """SELECT INTERSECTS(CIRCLE(ICRS, 0, 0, 10), BOX(ICRS, 2, 0, 10, 10)) FROM b"""
-    #  query = """SELECT TOP 10 AREA(CIRCLE(icrs,  25.4, -20, 1)) FROM b"""
-    query = """SELECT POLYGON(icrs, 10, -10.5, 20, 20.6, 30, 30.7) FROM b"""
+    #  query = """SELECT POINT('icrs', 10, 10) FROM b"""
+    #  query = """SELECT CIRCLE('ICRS', "bla".RA, -20/4., 1) FROM b"""
+    #  query = """SELECT BOX('ICRS', 25.4, -20, 1, 1) FROM b"""
+    #  query = """SELECT POLYGON('ICRS', 10, -10.5, 20, 20.6, 30, 30.7) FROM b"""
+    #  query = """SELECT TOP 10 AREA(CIRCLE('ICRS', "bla".RA, -20, 1)) FROM b"""
+    #  query = """SELECT TOP 10 CONTAINS(POINT('ICRS', 0, 0), CIRCLE('ICRS', 0, 0, 1)) FROM b"""
+    #  query = """SELECT DISTANCE(POINT('ICRS', 0, 0), POINT('ICRS', 0, 1)) FROM b"""
+    #  query = """SELECT INTERSECTS(CIRCLE('ICRS', 0, 0, 10), BOX('ICRS', 2, 0, 10, 10)) FROM b"""
+    query = """SELECT TOP 10 AREA(CIRCLE('ICRS',  25.4, -20, 1)) FROM b"""
     #  query = """
     #  SELECT *
     #  FROM cat

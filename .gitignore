@@ -12,6 +12,7 @@ ADQLLexer.py
 ADQLParser.py
 ADQLParserListener.py
 ADQLParserVisitor.py
+notes
 
 MySQLLexer.py
 MySQLParser.py

@@ -70,7 +70,7 @@ if antlr_path is None:
 
 major, _, _, _, _ = sys.version_info
 
-build_mysql_parser(antlr_path, major)
+#  build_mysql_parser(antlr_path, major)
 build_adql_translator(antlr_path, major)
 
 setup(

@@ -43,7 +43,7 @@ derived_table:                  table_subquery ;
 distance:                       DISTANCE LPAREN coord_value COMMA coord_value RPAREN ;
 exists_predicate:               EXISTS table_subquery ;
 extract_coordsys:               COORDSYS LPAREN geometry_value_expression RPAREN ;
-factor:                         ( SIGN )? numeric_primary ;
+factor:                         ( PLUS | MINUS )? numeric_primary ;
 from_clause:                    FROM table_reference ( COMMA table_reference )*;
 general_literal:                character_string_literal ;
 general_set_function:           set_function_type LPAREN ( set_quantifier )? value_expression RPAREN ;

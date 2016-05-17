@@ -48,4 +48,6 @@ adt.to_mysql()
 which returns a translated string.
 
 ## TODO
-ADQL coordinate systems
+* Documentation
+* ADQL coordinate systems
+* antlr search path

@@ -9,6 +9,7 @@ from queryparser import ADQLQueryTranslator
 
 from queryparser.test import test_queries
 from queryparser.test import broken_queries
+from queryparser.test import adql_queries
 
 
 def not_so_pretty_print(q, columns, keywords, functions, process_time,
@@ -99,7 +100,7 @@ def pretty_print(q, columns, keywords, functions, process_time, syntax=None,
     print('')
 
 
-def test_parsing(qs):
+def test_mysql_parsing(qs):
     qp = MySQLQueryProcessor()
     for q in qs:
         qp.set_query(q[0])
@@ -112,24 +113,25 @@ def test_parsing(qs):
         pretty_print(q, cols, keys, funcs, s, qp.syntax_errors, show_diff=True)
 
 
-def test_translation():
-    #  query = """SELECT POLYGON(icrs, 10, -10.5, 20, 20.6, 30/60., 30.7) FROM b"""
-    query = """
-    SELECT *
-    FROM 'II/295/SSTGC',"II/293/glimpse"
-    WHERE 1=CONTAINS(POINT('ICRS',"II/295/SSTGC.RAJ2000","II/295/SSTGC.DEJ2000"), BOX('GALACTIC', 0, 0, 30/60., 10/60.)) 
-    """
-    # WHERE 1=CONTAINS(POINT('ICRS',"II/295/SSTGC".RAJ2000,"II/295/SSTGC".DEJ2000), BOX('GALACTIC', 0, 0, 30/60., 10/60.)) 
-    # AND 1=CONTAINS(POINT('ICRS',"II/295/SSTGC".RAJ2000,"II/295/SSTGC".DEJ2000), CIRCLE('ICRS',"II/293/glimpse".RAJ2000,"II/293/glimpse".DEJ2000, 2/3600.))
-    adql_translator = ADQLQueryTranslator(query)
+def test_adql_translation(qs):
+    adt = ADQLQueryTranslator()
+    for q in qs:
+        adt.set_query(q)
+        s = time.time()
+        translated_query = adt.to_mysql()
+        s = time.time() - s
+
+        se = adt.syntax_error_listener.syntax_errors
+        if len(se):
+            print(se)
     
-    print("ADQL translation")
-    print('input:  ', query)
-    print('output: ', adql_translator.to_mysql())
-    print()
+        print('Done in %.4fs' % s)
+        print('input:  ', q)
+        print('output: ', translated_query)
+        print()
 
 
 if __name__ == '__main__':
     #  test_parsing(test_queries.queries[:2])
     #  test_parsing(broken_queries.queries[1:2])
-    test_translation()
+    test_adql_translation(adql_queries.queries)
