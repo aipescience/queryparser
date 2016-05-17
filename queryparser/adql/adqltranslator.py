@@ -61,6 +61,10 @@ class ADQLtoMySQLGeometryTranslationVisitor(ADQLParserVisitor):
         If a parameter is float, the value needs a 'd' at the end so
         mysql_sphere knows it is in units of degrees. If it is a column,
         we don't need anything but the string.
+
+        :param pars:
+            Parameters extract from the context.
+
         """
         units = []
         for p in pars:
@@ -78,6 +82,12 @@ class ADQLtoMySQLGeometryTranslationVisitor(ADQLParserVisitor):
         strings. Strings need to be treated differently because
         mysql-sphere syntax differs slightly if we pass a column name
         instead of a value.
+
+        :param ctx:
+            antlr context.
+
+        :param cidx:
+            Context child index.
 
         """
         vals = []
@@ -101,6 +111,9 @@ class ADQLtoMySQLGeometryTranslationVisitor(ADQLParserVisitor):
         """
         TOP N needs to go to the back of the query and it needs to become
         LIMIT N.
+
+        :param ctx:
+            antlr context.
 
         """
         self.limit = int(ctx.children[1].getText())
@@ -165,6 +178,14 @@ class ADQLtoMySQLGeometryTranslationVisitor(ADQLParserVisitor):
 
 
 class ADQLtoMySQLFunctionsTranslationVisitor(ADQLParserVisitor):
+    """
+    Run this visitor after the geometry has already been processed.
+
+    :param context:
+        A dictionary that was created in the previous run and includes
+        the replaced geomtry chunks.
+
+    """
     def __init__(self, contexts):
         self.contexts = contexts
 
@@ -209,6 +230,10 @@ class ADQLtoMySQLFunctionsTranslationVisitor(ADQLParserVisitor):
 
 
 class FormatListener(ADQLParserListener):
+    """
+    Used for formating the output query.
+
+    """
     def __init__(self, parser, contexts, limit):
         self._parser = parser
         self.nodes = []
@@ -229,6 +254,13 @@ class FormatListener(ADQLParserListener):
 
 
 class ADQLQueryTranslator(object):
+    """
+    The main translator object used to do the actual translation. 
+
+    :param query:
+        ADQL query string.
+
+    """
     def __init__(self, query=None):
         self.syntax_error_listener = SyntaxErrorListener()
         self.parsed = False

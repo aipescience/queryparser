@@ -303,6 +303,14 @@ class MySQLQueryProcessor(object):
         else:
             self.syntax_errors = self.syntax_error_listener.syntax_errors
 
+    @property
+    def query(self):
+        """
+        Get the query string.
+
+        """
+        return self._query
+
     def set_query(self, query):
         """
         Helper to set the query string.
