@@ -160,7 +160,7 @@ class ADQLtoMySQLGeometryTranslationVisitor(ADQLParserVisitor):
         self.contexts[ctx] = ctx_text
 
     def visitPolygon(self, ctx):
-        raise AttributeError("Polygons are not supported.")
+        raise AttributeError("Polygons are not supported (yet).")
         #  cc = ctx.getChildCount()
         #  s = 4
         #  pars = []
