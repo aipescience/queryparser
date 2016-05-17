@@ -9,7 +9,7 @@ if sys.version_info.major == 2:
     from ADQLParser import ADQLParser
     from ADQLParserVisitor import ADQLParserVisitor
     from ADQLParserListener import ADQLParserListener
-if sys.version_info.major == 3:
+elif sys.version_info.major == 3:
     from .ADQLLexer import ADQLLexer
     from .ADQLParser import ADQLParser
     from .ADQLParserVisitor import ADQLParserVisitor
@@ -43,7 +43,7 @@ class ADQLtoMySQLGeometryTranslationVisitor(ADQLParserVisitor):
        by other visitors or listeners. Otherwise is impossible (or hard?) to
        stick a new token in the stream so the walking works flawlessly.
     3) Hash the replacement string in the contexts dictionary. Use the context
-       as a hash. This way we can return the hashed string instead the 
+       as a hash. This way we can return the hashed string instead the
        token so we effectively translate the rule.
 
     :param conunits:
@@ -52,7 +52,7 @@ class ADQLtoMySQLGeometryTranslationVisitor(ADQLParserVisitor):
 
     """
     def __init__(self, conunits="RADIANS"):
-        self.contexts= {}
+        self.contexts = {}
         self.limit = None
         self.conunits = conunits
 
@@ -88,35 +88,15 @@ class ADQLtoMySQLGeometryTranslationVisitor(ADQLParserVisitor):
                 try:
                     v = float(eval(i))
                 except (AttributeError, ValueError):
-                    v = i.replace('"', '')
+                    v = i.replace('"', '`')
 
             vals.append(v)
-        
+
         return vals
-
-    def _wrap_strings(self, pars):
-        """
-        Check if all...
-
-        """
-        wpars = []
-        for i in pars:
-            try:
-                if type(i) in (unicode, str):
-                    wpars.append('`' + i + '`')
-                else:
-                    wpars.append(i)
-            except NameError:  # no unicode in py3
-                if type(i) == str:
-                    wpars.append('`' + i + '`')
-                else:
-                    wpars.append(i)
-
-        return wpars
 
     def visitRegular_identifier(self, ctx):
         self.contexts[ctx] = ctx.getText().replace("'", "`").replace('"', "`")
-        
+
     def visitSet_limit(self, ctx):
         """
         TOP N needs to go to the back of the query and it needs to become
@@ -128,17 +108,11 @@ class ADQLtoMySQLGeometryTranslationVisitor(ADQLParserVisitor):
         ctx.removeLastChild()
 
     def visitPoint(self, ctx):
-        cc = ctx.getChildCount()
         coords = []
         for j in (2, 4):
             coords.extend(self._convert_values(ctx, j))
         if len(coords) == 3:
             coords = coords[1:]
-        coords = self._wrap_strings(coords)
-
-        #  wraps = self._check_types(coords)
-        #  wunits = self._determine_units(coords)
-        #  ctx_text = "spoint( %s%s%s,%s%s%s )" % ((wraps[0],) + wunits + (wraps[1],))
 
         ctx_text = "spoint( %s(%s),%s(%s) )" % (self.conunits, coords[0],
                                                 self.conunits, coords[1])
@@ -147,14 +121,10 @@ class ADQLtoMySQLGeometryTranslationVisitor(ADQLParserVisitor):
         self.contexts[ctx] = ctx_text
 
     def visitBox(self, ctx):
-        cc = ctx.getChildCount()
         s = 4
         pars = []
         for j in range(0, 5, 2):
             pars.extend(self._convert_values(ctx, s + j))
-        nc = [pars[0] - pars[2] / 2, pars[1] - pars[3] / 2,
-              pars[0] + pars[2]/ 2, pars[1] + pars[3]] 
-        pars = self._wrap_strings(pars)
 
         ctx_text = "sbox( spoint(%s(%s),%s(%s)),spoint(%s(%s),%s(%s)) )" %\
             (self.conunits, pars[0], self.conunits, pars[1],
@@ -164,12 +134,10 @@ class ADQLtoMySQLGeometryTranslationVisitor(ADQLParserVisitor):
         self.contexts[ctx] = ctx_text
 
     def visitCircle(self, ctx):
-        cc = ctx.getChildCount()
         s = 4
         pars = []
         for j in range(0, 3, 2):
             pars.extend(self._convert_values(ctx, s + j))
-        pars = self._wrap_strings(pars)
 
         ctx_text = "scircle( spoint(%s(%s), %s(%s)), %s(%s) )" %\
             (self.conunits, pars[0], self.conunits, pars[1],
@@ -184,12 +152,12 @@ class ADQLtoMySQLGeometryTranslationVisitor(ADQLParserVisitor):
         #  s = 4
         #  pars = []
         #  for j in range(0, cc - 5, 2):
-            #  pars.extend(self._convert_values(ctx, s + j))
+        #  pars.extend(self._convert_values(ctx, s + j))
         #  pars = self._wrap_strings(pars)
 
         #  poly = "spoly( '{"
         #  for i in range(0, len(wunits), 4):
-            #  poly += '(%s%s,%s%s),' % wunits[i:i + 4]
+        #  poly += '(%s%s,%s%s),' % wunits[i:i + 4]
         #  ctx_text = poly[:-1] + "}' )"
 
         #  _remove_children(ctx)
@@ -302,7 +270,7 @@ class ADQLQueryTranslator(object):
 
     def set_query(self, query):
         """
-        Set the query string. 
+        Set the query string.
 
         :param value:
             Query string.
@@ -324,9 +292,9 @@ class ADQLQueryTranslator(object):
         translator_visitor = \
             ADQLtoMySQLFunctionsTranslationVisitor(translator_visitor.contexts)
         translator_visitor.visit(self.tree)
-        self.format_listener= FormatListener(self.parser,
-                                             translator_visitor.contexts,
-                                             limit)
+        self.format_listener = FormatListener(self.parser,
+                                              translator_visitor.contexts,
+                                              limit)
         self.walker.walk(self.format_listener, self.tree)
         return self.format_listener.format_query()
 

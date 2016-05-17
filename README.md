@@ -50,4 +50,5 @@ which returns a translated string.
 ## TODO
 * Documentation
 * ADQL coordinate systems
+* ADQL mixed coordinates
 * antlr search path
