@@ -124,7 +124,6 @@ def test_adql_translation(qs):
         se = adt.syntax_error_listener.syntax_errors
         if len(se):
             print(se)
-    
         print('Done in %.4fs' % s)
         print('input:  ', q)
         print('output: ', translated_query)
@@ -132,6 +131,6 @@ def test_adql_translation(qs):
 
 
 if __name__ == '__main__':
-    #  test_parsing(test_queries.queries[:2])
-    #  test_parsing(broken_queries.queries[1:2])
+    test_parsing(test_queries.queries[:2])
+    test_parsing(broken_queries.queries[1:2])
     test_adql_translation(adql_queries.queries)

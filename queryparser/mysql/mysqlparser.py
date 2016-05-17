@@ -15,7 +15,7 @@ if sys.version_info.major == 2:
     from MySQLLexer import MySQLLexer
     from MySQLParser import MySQLParser
     from MySQLParserListener import MySQLParserListener
-if sys.version_info.major == 3:
+elif sys.version_info.major == 3:
     from .MySQLLexer import MySQLLexer
     from .MySQLParser import MySQLParser
     from .MySQLParserListener import MySQLParserListener
