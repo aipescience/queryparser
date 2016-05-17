@@ -101,10 +101,16 @@ class ADQLtoMySQLGeometryTranslationVisitor(ADQLParserVisitor):
         """
         wpars = []
         for i in pars:
-            if type(i) in (unicode, str):
-                wpars.append('`' + i + '`')
-            else:
-                wpars.append(i)
+            try:
+                if type(i) in (unicode, str):
+                    wpars.append('`' + i + '`')
+                else:
+                    wpars.append(i)
+            except NameError:  # no unicode in py3
+                if type(i) == str:
+                    wpars.append('`' + i + '`')
+                else:
+                    wpars.append(i)
 
         return wpars
 
