@@ -131,6 +131,6 @@ def test_adql_translation(qs):
 
 
 if __name__ == '__main__':
-    test_parsing(test_queries.queries[:2])
-    test_parsing(broken_queries.queries[1:2])
+    test_mysql_parsing(test_queries.queries[:2])
+    test_mysql_parsing(broken_queries.queries[1:2])
     test_adql_translation(adql_queries.queries)
