@@ -22,8 +22,14 @@ elif sys.version_info.major == 3:
 
 
 def parse_alias(alias):
+    """
+    Extract the alias if available.
+
+    """
     if alias:
         alias = alias.ID().getText().strip('`')
+    else:
+        alias = None
     return alias
 
 
@@ -67,6 +73,10 @@ class RemoveSubqueriesListener(MySQLParserListener):
 
 
 class ColumnNameListener(MySQLParserListener):
+    """
+    Get all column names.
+
+    """
     def __init__(self):
         self.column_name = []
 
@@ -76,7 +86,7 @@ class ColumnNameListener(MySQLParserListener):
 
 class ColumnKeywordFunctionListener(MySQLParserListener):
     """
-    Extract table_names, column_names, and their aliases.
+    Extract columns, keywords and functions. 
 
     """
     def __init__(self):
@@ -171,6 +181,15 @@ class SyntaxErrorListener(ErrorListener):
 
 
 class MySQLQueryProcessor(object):
+    """
+    Object used for processing MySQL queries. Its objective is query validation
+    (syntax error detection )and extraction of used columns, keywords and
+    functions.
+
+    :param query:
+        MySQL query string.
+
+    """
     def __init__(self, query=None):
         self.walker = antlr4.ParseTreeWalker()
 
@@ -184,6 +203,11 @@ class MySQLQueryProcessor(object):
             self.process_query()
 
     def process_query(self):
+        """
+        Parses and processes the query. After a successful run in fills up
+        columns, keywords, functions and syntax_errors lists.
+
+        """
         inpt = antlr4.InputStream(self.query)
         lexer = MySQLLexer(inpt)
         stream = antlr4.CommonTokenStream(lexer)
@@ -280,6 +304,10 @@ class MySQLQueryProcessor(object):
             self.syntax_errors = self.syntax_error_listener.syntax_errors
 
     def set_query(self, query):
+        """
+        Helper to set the query string.
+
+        """
         self.columns = set()
         self.keywords = set()
         self.functions = set()
