@@ -25,7 +25,7 @@ feeding it a MySQL query
 sql = "SELECT a FROM b;"
 qp.set_query(sql)
 ```
-and running it
+and running it with
 ```
 qp.process_query()
 ```

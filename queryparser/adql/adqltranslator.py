@@ -255,7 +255,7 @@ class FormatListener(ADQLParserListener):
 
 class ADQLQueryTranslator(object):
     """
-    The main translator object used to do the actual translation. 
+    The main translator object used to do the actual translation.
 
     :param query:
         ADQL query string.

@@ -199,7 +199,7 @@ class MySQLQueryProcessor(object):
         self.syntax_error_listener = SyntaxErrorListener()
         self.syntax_errors = []
         if query is not None:
-            self.query = query
+            self._query = query
             self.process_query()
 
     def process_query(self):
@@ -320,7 +320,7 @@ class MySQLQueryProcessor(object):
         self.keywords = set()
         self.functions = set()
         self.syntax_errors = []
-        self.query = query
+        self._query = query
 
 
 if __name__ == '__main__':
