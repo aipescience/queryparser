@@ -130,7 +130,21 @@ def test_adql_translation(qs):
         print()
 
 
+def test_translated_mysql_parsing(qs):
+    adt = ADQLQueryTranslator()
+    qp = MySQLQueryProcessor()
+    for q in qs[:]:
+        adt.set_query(q)
+        translated_query = adt.to_mysql()
+        qp.set_query(translated_query)
+        qp.process_query()
+        cols, keys, funcs = qp.columns, qp.keywords, qp.functions
+        s = 0.0
+        not_so_pretty_print(q[0], cols, keys, funcs, s, qp.syntax_errors)
+
+
 if __name__ == '__main__':
-    test_mysql_parsing(test_queries.queries[:2])
-    test_mysql_parsing(broken_queries.queries[1:2])
-    test_adql_translation(adql_queries.queries)
+    test_mysql_parsing(test_queries.queries)
+    #  test_mysql_parsing(broken_queries.queries[1:2])
+    #  test_adql_translation(adql_queries.queries)
+    #  test_translated_mysql_parsing(adql_queries.queries)

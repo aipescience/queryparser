@@ -56,7 +56,8 @@ char_functions:
     | SUBSTRING | TO_BASE64 | TRIM | UNHEX | UPPER | WEIGHT_STRING ;
 
 custom_functions:
-      SPRNG_DBL ;
+      SPRNG_DBL | SPOINT | SBOX | SCIRCLE | SRCONTAINSL | SCENTER | SDIST
+    | SOVERLAPS ;
 
 group_functions:
 	  AVG | COUNT | MAX_SYM | MIN_SYM | SUM | BIT_AND | BIT_OR | BIT_XOR
