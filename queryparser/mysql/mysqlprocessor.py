@@ -6,7 +6,7 @@ used in a query.
 
 """
 
-from __future__ import absolute_import 
+from __future__ import absolute_import
 
 __all__ = ["MySQLQueryProcessor"]
 
@@ -83,7 +83,7 @@ class ColumnNameListener(MySQLParserListener):
 
 class ColumnKeywordFunctionListener(MySQLParserListener):
     """
-    Extract columns, keywords and functions. 
+    Extract columns, keywords and functions.
 
     """
     def __init__(self):
