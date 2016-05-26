@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from __future__ import absolute_import 
+from __future__ import absolute_import
 
 import antlr4
 from antlr4.error.ErrorListener import ErrorListener
@@ -9,8 +9,6 @@ from .ADQLLexer import ADQLLexer
 from .ADQLParser import ADQLParser
 from .ADQLParserVisitor import ADQLParserVisitor
 from .ADQLParserListener import ADQLParserListener
-
-from itertools import chain
 
 
 def _remove_children(ctx):
