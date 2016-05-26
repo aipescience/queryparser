@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-MySQL parser.
+MySQL processor. The goal is to check if a query has any syntax errors and
+to extract all accessed columns as well as keywords and functions being
+used in a query.
 
 """
 
