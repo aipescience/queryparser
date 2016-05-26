@@ -6,7 +6,7 @@ used in a query.
 
 """
 
-from __future__ import absolute_import
+from __future__ import (absolute_import, print_function)
 
 __all__ = ["MySQLQueryProcessor"]
 
@@ -201,7 +201,7 @@ class MySQLQueryProcessor(object):
 
     def process_query(self):
         """
-        Parses and processes the query. After a successful run in fills up
+        Parses and processes the query. After a successful run it fills up
         columns, keywords, functions and syntax_errors lists.
 
         """
@@ -211,6 +211,7 @@ class MySQLQueryProcessor(object):
         parser = MySQLParser(stream)
         parser._listeners = [self.syntax_error_listener]
 
+        # Parse the query
         tree = parser.query()
 
         query_listener = QueryListener()

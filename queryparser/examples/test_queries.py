@@ -6,6 +6,22 @@
 queries = [
     (
         """
+        SELECT db.tab.a FROM db.tab;
+        """,
+        ('db.tab.a',),
+        (),
+        ()
+    ),
+    (
+        """
+        SELECT a FROM tab1, tab2;
+        """,
+        ('tab1.a', 'tab2.a'),
+        (),
+        ()
+    ),
+    (
+        """
         SELECT (((((((1+2)*3)/4)^5)%6)&7)>>8) FROM tab;
         """,
         ('tab.NULL',),

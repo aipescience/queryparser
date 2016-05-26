@@ -108,9 +108,9 @@ def test_mysql_parsing(qs):
         qp.process_query()
         s = time.time() - s
 
-        cols, keys, funcs = qp.columns, qp.keywords, qp.functions
+        #  cols, keys, funcs = qp.columns, qp.keywords, qp.functions
         #  not_so_pretty_print(q[0], cols, keys, funcs, s, qp.syntax_errors)
-        pretty_print(q, cols, keys, funcs, s, qp.syntax_errors, show_diff=True)
+        #  pretty_print(q, cols, keys, funcs, s, qp.syntax_errors, show_diff=True)
 
 
 def test_adql_translation(qs):
@@ -144,7 +144,7 @@ def test_translated_mysql_parsing(qs):
 
 
 if __name__ == '__main__':
-    test_mysql_parsing(test_queries.queries)
+    test_mysql_parsing(test_queries.queries[:1])
     #  test_mysql_parsing(broken_queries.queries[1:2])
     #  test_adql_translation(adql_queries.queries)
     #  test_translated_mysql_parsing(adql_queries.queries)

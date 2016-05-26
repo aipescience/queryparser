@@ -79,7 +79,7 @@ setup(
     author="Gal Matijevic / AIP",
     author_email="gmatijevic@aip.de",
     packages=["queryparser", "queryparser.adql", "queryparser.mysql",
-              "queryparser.test"],
+              "queryparser.examples"],
     license="MIT",
     description="Parses MySQL and does some other stuff...",
     include_package_data=True,
