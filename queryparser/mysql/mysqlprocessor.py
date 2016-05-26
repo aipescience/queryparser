@@ -6,21 +6,16 @@ used in a query.
 
 """
 
-__all__ = ["MySQLQueryProcessor"]
+from __future__ import absolute_import 
 
-import sys
+__all__ = ["MySQLQueryProcessor"]
 
 import antlr4
 from antlr4.error.ErrorListener import ErrorListener
 
-if sys.version_info.major == 2:
-    from MySQLLexer import MySQLLexer
-    from MySQLParser import MySQLParser
-    from MySQLParserListener import MySQLParserListener
-elif sys.version_info.major == 3:
-    from .MySQLLexer import MySQLLexer
-    from .MySQLParser import MySQLParser
-    from .MySQLParserListener import MySQLParserListener
+from .MySQLLexer import MySQLLexer
+from .MySQLParser import MySQLParser
+from .MySQLParserListener import MySQLParserListener
 
 
 def parse_alias(alias):
@@ -216,10 +211,7 @@ class MySQLQueryProcessor(object):
         parser = MySQLParser(stream)
         parser._listeners = [self.syntax_error_listener]
 
-        try:
-            tree = parser.query()
-        except:
-            raise
+        tree = parser.query()
 
         query_listener = QueryListener()
         subquery_aliases = []
@@ -323,9 +315,3 @@ class MySQLQueryProcessor(object):
         self.functions = set()
         self.syntax_errors = []
         self._query = query
-
-
-if __name__ == '__main__':
-    sql = 'SELECT MAX((a + 1.123) ^ 2) FROM b;'
-    qp = MySQLQueryProcessor(sql)
-    print(qp.columns)

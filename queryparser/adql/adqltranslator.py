@@ -1,19 +1,14 @@
+# -*- coding: utf-8 -*-
+
+from __future__ import absolute_import 
 
 import antlr4
 from antlr4.error.ErrorListener import ErrorListener
 
-import sys
-
-if sys.version_info.major == 2:
-    from ADQLLexer import ADQLLexer
-    from ADQLParser import ADQLParser
-    from ADQLParserVisitor import ADQLParserVisitor
-    from ADQLParserListener import ADQLParserListener
-elif sys.version_info.major == 3:
-    from .ADQLLexer import ADQLLexer
-    from .ADQLParser import ADQLParser
-    from .ADQLParserVisitor import ADQLParserVisitor
-    from .ADQLParserListener import ADQLParserListener
+from .ADQLLexer import ADQLLexer
+from .ADQLParser import ADQLParser
+from .ADQLParserVisitor import ADQLParserVisitor
+from .ADQLParserListener import ADQLParserListener
 
 from itertools import chain
 
@@ -55,26 +50,6 @@ class ADQLtoMySQLGeometryTranslationVisitor(ADQLParserVisitor):
         self.contexts = {}
         self.limit = None
         self.conunits = conunits
-
-    def _determine_units(self, pars):
-        """
-        If a parameter is float, the value needs a 'd' at the end so
-        mysql_sphere knows it is in units of degrees. If it is a column,
-        we don't need anything but the string.
-
-        :param pars:
-            Parameters extract from the context.
-
-        """
-        units = []
-        for p in pars:
-            try:
-                float(p)
-                units.append('d')
-            except ValueError:
-                units.append('')
-
-        return tuple(chain(*zip(pars, units)))
 
     def _convert_values(self, ctx, cidx):
         """
@@ -280,13 +255,9 @@ class ADQLQueryTranslator(object):
         self.parser = ADQLParser(self.stream)
         self.parser._listeners = [self.syntax_error_listener]
 
-        try:
-            self.tree = self.parser.query_expression()
-            self.parsed = True
-        except:
-            self.parsed = False
-            raise RuntimeError("Could not parse the query.")
-        #  print(self.tree.toStringTree(recog=self.parser))
+        self.tree = self.parser.query_expression()
+        self.parsed = True
+
         if len(self.syntax_error_listener.syntax_errors):
             print (self.syntax_error_listener.syntax_errors)
             raise RuntimeError("ADQL query has errors.")
@@ -329,10 +300,3 @@ class ADQLQueryTranslator(object):
                                               limit)
         self.walker.walk(self.format_listener, self.tree)
         return self.format_listener.format_query()
-
-
-if __name__ == '__main__':
-    query = """SELECT TOP 10 AREA(CIRCLE('ICRS',  25.4, -20, 1)) FROM b"""
-
-    adql_translator = ADQLQueryTranslator(query)
-    print(adql_translator.to_mysql())

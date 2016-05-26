@@ -7,9 +7,9 @@ import time
 from queryparser import MySQLQueryProcessor
 from queryparser import ADQLQueryTranslator
 
-from queryparser.test import test_queries
-from queryparser.test import broken_queries
-from queryparser.test import adql_queries
+from queryparser.examples import test_queries
+from queryparser.examples import broken_queries
+from queryparser.examples import adql_queries
 
 
 def not_so_pretty_print(q, columns, keywords, functions, process_time,
