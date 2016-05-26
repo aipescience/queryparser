@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from .mysqlparser import MySQLQueryProcessor
+from .mysqlprocessor import MySQLQueryProcessor
 
 __all__ = ["MySQLQueryProcessor"]
