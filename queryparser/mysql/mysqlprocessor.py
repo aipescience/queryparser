@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-MySQL processor. The goal is to check if a query has any syntax errors and
+MySQL processor. Its task is to check if a query has any syntax errors and
 to extract all accessed columns as well as keywords and functions being
 used in a query.
 
@@ -21,6 +21,9 @@ from .MySQLParserListener import MySQLParserListener
 def parse_alias(alias):
     """
     Extract the alias if available.
+
+    :param alias:
+        antlr context.
 
     """
     if alias:
@@ -95,7 +98,6 @@ class ColumnKeywordFunctionListener(MySQLParserListener):
         self.walker = antlr4.ParseTreeWalker()
 
     def _process_column_name(self, ctx):
-        #  cn = [ctx.getText()]
         cn = []
         self.column_name_listener.column_name = []
         self.walker.walk(self.column_name_listener, ctx)

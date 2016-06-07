@@ -53,4 +53,12 @@ queries = [
         ('where', 'order by', 'limit'),
         ()
     ),
+    (
+        """
+        SELECT * FROM Users WHERE UserId = 105; DROP TABLE Suppliers
+        """,
+        (),
+        (),
+        ()
+    )
 ]

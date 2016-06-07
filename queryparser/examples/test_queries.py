@@ -38,7 +38,7 @@ queries = [
     ),
     (
         """
-        SELECT a,AVG(b) FROM db.tab;
+        SELECT ABS(a),AVG(b) FROM db.tab;
         """,
         ('db.tab.a', 'db.tab.b'),
         (),
@@ -514,6 +514,14 @@ queries = [
          'RAVE_DR4.Ti_N'
         ),
         ('join',),
+        ()
+    ),
+    (
+        """
+        SELECT Data FROM Users WHERE Name ="" or ""="" AND Pass ="" or ""=""
+        """,
+        ('Users.Data', 'Users.Name', 'Users.Pass'),
+        ('where',),
         ()
     )
 ]
