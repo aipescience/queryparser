@@ -13,9 +13,11 @@ automatically are needed.
 ## Instalation
 
 After cloning the project, run
+
 ```
 python setup.py install
 ```
+
 This also takes care of installing the required antlr runtime package.
 
 ## Parsing
@@ -67,10 +69,13 @@ adt.to_mysql()
 which returns a translated string.
 
 ### Examples
+
 There are some example queries in the queryparser/examples directory. Have a look there, edit `run.py` (just comment out/uncomment the line you want in `main`) and run it:
+
 ```
 python queryparser/examples/run.py
 ```
+
 This will parse a number of queries (specified in the corresponding example-files) and print the query, the parsed columns and the parsing time.
 
 ## TODO
