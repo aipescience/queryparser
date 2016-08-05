@@ -4,13 +4,11 @@
 *.tokens
 *.java
 *.egg-info
+*.bak
 
 build
 dist
 cover
-
-env
-env3
 
 ADQLLexer.py
 ADQLParser.py

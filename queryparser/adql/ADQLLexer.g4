@@ -30,7 +30,50 @@ fragment Y_ :	'y' | 'Y';
 fragment Z_ :	'z' | 'Z';
 
 
-// 2.1.2------------------------------------------------------------------------
+ABS                 :A_ B_ S_ ;
+ACOS                :A_ C_ O_ S_ ;
+AREA                :A_ R_ E_ A_ ;
+ASIN                :A_ S_ I_ N_ ;
+ATAN                :A_ T_ A_ N_ ;
+ATAN2               :A_ T_ A_ N_ '2' ;
+BIT_AND             :B_ I_ T_ '_' A_ N_ D_ ;
+BIT_NOT             :B_ I_ T_ '_' N_ O_ T_ ;
+BIT_OR              :B_ I_ T_ '_' O_ R_ ;
+BIT_XOR             :B_ I_ T_ '_' X_ O_ R_ ;
+BOX                 :B_ O_ X_ ;
+CEILING             :C_ E_ I_ L_ I_ N_ G_ ;
+CENTROID            :C_ E_ N_ T_ R_ O_ I_ D_ ;
+CIRCLE              :C_ I_ R_ C_ L_ E_ ;
+CONTAINS            :C_ O_ N_ T_ A_ I_ N_ S_ ;
+COORD1              :C_ O_ O_ R_ D_ '1' ;
+COORD2              :C_ O_ O_ R_ D_ '2' ;
+COORDSYS            :C_ O_ O_ R_ D_ S_ Y_ S_ ;
+COS                 :C_ O_ S_ ;
+COT                 :C_ O_ T_ ;
+DEGREES             :D_ E_ G_ R_ E_ E_ S_ ;
+DISTANCE            :D_ I_ S_ T_ A_ N_ C_ E_ ;
+EXP                 :E_ X_ P_ ;
+FLOOR               :F_ L_ O_ O_ R_ ;
+ILIKE               :I_ L_ I_ K_ E_ ;
+INTERSECTS          :I_ N_ T_ E_ R_ S_ E_ C_ T_ S_ ;
+IN_UNIT             :I_ N_ '_' U_ N_ I_ T_ ;
+LOG                 :L_ O_ G_ ;
+LOG10               :L_ O_ G_ '10' ;
+MOD                 :M_ O_ D_ ;
+PI                  :P_ I_ ;
+POINT               :P_ O_ I_ N_ T_ ;
+POLYGON             :P_ O_ L_ Y_ G_ O_ N_ ;
+POWER               :P_ O_ W_ E_ R_ ;
+RADIANS             :R_ A_ D_ I_ A_ N_ S_ ;
+REGION              :R_ E_ G_ I_ O_ N_ ;
+RAND                :R_ A_ N_ D_ ;
+ROUND               :R_ O_ U_ N_ D_ ;
+SIN                 :S_ I_ N_ ;
+SQRT                :S_ Q_ R_ T_ ;
+TAN                 :T_ A_ N_ ;
+TOP                 :T_ O_ P_ ;
+TRUNCATE            :T_ R_ U_ N_ C_ A_ T_ E_ ;
+
 
 ABSOLUTE            :A_ B_ S_ O_ L_ U_ T_ E_ ;
 ACTION              :A_ C_ T_ I_ O_ N_ ;
@@ -48,7 +91,7 @@ AT                  :A_ T_ ;
 AUTHORIZATION       :A_ U_ T_ H_ O_ R_ I_ Z_ A_ T_ I_ O_ N_ ;
 AVG                 :A_ V_ G_ ;
 BEGIN               :B_ E_ G_ I_ N_ ;
-BETWEEN            :B_ E_ T_ W_ E_ E_ N_ ;
+BETWEEN             :B_ E_ T_ W_ E_ E_ N_ ;
 BIT                 :B_ I_ T_ ;
 BIT_LENGTH          :B_ I_ T_ '_' L_ E_ N_ G_ T_ H_ ;
 BOTH                :B_ O_ T_ H_ ;
@@ -60,8 +103,8 @@ CAST                :C_ A_ S_ T_ ;
 CATALOG             :C_ A_ T_ A_ L_ O_ G_ ;
 CHAR                :C_ H_ A_ R_ ;
 CHARACTER           :C_ H_ A_ R_ A_ C_ T_ E_ R_ ;
-CHARACTER_LENGTH    :C_ H_ A_ R_ A_ C_ T_ E_ R_ '_' L_ E_ N_ G_ T_ H_ ;
 CHAR_LENGTH         :C_ H_ A_ R_ '_' L_ E_ N_ G_ T_ H_ ;
+CHARACTER_LENGTH    :C_ H_ A_ R_ A_ C_ T_ E_ R_ '_' L_ E_ N_ G_ T_ H_ ;
 CHECK               :C_ H_ E_ C_ K_ ;
 CLOSE               :C_ L_ O_ S_ E_ ;
 COALESCE            :C_ O_ A_ L_ E_ S_ C_ E_ ;
@@ -176,6 +219,7 @@ NULLIF              :N_ U_ L_ L_ I_ F_ ;
 NUMERIC             :N_ U_ M_ E_ R_ I_ C_ ;
 OCTET_LENGTH        :O_ C_ T_ E_ T_ '_' L_ E_ N_ G_ T_ H_ ;
 OF                  :O_ F_ ;
+OFFSET              :O_ F_ F_ S_ E_ T_;
 ON                  :O_ N_ ;
 ONLY                :O_ N_ L_ Y_ ;
 OPEN                :O_ P_ E_ N_ ;
@@ -261,57 +305,29 @@ YEAR                :Y_ E_ A_ R_ ;
 ZONE                :Z_ O_ N_ E_ ;
 
 
-ABS                 :A_ B_ S_ ;
-ACOS                :A_ C_ O_ S_ ;
-ASIN                :A_ S_ I_ N_ ;
-ATAN                :A_ T_ A_ N_ ;
-ATAN2               :A_ T_ A_ N_ '2' ;
-CEILING             :C_ E_ I_ L_ I_ N_ G_ ;
-COS                 :C_ O_ S_ ;
-COT                 :C_ O_ T_ ;
-DEGREES             :D_ E_ G_ R_ E_ E_ S_ ;
-EXP                 :E_ X_ P_ ;
-FLOOR               :F_ L_ O_ O_ R_ ;
-LOG                 :L_ O_ G_ ;
-LOG10               :L_ O_ G_ '10' ;
-MOD                 :M_ O_ D_ ;
-PI                  :P_ I_ ;
-POWER               :P_ O_ W_ E_ R_ ;
-RADIANS             :R_ A_ D_ I_ A_ N_ S_ ;
-RAND                :R_ A_ N_ D_ ;
-ROUND               :R_ O_ U_ N_ D_ ;
-SIN                 :S_ I_ N_ ;
-SQRT                :S_ Q_ R_ T_ ;
-TAN                 :T_ A_ N_ ;
-TOP                 :T_ O_ P_ ;
-TRUNCATE            :T_ R_ U_ N_ C_ A_ T_ E_ ;
-
-
-AREA                :A_ R_ E_ A_ ;
-BOX                 :B_ O_ X_ ;
-CENTROID            :C_ E_ N_ T_ R_ O_ I_ D_ ;
-CIRCLE              :C_ I_ R_ C_ L_ E_ ;
-CONTAINS            :C_ O_ N_ T_ A_ I_ N_ S_ ;
-COORD1              :C_ O_ O_ R_ D_ '1' ;
-COORD2              :C_ O_ O_ R_ D_ '2' ;
-COORDSYS            :C_ O_ O_ R_ D_ S_ Y_ S_ ;
-DISTANCE            :D_ I_ S_ T_ A_ N_ C_ E_ ;
-INTERSECTS          :I_ N_ T_ E_ R_ S_ E_ C_ T_ S_ ;
-POINT               :P_ O_ I_ N_ T_ ;
-POLYGON             :P_ O_ L_ Y_ G_ O_ N_ ;
-REGION              :R_ E_ G_ I_ O_ N_ ;
-
-
-//ID:	(( 'A'..'Z' | 'a'..'z') ( 'A'..'Z' | 'a'..'z' | '_' | '0'..'9' )*);
-//DID: (('\"' | '\'') ('\u0020' .. '\u0021' | '\u0023' .. '\u0026' | '\u0028' .. '\ufffe')+ ('\"' | '\''));
-ID:
-	(( 'A'..'Z' | 'a'..'z' | '_' | '$') ( 'A'..'Z' | 'a'..'z' | '_' | '$' | '0'..'9' )*) |
-	(DQ ('\u0020' .. '\u0021' | '\u0023' .. '\u007f')+ DQ) |
-	(SQ ('\u0020' .. '\u0026' | '\u0028' .. '\u007f')+ SQ)
-	//('`' (('\u0020' .. '\u005F') | ('\u0061' .. '\uabff'))+ '`')
+SIGN    : ( PLUS | MINUS ) ;
+INT		: [0-9]+;
+EXPONENT: INT ;
+REAL    : (  INT DOT INT | INT DOT | DOT INT  )
+	      (  ('E'|'e') ( PLUS | MINUS )? INT  )?
 ;
 
+fragment HEX_DIGIT_FRAGMENT: ( 'a'..'f' | 'A'..'F' | '0'..'9' ) ;
+HEX_DIGIT:
+	(  '0x'     (HEX_DIGIT_FRAGMENT)+  )
+;
+
+ID:
+	(( 'A'..'Z' | 'a'..'z' | '_' | '$') ( 'A'..'Z' | 'a'..'z' | '_' | '$' | '0'..'9' )*) |
+	(DQ ('\u0020' .. '\u0021' | '\u0023' .. '\u007f')+ DQ)
+;
+
+NQC: 'A'..'Z' | 'a'..'z' | '_' | '0'..'9' ;
+//NDQC: 'A'..'Z' | 'a'..'z' | '_' | '0'..'9' ;
+
 AMPERSAND   : '&' ;
+TILDE       : '~' ;
+CIRCUMFLEX  : '^' ;
 LPAREN	    : '(' ;
 RPAREN	    : ')' ;
 ASTERISK    : '*' ;
@@ -336,22 +352,6 @@ DQ          : '\"' ;
 SQ          : '\'' ;
 
 DQ_SYM      : DQ DQ ;
-
-SIGN    : ( PLUS | MINUS ) ;
-INT    : ( '0'..'9' )+ ;
-EXPONENT: INT ;
-REAL    : (  INT DOT INT | INT DOT | DOT INT  )
-	      (  ('E'|'e') ( PLUS | MINUS )? INT  )?
-;
-
-TEXT_STRING:
-	( N_ | ('_' U_ T_ F_ '8') )?
-	(
-		(  '\'' ( ('\\' '\\') | ('\'' '\'') | ('\\' '\'') | ~('\'') )* '\''  )
-		//|
-		//(  '\"' ( ('\\' '\\') | ('\"' '\"') | ('\\' '\"') | ~('\"') )* '\"'  )
-	)
-;
 
 WS
    : ( ' ' | '\t' | '\n' | '\r' )+ -> channel(HIDDEN)
