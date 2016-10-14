@@ -3,7 +3,6 @@
 
 import os
 import sys
-import re
 import subprocess
 
 try:
@@ -16,10 +15,12 @@ except ImportError:
 
 def get_java_version():
     try:
-        jp = subprocess.Popen(['java', '-version'], stdout=subprocess.PIPE,
-                              stderr=subprocess.PIPE)
-        jo = jp.communicate()[1].decode('utf-8')
-        return re.findall('java version "(.+)"', jo)
+        cmd = """java -version 2>&1 | awk '/version/ {print $3}'"""
+        jp = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                              stderr=subprocess.PIPE, shell=True)
+        jo = jp.communicate()
+
+        return jo[0].strip('\n').strip('"')
     except OSError:
         return []
 
@@ -58,7 +59,7 @@ if not len(jv):
     raise RuntimeError("No Java found.")
 
 try:
-    if int(jv[0].split('.')[1]) < 7:
+    if int(jv.split('.')[1]) < 7:
         raise RuntimeError("You need a newer version of Java.")
 except (AttributeError, IndexError):
     print('No Java found.')
