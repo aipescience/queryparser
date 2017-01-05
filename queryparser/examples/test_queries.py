@@ -42,7 +42,7 @@ queries = [
         """,
         ('db.tab.a', 'db.tab.b'),
         (),
-        ('AVG',)
+        ('AVG', 'ABS')
     ),
     (
         """
@@ -521,6 +521,20 @@ queries = [
         SELECT Data FROM Users WHERE Name ="" or ""="" AND Pass ="" or ""=""
         """,
         ('Users.Data', 'Users.Name', 'Users.Pass'),
+        ('where',),
+        ()
+    ),
+    (
+        """
+        SELECT
+            CONVERT(`ra`,DECIMAL(12,9)) as ra2, `ra` as ra1
+        FROM 
+            GDR1.gaia_source 
+        WHERE 
+            `dec` BETWEEN 51 AND 51.5 AND 
+            `ra` BETWEEN 126.25 AND 127.25
+        """,
+        ('GDR1.gaia_source.ra', 'GDR1.gaia_source.dec'),
         ('where',),
         ()
     )
