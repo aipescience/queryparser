@@ -22,3 +22,5 @@ MySQLParserListener.py
 MySQLLexer2.py
 MySQLParser2.py
 MySQLParserListener2.py
+
+.idea
