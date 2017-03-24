@@ -76,13 +76,13 @@ build_adql_translator(antlr_path, major)
 
 setup(
     name="queryparser",
-    version="0.0.1",
+    version="0.1",
     author="Gal Matijevic / AIP",
     author_email="gmatijevic@aip.de",
     packages=["queryparser", "queryparser.adql", "queryparser.mysql",
               "queryparser.examples"],
     license="MIT",
-    description="Parses MySQL and does some other stuff...",
+    description="Parses MySQL and translates ADQL to MySQL",
     include_package_data=True,
     install_requires=["antlr4_python%d_runtime" % major]
 )
