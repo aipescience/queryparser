@@ -70,7 +70,7 @@ class ADQLtoMySQLGeometryTranslationVisitor(ADQLParserVisitor):
             except ValueError:
                 try:
                     v = float(eval(i))
-                except (AttributeError, ValueError):
+                except (AttributeError, ValueError, NameError):
                     v = i.replace('"', '`')
 
             vals.append(v)
@@ -154,7 +154,7 @@ class ADQLtoMySQLFunctionsTranslationVisitor(ADQLParserVisitor):
     """
     Run this visitor after the geometry has already been processed.
 
-    :param context:
+    :param contexts:
         A dictionary that was created in the previous run and includes
         the replaced geometry chunks.
 
@@ -163,7 +163,8 @@ class ADQLtoMySQLFunctionsTranslationVisitor(ADQLParserVisitor):
         self.contexts = contexts
 
     def visitArea(self, ctx):
-        arg = self.contexts[ctx.children[2].children[0].children[0]]
+        #  arg = self.contexts[ctx.children[2].children[0].children[0]]
+        arg = self.contexts[ctx.children[2].children[0]]
         ctx_text = 'sarea(%s)' % arg
         for i in range(ctx.getChildCount() - 1):
             ctx.removeLastChild()
@@ -174,14 +175,17 @@ class ADQLtoMySQLFunctionsTranslationVisitor(ADQLParserVisitor):
         Works only for circles.
 
         """
-        arg = self.contexts[ctx.children[2].children[0].children[0]]
+        #  arg = self.contexts[ctx.children[2].children[0].children[0]]
+        arg = self.contexts[ctx.children[2].children[0]]
         ctx_text = 'scenter(%s)' % arg
         _remove_children(ctx)
         self.contexts[ctx] = ctx_text
 
     def visitContains(self, ctx):
-        arg = (self.contexts[ctx.children[2].children[0].children[0]],
-               self.contexts[ctx.children[4].children[0].children[0]])
+        #  arg = (self.contexts[ctx.children[2].children[0].children[0]],
+               #  self.contexts[ctx.children[4].children[0].children[0]])
+        arg = (self.contexts[ctx.children[2].children[0]],
+               self.contexts[ctx.children[4].children[0]])
         ctx_text = 'srcontainsl(%s, %s)' % arg
         _remove_children(ctx)
         self.contexts[ctx] = ctx_text
@@ -195,8 +199,10 @@ class ADQLtoMySQLFunctionsTranslationVisitor(ADQLParserVisitor):
         self.contexts[ctx] = ctx_text
 
     def visitIntersects(self, ctx):
-        arg = (self.contexts[ctx.children[2].children[0].children[0]],
-               self.contexts[ctx.children[4].children[0].children[0]])
+        #  arg = (self.contexts[ctx.children[2].children[0].children[0]],
+               #  self.contexts[ctx.children[4].children[0].children[0]])
+        arg = (self.contexts[ctx.children[2].children[0]],
+               self.contexts[ctx.children[4].children[0]])
         ctx_text = 'soverlaps(%s, %s)' % arg
         _remove_children(ctx)
         self.contexts[ctx] = ctx_text
