@@ -253,7 +253,7 @@ class ADQLQueryTranslator(object):
         self.parser = ADQLParser(self.stream)
         self.parser._listeners = [self.syntax_error_listener]
 
-        self.tree = self.parser.query_expression()
+        self.tree = self.parser.query_specification()
         self.parsed = True
 
         if len(self.syntax_error_listener.syntax_errors):

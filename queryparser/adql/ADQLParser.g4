@@ -24,8 +24,8 @@ box:
           RPAREN ;
 catalog_name:                   ID ;
 centroid:                       CENTROID LPAREN geometry_value_expression RPAREN ;
-character_representation:       nonquote_character | SQ SQ ;
-character_string_literal:       SQ ( character_representation )* SQ ;
+//character_representation:       nonquote_character ;// | SQ SQ ;
+character_string_literal:       SQ ( ID )* SQ ; //SQ ( character_representation )* SQ ;
 character_value_expression:
           character_value_expression concatenation_operator ( value_expression_primary | string_value_function )
         | value_expression_primary
@@ -47,7 +47,7 @@ coordinate2:                    numeric_value_expression ;
 coordinates:                    coordinate1 COMMA coordinate2 ;
 correlation_name:               identifier ;
 correlation_specification:      ( AS )? correlation_name ;
-//default_function_prefix:      // his is empty in the document!
+//default_function_prefix:      // this is empty in the document!
 delimited_identifier:           DQ ID DQ ;
 derived_column:                 value_expression ( as_clause )? ;
 derived_table:                  table_subquery ;
@@ -106,10 +106,10 @@ non_join_query_primary:         query_specification | LPAREN non_join_query_expr
 non_join_query_term:            non_join_query_primary | query_term INTERSECT ( ALL )? query_expression ;
 non_predicate_geometry_function:area | coord1 | coord2 | distance ;
 //nondoublequote_character:       NDQC ;
-nonquote_character:             NQC ;
+//nonquote_character:             NQC ;
 null_predicate:                 column_reference IS ( NOT )? NULL ;
 numeric_geometry_function:      predicate_geometry_function | non_predicate_geometry_function ;
-numeric_primary:                value_expression_primary | numeric_value_function ;
+numeric_primary:                ( SIGN )? value_expression_primary | numeric_value_function ;
 numeric_value_expression:
           term
         | bitwise_not numeric_value_expression
@@ -142,12 +142,12 @@ query_expression:
         | query_expression EXCEPT ( ALL )? query_term
         | joined_table ;
 query_name:                     ID ;
-query_specification:            WITH with_query select_query ; // This could be a problem...
+query_specification:            ( WITH with_query )? select_query ;
 query_term:                     non_join_query_primary | query_term INTERSECT ( ALL )? query_expression | joined_table ;
 radius:                         numeric_value_expression ;
 region:                         REGION LPAREN string_value_expression RPAREN ;
 regular_identifier:             ID ;
-schema_name:                    ( catalog_name DOT )? unqualified_schema_name ;
+schema_name:                    ID ; //( catalog_name DOT )? unqualified_schema_name ;
 search_condition:               boolean_term | search_condition OR boolean_term ;
 select_list:                    ASTERISK | select_sublist ( COMMA select_sublist )* ;
 select_query:                   SELECT ( set_quantifier )? ( set_limit )? select_list table_expression ;
@@ -179,7 +179,7 @@ table_reference:
         | table_reference ( NATURAL )? ( join_type )? JOIN table_reference ( join_specification )?
         | LPAREN joined_table RPAREN ;
 table_subquery:                 subquery ;
-term:                           factor | term ASTERISK factor | term SOLIDUS factor ;
+term:                           factor | term ASTERISK factor | term SOLIDUS factor | term MOD_SYM factor;
 trig_function:                  ACOS LPAREN numeric_value_expression RPAREN
         | ACOS LPAREN numeric_value_expression RPAREN
         | ASIN LPAREN numeric_value_expression RPAREN
@@ -213,4 +213,4 @@ value_expression_primary:
         | set_function_specification
         | LPAREN value_expression RPAREN ;
 where_clause:                   WHERE search_condition ;
-with_query:                     query_name ( column_name )? AS query_specification ; // Is this okay?
+with_query:                     query_name ( LPAREN column_name ( COMMA column_name )* RPAREN )? AS LPAREN ( query_specification )? RPAREN  ;

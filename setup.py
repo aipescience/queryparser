@@ -20,7 +20,7 @@ def get_java_version():
                               stderr=subprocess.PIPE, shell=True)
         jo = jp.communicate()
 
-        return jo[0].strip('\n').strip('"')
+        return jo[0].decode('ascii').strip('\n').strip('"')
     except OSError:
         return []
 
@@ -71,8 +71,8 @@ if antlr_path is None:
 
 major, _, _, _, _ = sys.version_info
 
-build_mysql_parser(antlr_path, major)
-build_adql_translator(antlr_path, major)
+#  build_mysql_parser(antlr_path, major)
+#  build_adql_translator(antlr_path, major)
 
 setup(
     name="queryparser",
