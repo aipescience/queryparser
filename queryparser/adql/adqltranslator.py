@@ -243,7 +243,6 @@ class FormatListener(ADQLParserListener):
             self.nodes.append(node.getText())
 
     def format_query(self):
-        print(self.nodes)
         query = ' '.join(self.nodes)
         # Remove some spaces
         query = query.replace(' . ', '.')
