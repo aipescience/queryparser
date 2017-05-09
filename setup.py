@@ -28,7 +28,7 @@ def get_java_version():
 def find_antlr():
     dirs = ['/usr/local/lib', '/usr/local/bin']
     for d in dirs:
-        p = os.path.join(d, 'antlr-4.5.3-complete.jar')
+        p = os.path.join(d, 'antlr-4.7-complete.jar')
         if os.path.exists(p):
             return p
         else:

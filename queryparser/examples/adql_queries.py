@@ -29,9 +29,9 @@ SELECT RA,DE FROM "tycho2"
 WHERE 1=CONTAINS(POINT('ICRS', "tycho2".RA, "tycho2".DE), CIRCLE('ICRS', 75.35, -69.7, 10))
 """,
 """
-SELECT source_id, ra, dec, DISTANCE(POINT('ICRS',ra,dec), 
+SELECT TOP 1 source_id, ra, dec, DISTANCE(POINT('ICRS',ra,dec), 
        POINT('ICRS',266.41683,-29.00781)) AS dist
-   FROM gaiadr1.gaia_source 
+   FROM GDR1.gaia_source 
    WHERE 1=CONTAINS(POINT('ICRS',ra,dec),CIRCLE('ICRS',266.41683,-29.00781, 0.08333333))
 """
 ]

@@ -66,19 +66,33 @@ class ADQLtoMySQLGeometryTranslationVisitor(ADQLParserVisitor):
         vals = []
         for i in ctx.children[cidx].getText().split(','):
             try:
-                v = float(i)
+                val = float(i)
             except ValueError:
                 try:
-                    v = float(eval(i))
+                    val = float(eval(i))
                 except (AttributeError, ValueError, NameError):
-                    v = i.replace('"', '`')
+                    val = '.'.join('`{0}`'.format(v.rstrip("'").lstrip("'").
+                                                  rstrip('"').lstrip('"'))
+                                   for v in i.split('.'))
 
-            vals.append(v)
+            vals.append(val)
 
         return vals
 
     def visitRegular_identifier(self, ctx):
-        self.contexts[ctx] = ctx.getText().replace("'", "`").replace('"', "`")
+        ri = ctx.getText().rstrip("'").lstrip("'").rstrip('"').lstrip('"')
+        ri = '`' + ri + '`'
+        self.contexts[ctx] = ri
+
+    def visitSchema_name(self, ctx):
+        ri = ctx.getText().rstrip("'").lstrip("'").rstrip('"').lstrip('"')
+        ri = '`' + ri + '`'
+        self.contexts[ctx] = ri
+
+    def visitAs_clause(self, ctx):
+        # We need to visit the AS clause to avoid aliases being treated same
+        # as regular identifiers and backticked.
+        pass
 
     def visitSet_limit(self, ctx):
         """
@@ -100,8 +114,10 @@ class ADQLtoMySQLGeometryTranslationVisitor(ADQLParserVisitor):
         if len(coords) == 3:
             coords = coords[1:]
 
-        ctx_text = "spoint( %s(%s),%s(%s) )" % (self.conunits, coords[0],
-                                                self.conunits, coords[1])
+        #  ctx_text = "spoint( %s(%s),%s(%s) )" % (self.conunits, coords[0],
+        #                                          self.conunits, coords[1])
+        ctx_text = "spoint( %s(%s), %s(%s) )" % (self.conunits, coords[0],
+                                                 self.conunits, coords[1])
 
         _remove_children(ctx)
         self.contexts[ctx] = ctx_text
@@ -159,8 +175,9 @@ class ADQLtoMySQLFunctionsTranslationVisitor(ADQLParserVisitor):
         the replaced geometry chunks.
 
     """
-    def __init__(self, contexts):
+    def __init__(self, contexts, conunits="DEGREES"):
         self.contexts = contexts
+        self.conunits = conunits
 
     def visitArea(self, ctx):
         #  arg = self.contexts[ctx.children[2].children[0].children[0]]
@@ -183,7 +200,7 @@ class ADQLtoMySQLFunctionsTranslationVisitor(ADQLParserVisitor):
 
     def visitContains(self, ctx):
         #  arg = (self.contexts[ctx.children[2].children[0].children[0]],
-               #  self.contexts[ctx.children[4].children[0].children[0]])
+        #         self.contexts[ctx.children[4].children[0].children[0]])
         arg = (self.contexts[ctx.children[2].children[0]],
                self.contexts[ctx.children[4].children[0]])
         ctx_text = 'srcontainsl(%s, %s)' % arg
@@ -193,14 +210,14 @@ class ADQLtoMySQLFunctionsTranslationVisitor(ADQLParserVisitor):
     def visitDistance(self, ctx):
         arg = (self.contexts[ctx.children[2].children[0]],
                self.contexts[ctx.children[4].children[0]])
-        ctx_text = 'sdist(%s, %s)' % arg
+        ctx_text = '%s(sdist(%s, %s))' % ((self.conunits, ) + arg)
         for i in range(ctx.getChildCount() - 1):
             ctx.removeLastChild()
         self.contexts[ctx] = ctx_text
 
     def visitIntersects(self, ctx):
         #  arg = (self.contexts[ctx.children[2].children[0].children[0]],
-               #  self.contexts[ctx.children[4].children[0].children[0]])
+        #         self.contexts[ctx.children[4].children[0].children[0]])
         arg = (self.contexts[ctx.children[2].children[0]],
                self.contexts[ctx.children[4].children[0]])
         ctx_text = 'soverlaps(%s, %s)' % arg
@@ -226,7 +243,13 @@ class FormatListener(ADQLParserListener):
             self.nodes.append(node.getText())
 
     def format_query(self):
+        print(self.nodes)
         query = ' '.join(self.nodes)
+        # Remove some spaces
+        query = query.replace(' . ', '.')
+        query = query.replace(' , ', ', ')
+        query = query.replace('( ', '(')
+        query = query.replace(' )', ')')
         if self.limit:
             query += ' LIMIT %d' % self.limit
         return query
@@ -263,7 +286,7 @@ class ADQLQueryTranslator(object):
         self.parsed = True
 
         if len(self.syntax_error_listener.syntax_errors):
-            print (self.syntax_error_listener.syntax_errors)
+            print(self.syntax_error_listener.syntax_errors)
             raise RuntimeError("ADQL query has errors.")
         self.walker = antlr4.ParseTreeWalker()
 
