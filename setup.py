@@ -16,9 +16,11 @@ except ImportError:
 def get_java_version():
     try:
         cmd = """java -version 2>&1 | awk '/version/ {print $3}'"""
-        output = subprocess.check_output(cmd,  shell=True)
+        jp = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                              stderr=subprocess.PIPE, shell=True)
+        jo = jp.communicate()
 
-        return output.decode('utf-8').strip('\n').strip('"')
+        return jo[0].decode('ascii').strip('\n').strip('"')
     except OSError:
         return []
 
@@ -27,9 +29,10 @@ def find_antlr():
     dirs = ['/usr/local/lib', '/usr/local/bin']
     for d in dirs:
         p = os.path.join(d, 'antlr-4.7-complete.jar')
-        print(p)
         if os.path.exists(p):
             return p
+        else:
+            return None
 
 
 def build_mysql_parser(antlr_path, major):
@@ -50,9 +53,7 @@ def build_adql_translator(antlr_path, major):
     subprocess.call(ca + ["./queryparser/adql/ADQLParser.g4"])
 
 
-
 jv = get_java_version()
-print(jv)
 
 if not len(jv):
     raise RuntimeError("No Java found.")

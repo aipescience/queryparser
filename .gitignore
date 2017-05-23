@@ -10,10 +10,6 @@ build
 dist
 cover
 
-env
-env3
-clear.ilg
-
 ADQLLexer.py
 ADQLParser.py
 ADQLParserListener.py
