@@ -16,11 +16,9 @@ except ImportError:
 def get_java_version():
     try:
         cmd = """java -version 2>&1 | awk '/version/ {print $3}'"""
-        jp = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                              stderr=subprocess.PIPE, shell=True)
-        jo = jp.communicate()
+        output = subprocess.check_output(cmd,  shell=True)
 
-        return jo[0].decode('ascii').strip('\n').strip('"')
+        return  output.decode('utf-8').strip('\n').strip('"')
     except OSError:
         return []
 
@@ -31,8 +29,6 @@ def find_antlr():
         p = os.path.join(d, 'antlr-4.7-complete.jar')
         if os.path.exists(p):
             return p
-        else:
-            return None
 
 
 def build_mysql_parser(antlr_path, major):
