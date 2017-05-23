@@ -5,6 +5,9 @@
 *.java
 *.egg-info
 *.bak
+env
+env3
+clear.ilg
 
 build
 dist
