@@ -1,16 +1,27 @@
 *.swp
+*.~
+.DS_Store
+
+.idea
 
 *.pyc
-*.tokens
-*.java
 *.egg-info
-*.bak
+
 env
 env3
-clear.ilg
 
 build
 dist
-cover
 
-.idea
+queryparser/adql/ADQLLexer.py
+queryparser/adql/ADQLParser.py
+queryparser/adql/ADQLParserListener.py
+queryparser/adql/ADQLParserVisitor.py
+queryparser/adql/ADQLLexer.tokens
+queryparser/adql/ADQLParser.tokens
+
+queryparser/mysql/MySQLLexer.py
+queryparser/mysql/MySQLParser.py
+queryparser/mysql/MySQLParserListener.py
+queryparser/mysql/MySQLLexer.tokens
+queryparser/mysql/MySQLParser.tokens
