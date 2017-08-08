@@ -10,18 +10,7 @@
 env
 env3
 
+queryparser
 build
 dist
-
-queryparser/adql/ADQLLexer.py
-queryparser/adql/ADQLParser.py
-queryparser/adql/ADQLParserListener.py
-queryparser/adql/ADQLParserVisitor.py
-queryparser/adql/ADQLLexer.tokens
-queryparser/adql/ADQLParser.tokens
-
-queryparser/mysql/MySQLLexer.py
-queryparser/mysql/MySQLParser.py
-queryparser/mysql/MySQLParserListener.py
-queryparser/mysql/MySQLLexer.tokens
-queryparser/mysql/MySQLParser.tokens
+MANIFEST
