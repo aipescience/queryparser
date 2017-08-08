@@ -10,9 +10,7 @@
 env
 env3
 
-queryparser
+lib
 build
 dist
 MANIFEST
-
-!src/queryparser
