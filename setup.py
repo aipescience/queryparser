@@ -19,7 +19,11 @@ setup(
     packages=[
         'queryparser',
         'queryparser.adql',
+        'queryparser.adql.two',
+        'queryparser.adql.three',
         'queryparser.mysql',
+        'queryparser.mysql.two',
+        'queryparser.mysql.three',
         'queryparser.examples'
     ],
     install_requires=[

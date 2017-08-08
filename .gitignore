@@ -14,3 +14,5 @@ queryparser
 build
 dist
 MANIFEST
+
+!src/queryparser
