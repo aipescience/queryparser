@@ -11,6 +11,7 @@ ANTLR_DIRS = ('/usr/local/lib/', '/usr/local/bin/')
 MYSQL_SRC = 'src/queryparser/mysql'
 ADQL_SRC = 'src/queryparser/adql'
 
+
 def main():
     if get_java_version() < 7:
         raise RuntimeError('You need a newer version of Java.')
@@ -19,13 +20,10 @@ def main():
     if not antlr_path:
         raise RuntimeError('You need Antlr 4.7 installed in %s.' % ':'.join(ANTLR_DIRS))
 
-    copy_source_files()
-
-    build_mysql_parser(antlr_path, 2)
-    build_mysql_parser(antlr_path, 3)
-
-    build_adql_translator(antlr_path, 2)
-    build_adql_translator(antlr_path, 3)
+    for python_version in [2, 3]:
+        copy_source_files(python_version)
+        build_mysql_parser(antlr_path, python_version)
+        build_adql_translator(antlr_path, python_version)
 
 
 def get_java_version():
@@ -49,13 +47,15 @@ def get_antlr_path():
     return False
 
 
-def copy_source_files():
+def copy_source_files(python_version):
+    directory = os.path.join('lib', 'python2' if python_version < 3 else 'python3')
+
     try:
-        shutil.rmtree('queryparser')
+        shutil.rmtree(directory)
     except OSError:
         pass
 
-    shutil.copytree('src/queryparser', 'queryparser', ignore=shutil.ignore_patterns('*.pyc', '*.g4', '*.token'))
+    shutil.copytree('src', directory, ignore=shutil.ignore_patterns('*.pyc', '*.g4', '*.token'))
 
 
 def build_mysql_parser(antlr_path, python_version):
@@ -69,13 +69,14 @@ def build_mysql_parser(antlr_path, python_version):
 
     for filename in ['MySQLLexer.py', 'MySQLParser.py', 'MySQLParserListener.py']:
         source = os.path.join(MYSQL_SRC, filename)
-        target = os.path.join('queryparser/mysql', 'two' if python_version < 3 else 'three', filename)
+        target = os.path.join('lib', 'python2' if python_version < 3 else 'python3', 'queryparser/mysql', filename)
 
         print('moving %s -> %s' % (source, target))
         shutil.move(source, target)
 
     os.remove(os.path.join(MYSQL_SRC, 'MySQLLexer.tokens'))
     os.remove(os.path.join(MYSQL_SRC, 'MySQLParser.tokens'))
+
 
 def build_adql_translator(antlr_path, python_version):
     args = ['java', '-jar', antlr_path, '-Dlanguage=Python%d' % python_version, '-visitor', '-lib', ADQL_SRC]
@@ -88,7 +89,7 @@ def build_adql_translator(antlr_path, python_version):
 
     for filename in ['ADQLLexer.py', 'ADQLParser.py', 'ADQLParserListener.py', 'ADQLParserVisitor.py']:
         source = os.path.join(ADQL_SRC, filename)
-        target = os.path.join('queryparser/adql', 'two' if python_version < 3 else 'three', filename)
+        target = os.path.join('lib', 'python2' if python_version < 3 else 'python3', 'queryparser/adql', filename)
 
         print('moving %s -> %s' % (source, target))
         shutil.move(source, target)

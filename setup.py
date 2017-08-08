@@ -1,13 +1,13 @@
 import sys
 
-from distutils.core import setup
+from setuptools import setup
 
 version = '0.1.0'
 
-python_version, _, _, _, _ = sys.version_info
+python_version = sys.version_info.major
 
 setup(
-    name='queryparser',
+    name='queryparser-python%d' % python_version,
     version=version,
     description='Parses MySQL and translates ADQL to MySQL.',
     url='https://github.com/aipescience/queryparser',
@@ -19,17 +19,15 @@ setup(
     packages=[
         'queryparser',
         'queryparser.adql',
-        'queryparser.adql.two',
-        'queryparser.adql.three',
         'queryparser.mysql',
-        'queryparser.mysql.two',
-        'queryparser.mysql.three',
         'queryparser.examples'
     ],
     install_requires=[
         'wheel',
         'antlr4_python%d_runtime' % python_version
     ],
-    download_url='https://github.com/aipescience/queryparser/archive/%s.tar.gz' % version,
     classifiers=[],
+    package_dir={
+        '': 'lib/python%d' % python_version,
+    },
 )

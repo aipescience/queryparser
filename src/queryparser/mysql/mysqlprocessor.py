@@ -10,19 +10,12 @@ from __future__ import (absolute_import, print_function)
 
 __all__ = ["MySQLQueryProcessor"]
 
-import sys
-
 import antlr4
 from antlr4.error.ErrorListener import ErrorListener
 
-if sys.version_info.major < 3:
-    from queryparser.mysql.two.MySQLLexer import MySQLLexer
-    from queryparser.mysql.two.MySQLParser import MySQLParser
-    from queryparser.mysql.two.MySQLParserListener import MySQLParserListener
-else:
-    from queryparser.mysql.three.MySQLLexer import MySQLLexer
-    from queryparser.mysql.three.MySQLParser import MySQLParser
-    from queryparser.mysql.three.MySQLParserListener import MySQLParserListener
+from .MySQLLexer import MySQLLexer
+from .MySQLParser import MySQLParser
+from .MySQLParserListener import MySQLParserListener
 
 
 def parse_alias(alias):
