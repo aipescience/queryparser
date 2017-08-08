@@ -2,21 +2,14 @@
 
 from __future__ import absolute_import
 
-import sys
-
 import antlr4
 from antlr4.error.ErrorListener import ErrorListener
 
-if sys.version_info.major < 3:
-    from queryparser.adql.two.ADQLLexer import ADQLLexer
-    from queryparser.adql.two.ADQLParser import ADQLParser
-    from queryparser.adql.two.ADQLParserVisitor import ADQLParserVisitor
-    from queryparser.adql.two.ADQLParserListener import ADQLParserListener
-else:
-    from queryparser.adql.three.ADQLLexer import ADQLLexer
-    from queryparser.adql.three.ADQLParser import ADQLParser
-    from queryparser.adql.three.ADQLParserVisitor import ADQLParserVisitor
-    from queryparser.adql.three.ADQLParserListener import ADQLParserListener
+from .ADQLLexer import ADQLLexer
+from .ADQLParser import ADQLParser
+from .ADQLParserVisitor import ADQLParserVisitor
+from .ADQLParserListener import ADQLParserListener
+
 
 def _remove_children(ctx):
         for i in range(ctx.getChildCount() - 1):
