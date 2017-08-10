@@ -6,7 +6,7 @@
 queries = [
     (
         """
-        SELECT db.tab.a FROM db.tab;
+        SELECT db.tab.a AS col1 FROM db.tab;
         """,
         ('db.tab.a',),
         (),
@@ -559,5 +559,21 @@ queries = [
          'RAVEPUB_DR5.RAVE_Gravity_SC.RAVE_OBS_ID'),
         ('join', 'limit', 'where'),
         ()
+    ),
+    (
+        """
+        SELECT DEGREES(sdist(spoint(RADIANS(`ra`), RADIANS(`dec`)),
+                             spoint(RADIANS(266.41683), RADIANS(-29.00781))))
+            AS dist
+            FROM `GDR1`.`gaia_source`
+            WHERE 1 = srcontainsl(spoint(RADIANS(`ra`), RADIANS(`dec`)),
+                                  scircle(spoint(RADIANS(266.41683),
+                                                 RADIANS(-29.00781)),
+                                          RADIANS(0.08333333)))
+            ORDER BY `dist` ASC
+        """,
+        ('GDR1.gaia_source.ra', 'GDR1.gaia_source.dec'),
+        ('where', 'order by'),
+        ('sdist', 'scircle', 'RADIANS', 'spoint', 'srcontainsl', 'DEGREES')
     )
 ]
