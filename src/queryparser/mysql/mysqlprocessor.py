@@ -92,6 +92,7 @@ class ColumnKeywordFunctionListener(MySQLParserListener):
     def __init__(self):
         self.tables = []
         self.columns = []
+        self.column_aliases = []
         self.keywords = []
         self.functions = []
         self.column_name_listener = ColumnNameListener()
@@ -122,10 +123,14 @@ class ColumnKeywordFunctionListener(MySQLParserListener):
     def _extract_column(self, ctx):
         cn = self._process_column_name(ctx)
         alias = self._process_alias(ctx)
-        if len(cn) > 1:
-            self.columns.extend([(i, None) for i in cn])
-        else:
-            self.columns.append((cn[0], alias))
+        if alias is not None:
+            self.column_aliases.append(alias)
+
+        if cn[0] not in self.column_aliases:
+            if len(cn) > 1:
+                self.columns.extend([(i, None) for i in cn])
+            else:
+                self.columns.append((cn[0], alias))
 
     def enterTable_atom(self, ctx):
         alias = parse_alias(ctx.alias())
@@ -152,7 +157,6 @@ class ColumnKeywordFunctionListener(MySQLParserListener):
     def enterGroupby_clause(self, ctx):
         self.keywords.append('group by')
         self._extract_column(ctx)
-        #  self.functions.append(ctx.getText())
 
     def enterWhere_clause(self, ctx):
         self.keywords.append('where')
