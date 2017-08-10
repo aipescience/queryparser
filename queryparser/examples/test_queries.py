@@ -537,5 +537,27 @@ queries = [
         ('GDR1.gaia_source.ra', 'GDR1.gaia_source.dec'),
         ('where',),
         ()
+    ),
+    (
+        """
+        SELECT t.RAVE_OBS_ID AS c1, t.HEALPix AS c2,
+               h.`logg_SC` AS c3, h.`TEFF` AS c4
+        FROM `RAVEPUB_DR5`.`RAVE_DR5` AS t
+        JOIN (
+            SELECT `RAVE_OBS_ID`, `logg_SC`, k.`TEFF`
+            FROM `RAVEPUB_DR5`.`RAVE_Gravity_SC`
+            JOIN (
+                SELECT `RAVE_OBS_ID`, `TEFF`
+                FROM `RAVEPUB_DR5`.`RAVE_ON`
+                LIMIT 1000
+            ) AS k USING (`RAVE_OBS_ID`)
+        ) AS h USING (`RAVE_OBS_ID`)
+        """,
+        ('RAVEPUB_DR5.RAVE_DR5.RAVE_OBS_ID', 'RAVEPUB_DR5.RAVE_DR5.HEALPix', 
+         'RAVEPUB_DR5.RAVE_ON.TEFF', 'RAVEPUB_DR5.RAVE_Gravity_SC.logg_SC',
+         'RAVEPUB_DR5.RAVE_ON.RAVE_OBS_ID',
+         'RAVEPUB_DR5.RAVE_Gravity_SC.RAVE_OBS_ID'),
+        ('join', 'limit', 'where'),
+        ()
     )
 ]
