@@ -127,7 +127,7 @@ outer_join_type:                LEFT | RIGHT | FULL ;
 pattern:                        character_value_expression ;
 point:                          POINT LPAREN coord_sys COMMA coordinates RPAREN ;
 polygon:                        POLYGON LPAREN coord_sys COMMA coordinates COMMA
-          coordinates ( COMMA coordinates )? RPAREN ;
+          coordinates ( COMMA coordinates )+ RPAREN ;
 predicate:
           comparison_predicate
         | between_predicate

@@ -13,4 +13,6 @@ env3
 lib
 build
 dist
+src/queryparser/mysql/gen/
+src/queryparser/adql/gen/
 MANIFEST
