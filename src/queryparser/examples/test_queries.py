@@ -6,7 +6,7 @@
 queries = [
     (
         """
-        SELECT db.tab.a FROM db.tab;
+        SELECT db.tab.a AS col1 FROM db.tab;
         """,
         ('db.tab.a',),
         (),
@@ -286,14 +286,15 @@ queries = [
     ),
     (
         """
-        SELECT 0.25*(0.5+FLOOR(LOG10(Mvir)/0.25)) AS log_mass, COUNT(*) AS num
+        SELECT 0.25*(0.5+FLOOR(LOG10(Mvir)/0.25)) AS log_mass,
+               COUNT(*) AS num
         FROM MDR1.BDMV
         WHERE snapnum=85 
         GROUP BY FLOOR(LOG10(x)/0.25)
         ORDER BY log_mass
         """,
-        ('MDR1.BDMV.Mvir', 'MDR1.BDMV.snapnum', 'MDR1.BDMV.log_mass',
-         'MDR1.BDMV.NULL', 'MDR1.BDMV.x'),
+        ('MDR1.BDMV.Mvir', 'MDR1.BDMV.snapnum', 'MDR1.BDMV.NULL',
+         'MDR1.BDMV.x'),
         ('where', 'group by', 'order by'),
         ('COUNT', 'FLOOR', 'LOG10')
     ),
@@ -537,5 +538,43 @@ queries = [
         ('GDR1.gaia_source.ra', 'GDR1.gaia_source.dec'),
         ('where',),
         ()
+    ),
+    (
+        """
+        SELECT t.RAVE_OBS_ID AS c1, t.HEALPix AS c2,
+               h.`logg_SC` AS c3, h.`TEFF` AS c4
+        FROM `RAVEPUB_DR5`.`RAVE_DR5` AS t
+        JOIN (
+            SELECT `RAVE_OBS_ID`, `logg_SC`, k.`TEFF`
+            FROM `RAVEPUB_DR5`.`RAVE_Gravity_SC`
+            JOIN (
+                SELECT `RAVE_OBS_ID`, `TEFF`
+                FROM `RAVEPUB_DR5`.`RAVE_ON`
+                LIMIT 1000
+            ) AS k USING (`RAVE_OBS_ID`)
+        ) AS h USING (`RAVE_OBS_ID`)
+        """,
+        ('RAVEPUB_DR5.RAVE_DR5.RAVE_OBS_ID', 'RAVEPUB_DR5.RAVE_DR5.HEALPix', 
+         'RAVEPUB_DR5.RAVE_ON.TEFF', 'RAVEPUB_DR5.RAVE_Gravity_SC.logg_SC',
+         'RAVEPUB_DR5.RAVE_ON.RAVE_OBS_ID',
+         'RAVEPUB_DR5.RAVE_Gravity_SC.RAVE_OBS_ID'),
+        ('join', 'limit'),
+        ()
+    ),
+    (
+        """
+        SELECT DEGREES(sdist(spoint(RADIANS(`ra`), RADIANS(`dec`)),
+                             spoint(RADIANS(266.41683), RADIANS(-29.00781))))
+            AS dist
+            FROM `GDR1`.`gaia_source`
+            WHERE 1 = srcontainsl(spoint(RADIANS(`ra`), RADIANS(`dec`)),
+                                  scircle(spoint(RADIANS(266.41683),
+                                                 RADIANS(-29.00781)),
+                                          RADIANS(0.08333333)))
+            ORDER BY `dist` ASC
+        """,
+        ('GDR1.gaia_source.ra', 'GDR1.gaia_source.dec'),
+        ('where', 'order by'),
+        ('sdist', 'scircle', 'RADIANS', 'spoint', 'srcontainsl', 'DEGREES')
     )
 ]

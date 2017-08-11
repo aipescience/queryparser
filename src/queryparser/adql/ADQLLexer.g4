@@ -305,7 +305,6 @@ YEAR                :Y_ E_ A_ R_ ;
 ZONE                :Z_ O_ N_ E_ ;
 
 
-SIGN    : ( PLUS | MINUS ) ;
 INT		: [0-9]+;
 EXPONENT: INT ;
 REAL    : (  INT DOT INT | INT DOT | DOT INT  )

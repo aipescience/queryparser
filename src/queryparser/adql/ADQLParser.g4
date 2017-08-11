@@ -58,7 +58,7 @@ distance:
           ( numeric_value_expression COMMA numeric_value_expression COMMA
             numeric_value_expression COMMA numeric_value_expression )
           ) RPAREN ;
-double_quote_symbol:            DQ DQ ;
+//double_quote_symbol:            DQ DQ ;
 exact_numeric_literal:          unsigned_decimal ( DOT ( unsigned_decimal )? )? | DOT unsigned_decimal;
 exists_predicate:               EXISTS table_subquery ;
 extract_coordsys:               COORDSYS LPAREN geometry_value_expression RPAREN ;
@@ -90,6 +90,7 @@ math_function:
         | CEILING LPAREN numeric_value_expression RPAREN
         | DEGREES LPAREN numeric_value_expression RPAREN
         | EXP LPAREN numeric_value_expression RPAREN
+        | FLOOR LPAREN numeric_value_expression RPAREN
         | LOG LPAREN numeric_value_expression RPAREN
         | LOG10 LPAREN numeric_value_expression RPAREN
         | MOD LPAREN numeric_value_expression COMMA numeric_value_expression RPAREN
@@ -109,7 +110,7 @@ non_predicate_geometry_function:area | coord1 | coord2 | distance ;
 //nonquote_character:             NQC ;
 null_predicate:                 column_reference IS ( NOT )? NULL ;
 numeric_geometry_function:      predicate_geometry_function | non_predicate_geometry_function ;
-numeric_primary:                ( SIGN )? value_expression_primary | numeric_value_function ;
+numeric_primary:                ( sign )? value_expression_primary | numeric_value_function ;
 numeric_value_expression:
           term
         | bitwise_not numeric_value_expression
@@ -135,7 +136,7 @@ predicate:
         | null_predicate
         | exists_predicate ;
 predicate_geometry_function:    contains | intersects ;
-qualifier:                      table_name | correlation_name ;
+qualifier:                      column_name | table_name | correlation_name ;
 query_expression:
           non_join_query_term
         | query_expression UNION ( ALL )? query_term
@@ -172,7 +173,7 @@ table_expression:
           ( having_clause )?
           ( order_by_clause )?
           ( offset_clause )? ;
-table_name:                     ( schema_name DOT)? identifier ;
+table_name:                     ( schema_name DOT )? identifier ;
 table_reference:
           table_name ( correlation_specification )?
         | derived_table correlation_specification
