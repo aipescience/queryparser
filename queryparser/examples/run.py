@@ -24,7 +24,7 @@ def not_so_pretty_print(q, columns, keywords, functions, process_time,
     print()
 
 
-def pretty_print(q, columns, keywords, functions, process_time,
+def pretty_print(q, columns, keywords, functions, column_aliases, process_time,
                  syntax=None, show_diff=True):
 
     print('+' + '=' * 78 + '+')
@@ -51,6 +51,14 @@ def pretty_print(q, columns, keywords, functions, process_time,
         print('|  Columns:' + ' ' * 68 + '|')
         for i in sorted(columns):
             print('|\t' + i + ' ' * (71 - len(i)) + '|')
+
+        if len(column_aliases.items()):
+            print('|' + ' ' * 78 + '|')
+            print('|  Column aliases:' + ' ' * 61 + '|')
+            for i in sorted(column_aliases.items()):
+                pstr = '%s: %s' % i
+                print('|\t' + pstr + ' ' * (71 - len(pstr)) + '|')
+
 
         if len(keywords):
             print('|' + ' ' * 78 + '|')
@@ -108,9 +116,10 @@ def test_mysql_parsing(qs):
         qp.process_query()
         s = time.time() - s
 
-        cols, keys, funcs = qp.columns, qp.keywords, qp.functions
+        cols, keys, funcs, col_als = qp.columns, qp.keywords, qp.functions, \
+            qp.column_aliases
         #  not_so_pretty_print(q[0], cols, keys, funcs, s, qp.syntax_errors)
-        pretty_print(q, cols, keys, funcs, s, qp.syntax_errors,
+        pretty_print(q, cols, keys, funcs, col_als, s, qp.syntax_errors,
                      show_diff=True)
 
 
@@ -146,7 +155,7 @@ def test_translated_mysql_parsing(qs):
 
 
 if __name__ == '__main__':
-    test_mysql_parsing(test_queries.queries[-1:])
+    test_mysql_parsing(test_queries.queries[:])
     #  test_mysql_parsing(broken_queries.queries[-1:])
     #  test_adql_translation(adql_queries.queries[:])
     #  test_translated_mysql_parsing(adql_queries.queries)
