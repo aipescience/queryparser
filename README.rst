@@ -61,7 +61,8 @@ There are some example queries in the queryparser/examples directory. Have a loo
 
 .. code-block:: bash
 
-    python queryparser/examples/run.py
+    python lib/python2/queryparser/examples/run.py  # for python2
+    python lib/python3/queryparser/examples/run.py  # for python3
 
 This will parse a number of queries (specified in the corresponding example-files) and print the query, the parsed columns and the parsing time.
 
