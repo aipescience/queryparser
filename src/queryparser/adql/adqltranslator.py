@@ -27,9 +27,6 @@ class SyntaxErrorListener(ErrorListener):
 
 class ADQLtoMySQLGeometryTranslationVisitor(ADQLParserVisitor):
     """
-    This thing has a shitty hack in it but that's the only way I could get
-    it to work. It's like this:
-
     1) Find the rule we need to translate. Point, for example.
     2) After processing it, get rid of all off its children except the first
        one. This still keeps a token in the stream so it can be accessed later
@@ -149,21 +146,27 @@ class ADQLtoMySQLGeometryTranslationVisitor(ADQLParserVisitor):
         self.contexts[ctx] = ctx_text
 
     def visitPolygon(self, ctx):
-        raise AttributeError("Polygons are not supported (yet).")
-        #  cc = ctx.getChildCount()
-        #  s = 4
-        #  pars = []
-        #  for j in range(0, cc - 5, 2):
-        #  pars.extend(self._convert_values(ctx, s + j))
-        #  pars = self._wrap_strings(pars)
+        s = 4
+        j = 0
+        pars = []
+        while True:
+            try:
+                pars.append(self._convert_values(ctx, s + j))
+                s += 2
+            except IndexError:
+                break
 
-        #  poly = "spoly( '{"
-        #  for i in range(0, len(wunits), 4):
-        #  poly += '(%s%s,%s%s),' % wunits[i:i + 4]
-        #  ctx_text = poly[:-1] + "}' )"
+        ustr = ''
+        if self.conunits == "RADIANS":
+            ustr = 'd'
 
-        #  _remove_children(ctx)
-        #  self.contexts[ctx] = ctx_text
+        ctx_text = "spoly('{"
+        for p in pars:
+            ctx_text += '(%s%s,%s%s),' % (str(p[0]), ustr, str(p[1]), ustr)
+
+        ctx_text = ctx_text[:-1] + "}')"
+        _remove_children(ctx)
+        self.contexts[ctx] = ctx_text
 
 
 class ADQLtoMySQLFunctionsTranslationVisitor(ADQLParserVisitor):
