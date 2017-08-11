@@ -57,7 +57,7 @@ class RemoveSubqueriesListener(MySQLParserListener):
     """
     def __init__(self, depth):
         self.depth = depth
-        self.subquery_aliases = []
+        self.subquery_aliases = {}
 
     def enterSelect_expression(self, ctx):
         parent = ctx.parentCtx.parentCtx
@@ -67,8 +67,9 @@ class RemoveSubqueriesListener(MySQLParserListener):
                 alias = parent.parentCtx.alias()
             except AttributeError:
                 alias = None
+            table_ref = ctx.table_references().getText().split('JOIN')[0]
             alias = parse_alias(alias)
-            self.subquery_aliases.append(alias)
+            self.subquery_aliases[alias] = table_ref
             ctx.parentCtx.removeLastChild()
 
 
@@ -199,6 +200,7 @@ class MySQLQueryProcessor(object):
         self.columns = set()
         self.keywords = set()
         self.functions = set()
+        self.column_aliases = {}
         self.syntax_error_listener = SyntaxErrorListener()
         self.syntax_errors = []
         if query is not None:
@@ -221,7 +223,7 @@ class MySQLQueryProcessor(object):
         tree = parser.query()
 
         query_listener = QueryListener()
-        subquery_aliases = []
+        subquery_aliases = {}
         query_names = []
         keywords = []
         functions = []
@@ -235,8 +237,10 @@ class MySQLQueryProcessor(object):
 
             # Remove nested subqueries from select_expressions
             self.walker.walk(remove_subquieries_listener, ctx)
-            subquery_aliases.extend(
-                remove_subquieries_listener.subquery_aliases)
+            #  subquery_aliases.extend(
+                #  remove_subquieries_listener.subquery_aliases)
+            for als in remove_subquieries_listener.subquery_aliases.items():
+                subquery_aliases[als[0]] = als[1]
 
             # Extract table and column names and keywords
             self.walker.walk(column_keyword_function_listener, ctx)
@@ -247,6 +251,7 @@ class MySQLQueryProcessor(object):
             functions.extend(column_keyword_function_listener.functions)
 
         columns = []
+        col_aliases = {}
 
         for qn in query_names:
             tab_dict = {}
@@ -256,6 +261,7 @@ class MySQLQueryProcessor(object):
                     tab_dict[i[1]] = i[0]
                 else:
                     tab.append(i[0])
+
             for i in qn[1]:
                 parts = i[0].split('.')
 
@@ -266,11 +272,24 @@ class MySQLQueryProcessor(object):
                     # we need to replace the table name alias
                     try:
                         update = tab_dict[parts[0]]
-                        columns.append('%s.%s' % (update, parts[1]))
+                        cappend = '%s.%s' % (update, parts[1])
+                        if i[0] != 'NULL' and i[1] is not None:
+                            col_aliases[i[1]] = cappend
+                        columns.append(cappend)
+                    except KeyError:
+                        pass
+
+                elif len(parts) == 2 and parts[0] in subquery_aliases.keys():
+                    try:
+                        alias_key = i[0].split('.')
+                        if i[0] != 'NULL' and i[1] is not None:
+                            col_aliases[i[1]] = '.'.join((subquery_aliases[alias_key[0]], alias_key[1]))
                     except KeyError:
                         pass
 
                 if len(parts) == 1:
+                    if i[0] != 'NULL' and i[1] is not None:
+                        col_aliases[i[1]] = i[0]
                     dvs = list(tab_dict.values())
                     if len(dvs) > 1 or len(tab) > 1:
                         for k in dvs:
@@ -301,6 +320,7 @@ class MySQLQueryProcessor(object):
             self.columns = set(columns).difference(del_columns)
             self.keywords = set(keywords)
             self.functions = set(functions)
+            self.column_aliases = col_aliases
         else:
             self.syntax_errors = self.syntax_error_listener.syntax_errors
 
@@ -320,5 +340,6 @@ class MySQLQueryProcessor(object):
         self.columns = set()
         self.keywords = set()
         self.functions = set()
+        self.column_aliases = {}
         self.syntax_errors = []
         self._query = query

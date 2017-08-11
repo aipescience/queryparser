@@ -286,14 +286,15 @@ queries = [
     ),
     (
         """
-        SELECT 0.25*(0.5+FLOOR(LOG10(Mvir)/0.25)) AS log_mass, COUNT(*) AS num
+        SELECT 0.25*(0.5+FLOOR(LOG10(Mvir)/0.25)) AS log_mass,
+               COUNT(*) AS num
         FROM MDR1.BDMV
         WHERE snapnum=85 
         GROUP BY FLOOR(LOG10(x)/0.25)
         ORDER BY log_mass
         """,
-        ('MDR1.BDMV.Mvir', 'MDR1.BDMV.snapnum', 'MDR1.BDMV.log_mass',
-         'MDR1.BDMV.NULL', 'MDR1.BDMV.x'),
+        ('MDR1.BDMV.Mvir', 'MDR1.BDMV.snapnum', 'MDR1.BDMV.NULL',
+         'MDR1.BDMV.x'),
         ('where', 'group by', 'order by'),
         ('COUNT', 'FLOOR', 'LOG10')
     ),
@@ -557,7 +558,7 @@ queries = [
          'RAVEPUB_DR5.RAVE_ON.TEFF', 'RAVEPUB_DR5.RAVE_Gravity_SC.logg_SC',
          'RAVEPUB_DR5.RAVE_ON.RAVE_OBS_ID',
          'RAVEPUB_DR5.RAVE_Gravity_SC.RAVE_OBS_ID'),
-        ('join', 'limit', 'where'),
+        ('join', 'limit'),
         ()
     ),
     (
