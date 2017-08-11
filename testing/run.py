@@ -4,8 +4,8 @@ from __future__ import print_function
 
 import time
 
-from queryparser import MySQLQueryProcessor
-from queryparser import ADQLQueryTranslator
+from queryparser.mysql import MySQLQueryProcessor
+from queryparser.adql import ADQLQueryTranslator
 
 import test_queries
 import broken_queries
