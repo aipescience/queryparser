@@ -67,7 +67,8 @@ class RemoveSubqueriesListener(MySQLParserListener):
                 alias = parent.parentCtx.alias()
             except AttributeError:
                 alias = None
-            table_ref = ctx.table_references().getText().split('JOIN')[0]
+            table_ref = ctx.table_references().getText()\
+                .split('JOIN')[0].replace('`', '')
             alias = parse_alias(alias)
             self.subquery_aliases[alias] = table_ref
             ctx.parentCtx.removeLastChild()
@@ -237,8 +238,6 @@ class MySQLQueryProcessor(object):
 
             # Remove nested subqueries from select_expressions
             self.walker.walk(remove_subquieries_listener, ctx)
-            #  subquery_aliases.extend(
-                #  remove_subquieries_listener.subquery_aliases)
             for als in remove_subquieries_listener.subquery_aliases.items():
                 subquery_aliases[als[0]] = als[1]
 
@@ -283,7 +282,8 @@ class MySQLQueryProcessor(object):
                     try:
                         alias_key = i[0].split('.')
                         if i[0] != 'NULL' and i[1] is not None:
-                            col_aliases[i[1]] = '.'.join((subquery_aliases[alias_key[0]], alias_key[1]))
+                            col_aliases[i[1]] = '.'.join(
+                                (subquery_aliases[alias_key[0]], alias_key[1]))
                     except KeyError:
                         pass
 
