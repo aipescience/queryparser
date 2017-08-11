@@ -23,8 +23,7 @@ setup(
     packages=[
         'queryparser',
         'queryparser.adql',
-        'queryparser.mysql',
-        'queryparser.examples'
+        'queryparser.mysql'
     ],
     install_requires=[
         'wheel',
