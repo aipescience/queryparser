@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import argparse
 import os
 import shutil
 import subprocess
@@ -8,11 +9,21 @@ import re
 ANTLR_JAR = 'antlr-4.7-complete.jar'
 ANTLR_DIRS = ('/usr/local/lib/', '/usr/local/bin/')
 
+QUERYPARSER_SRC = 'src/queryparser/'
 MYSQL_SRC = 'src/queryparser/mysql'
 ADQL_SRC = 'src/queryparser/adql'
 
 
 def main():
+    parser = argparse.ArgumentParser(description='Generate the parsers.')
+    parser.add_argument('-l', help='language (ADQL or MySQL)')
+    parser.add_argument('-p', type=int, help='python version (2 or 3)')
+
+    args = parser.parse_args()
+
+    languages = [args.l] if args.l else ['adql', 'mysql']
+    python_versions = [args.p] if args.p else [2, 3]
+
     if get_java_version() < 7:
         raise RuntimeError('You need a newer version of Java.')
 
@@ -20,10 +31,15 @@ def main():
     if not antlr_path:
         raise RuntimeError('You need Antlr 4.7 installed in %s.' % ':'.join(ANTLR_DIRS))
 
-    for python_version in [2, 3]:
-        copy_source_files(python_version)
-        build_mysql_parser(antlr_path, python_version)
-        build_adql_translator(antlr_path, python_version)
+    for python_version in python_versions:
+        create_module(python_version)
+
+        for language in languages:
+            if language == 'adql':
+                build_adql_translator(antlr_path, python_version)
+
+            if language == 'mysql':
+                build_mysql_parser(antlr_path, python_version)
 
 
 def get_java_version():
@@ -47,29 +63,41 @@ def get_antlr_path():
     return False
 
 
-def copy_source_files(python_version):
-    directory = os.path.join('lib', 'python2' if python_version < 3 else 'python3')
+def create_module(python_version):
+    directory = os.path.join('lib', 'python2' if python_version < 3 else 'python3', 'queryparser')
 
     try:
-        shutil.rmtree(directory)
+        os.makedirs(directory)
     except OSError:
         pass
 
-    shutil.copytree('src', directory, ignore=shutil.ignore_patterns('*.pyc', '*.g4', '*.token'))
-
+    open(os.path.join(directory, '__init__.py'), 'w').close()
 
 def build_mysql_parser(antlr_path, python_version):
     args = ['java', '-jar', antlr_path, '-Dlanguage=Python%d' % python_version, '-lib', MYSQL_SRC]
 
     print('building mysql lexer for python%i' % python_version)
-    subprocess.call(args + [os.path.join(MYSQL_SRC, 'MySQLLexer.g4')])
+    subprocess.check_call(args + [os.path.join(MYSQL_SRC, 'MySQLLexer.g4')])
 
     print('building mysql parser for python%i' % python_version)
-    subprocess.call(args + [os.path.join(MYSQL_SRC, 'MySQLParser.g4')])
+    subprocess.check_call(args + [os.path.join(MYSQL_SRC, 'MySQLParser.g4')])
+
+
+    directory = os.path.join('lib', 'python2' if python_version < 3 else 'python3', 'queryparser/mysql')
+    try:
+        os.makedirs(directory)
+    except OSError:
+        pass
+
+    for filename in ['__init__.py', 'mysqlprocessor.py']:
+        source = os.path.join(MYSQL_SRC, filename)
+        target = os.path.join(directory, filename)
+        print('copying %s -> %s' % (source, target))
+        shutil.copy(source, target)
 
     for filename in ['MySQLLexer.py', 'MySQLParser.py', 'MySQLParserListener.py']:
         source = os.path.join(MYSQL_SRC, filename)
-        target = os.path.join('lib', 'python2' if python_version < 3 else 'python3', 'queryparser/mysql', filename)
+        target = os.path.join(directory, filename)
 
         print('moving %s -> %s' % (source, target))
         shutil.move(source, target)
@@ -82,14 +110,26 @@ def build_adql_translator(antlr_path, python_version):
     args = ['java', '-jar', antlr_path, '-Dlanguage=Python%d' % python_version, '-visitor', '-lib', ADQL_SRC]
 
     print('building adql lexer for python%i' % python_version)
-    subprocess.call(args + [os.path.join(ADQL_SRC, 'ADQLLexer.g4')])
+    subprocess.check_call(args + [os.path.join(ADQL_SRC, 'ADQLLexer.g4')])
 
     print('building adql parser for python%i' % python_version)
-    subprocess.call(args + [os.path.join(ADQL_SRC, 'ADQLParser.g4')])
+    subprocess.check_call(args + [os.path.join(ADQL_SRC, 'ADQLParser.g4')])
+
+    directory = os.path.join('lib', 'python2' if python_version < 3 else 'python3', 'queryparser/adql')
+    try:
+        os.makedirs(directory)
+    except OSError:
+        pass
+
+    for filename in ['__init__.py', 'adqltranslator.py']:
+        source = os.path.join(ADQL_SRC, filename)
+        target = os.path.join(directory, filename)
+        print('copying %s -> %s' % (source, target))
+        shutil.copy(source, target)
 
     for filename in ['ADQLLexer.py', 'ADQLParser.py', 'ADQLParserListener.py', 'ADQLParserVisitor.py']:
         source = os.path.join(ADQL_SRC, filename)
-        target = os.path.join('lib', 'python2' if python_version < 3 else 'python3', 'queryparser/adql', filename)
+        target = os.path.join(directory, filename)
 
         print('moving %s -> %s' % (source, target))
         shutil.move(source, target)

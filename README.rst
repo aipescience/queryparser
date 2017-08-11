@@ -54,19 +54,6 @@ and calling
 which returns a translated string.
 
 
-Examples
---------
-
-There are some example queries in the queryparser/examples directory. Have a look there, edit `run.py` (just comment out/uncomment the line you want in `main`) and run it:
-
-.. code-block:: bash
-
-    python lib/python2/queryparser/examples/run.py  # for python2
-    python lib/python3/queryparser/examples/run.py  # for python3
-
-This will parse a number of queries (specified in the corresponding example-files) and print the query, the parsed columns and the parsing time.
-
-
 Generating the parser from the git repository
 ---------------------------------------------
 
@@ -86,6 +73,18 @@ and a `lib` directory will be created with the complete source for python2 and p
     python setup.py install
 
 to install the generated parser in you virtual env.
+
+
+Testing
+-------
+
+There are some example queries in the ``testing`` directory. Have a look there, edit `run.py` (just comment out/uncomment the line you want in `main`) and run it:
+
+.. code-block:: bash
+
+    python testing/run.py
+
+This will parse a number of queries (specified in the corresponding example-files) and print the query, the parsed columns and the parsing time.
 
 
 TODO
