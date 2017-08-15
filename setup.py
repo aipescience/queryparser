@@ -2,7 +2,7 @@ import sys
 
 from setuptools import setup
 
-version = '0.1'
+version = '0.1.1'
 
 python_version = sys.version_info.major
 
