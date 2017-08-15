@@ -155,7 +155,7 @@ def test_translated_mysql_parsing(qs):
 
 
 if __name__ == '__main__':
-    #  test_mysql_parsing(test_queries.queries[:])
+    test_mysql_parsing(test_queries.queries[-1:])
     #  test_mysql_parsing(broken_queries.queries[-1:])
-    test_adql_translation(adql_queries.queries[-1:])
+    #  test_adql_translation(adql_queries.queries[-1:])
     #  test_translated_mysql_parsing(adql_queries.queries)

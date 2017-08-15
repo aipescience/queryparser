@@ -576,5 +576,11 @@ queries = [
         ('GDR1.gaia_source.ra', 'GDR1.gaia_source.dec'),
         ('where', 'order by'),
         ('sdist', 'scircle', 'RADIANS', 'spoint', 'srcontainsl', 'DEGREES')
-    )
+    ),
+    (("""
+    SELECT `hip` FROM `GDR1`.`tgas_source` WHERE  1;
+    """),
+    (),
+    (),
+    ())
 ]

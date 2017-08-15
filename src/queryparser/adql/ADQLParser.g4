@@ -143,7 +143,7 @@ query_expression:
         | query_expression EXCEPT ( ALL )? query_term
         | joined_table ;
 query_name:                     ID ;
-query_specification:            ( WITH with_query )? select_query ;
+query_specification:            ( WITH with_query )? select_query SEMI;
 query_term:                     non_join_query_primary | query_term INTERSECT ( ALL )? query_expression | joined_table ;
 radius:                         numeric_value_expression ;
 region:                         REGION LPAREN string_value_expression RPAREN ;
@@ -191,7 +191,7 @@ trig_function:                  ACOS LPAREN numeric_value_expression RPAREN
         | SIN LPAREN numeric_value_expression RPAREN
         | TAN LPAREN numeric_value_expression RPAREN ;
 unqualified_schema_name:        ID ;
-unsigned_decimal:               INT;
+unsigned_decimal:               INT ;
 unsigned_hexadecimal:           HEX_DIGIT ;
 unsigned_literal:               unsigned_numeric_literal | general_literal ;
 unsigned_numeric_literal:       exact_numeric_literal | approximate_numeric_literal | unsigned_hexadecimal ;

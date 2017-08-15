@@ -339,7 +339,7 @@ predicate:
 	| ( bit_expr ) ; //done
     */
 
-query:                  select_statement ;
+query:                  select_statement SEMI;
 
 schema_name:            ID ;
 select_list:            ( ( displayed_column ( COMMA displayed_column )* ) | ASTERISK ) ;

@@ -108,9 +108,12 @@ class ColumnKeywordFunctionListener(MySQLParserListener):
             for i in self.column_name_listener.column_name:
                 cn.append(i.replace('`', ''))
         else:
-            if ctx.ASTERISK():
-                cn = [ctx.getText()]
-            else:
+            try:
+                if ctx.ASTERISK():
+                    cn = [ctx.getText()]
+                else:
+                    cn = ['NULL']
+            except AttributeError:
                 cn = ['NULL']
         return cn
 
@@ -205,7 +208,7 @@ class MySQLQueryProcessor(object):
         self.syntax_error_listener = SyntaxErrorListener()
         self.syntax_errors = []
         if query is not None:
-            self._query = query
+            self._query = query.rstrip(';') + ';'
             self.process_query()
 
     def process_query(self):
@@ -342,4 +345,4 @@ class MySQLQueryProcessor(object):
         self.functions = set()
         self.column_aliases = {}
         self.syntax_errors = []
-        self._query = query
+        self._query = query.rstrip(';') + ';'

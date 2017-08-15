@@ -34,5 +34,6 @@ SELECT TOP 1 source_id, ra, dec, DISTANCE(POINT('ICRS',ra,dec),
    FROM GDR1.gaia_source 
    WHERE 1=CONTAINS(POINT('ICRS',ra,dec),CIRCLE('ICRS',266.41683,-29.00781, 0.08333333))
 """,
-"""SELECT polygon('ICRS', 0, 0, 0, 1, 1, 1, 1, 0) FROM b"""
+"""SELECT polygon('ICRS', 0, 0, 0, 1, 1, 1, 1, 0) FROM b""",
+"""SELECT a FROM a limit 10"""
 ]

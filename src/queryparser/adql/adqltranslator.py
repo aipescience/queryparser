@@ -147,6 +147,7 @@ class ADQLtoMySQLGeometryTranslationVisitor(ADQLParserVisitor):
 
     def visitPolygon(self, ctx):
         s = 4
+
         j = 0
         pars = []
         while True:
@@ -227,6 +228,9 @@ class ADQLtoMySQLFunctionsTranslationVisitor(ADQLParserVisitor):
         _remove_children(ctx)
         self.contexts[ctx] = ctx_text
 
+    def visitTable_reference(self, ctx):
+        print(ctx.getText())
+
 
 class FormatListener(ADQLParserListener):
     """
@@ -302,13 +306,13 @@ class ADQLQueryTranslator(object):
 
     def set_query(self, query):
         """
-        Set the query string.
+        Set the query string. A semicolon is added in case it is missing.
 
         :param value:
             Query string.
 
         """
-        self._query = query
+        self._query = query.rstrip(';') + ';'
         self.parse()
 
     def to_mysql(self):
