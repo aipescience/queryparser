@@ -15,7 +15,7 @@ matrix:
 install:
 - wget http://www.antlr.org/download/antlr-4.7-complete.jar
 - make
-- pip install .
+- pip install -e .
 - pip install pytest coverage coveralls
 
 script:
