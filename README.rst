@@ -78,14 +78,17 @@ to install the generated parser in you virtual env.
 Testing
 -------
 
-There are some example queries in the ``testing`` directory. Have a look there, edit `run.py` (just comment out/uncomment the line you want in `main`) and run it:
+First, install `pytest`
 
-.. code-block:: bash
+```
+pip install pytest
+```
 
-    python testing/run.py
+then, run the test suite:
 
-This will parse a number of queries (specified in the corresponding example-files) and print the query, the parsed columns and the parsing time.
-
+```
+pytest
+```
 
 TODO
 ----
