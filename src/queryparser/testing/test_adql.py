@@ -2,25 +2,27 @@ from . import TestCase
 
 class ADQLTestCase(TestCase):
 
-    def test_point(self):
-        self._test_mysql_parsing(
-            """
-            SELECT POINT('icrs', 10, 10) FROM b
-            """,
-            """
+    pass
 
-            """
-        )
+    # def test_point(self):
+    #     self._test_mysql_parsing(
+    #         """
+    #         SELECT POINT('icrs', 10, 10) FROM b
+    #         """,
+    #         """
 
-    def test_circle(self):
-        self._test_mysql_parsing(
-            """
-            SELECT CIRCLE('ICRS', "bla".RA, -20/4., 1) FROM b
-            """,
-            """
+    #         """
+    #     )
 
-            """
-        )
+    # def test_circle(self):
+    #     self._test_mysql_parsing(
+    #         """
+    #         SELECT CIRCLE('ICRS', "bla".RA, -20/4., 1) FROM b
+    #         """,
+    #         """
+
+    #         """
+    #     )
 
 # """SELECT BOX('ICRS', 25.4, -20, 1, 1) FROM b""",
 # """SELECT TOP 10 AREA(CIRCLE('ICRS', "bla".RA, -20, 1)) FROM b""",

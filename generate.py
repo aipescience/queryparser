@@ -7,7 +7,7 @@ import subprocess
 import re
 
 ANTLR_JAR = 'antlr-4.7-complete.jar'
-ANTLR_DIRS = ('/usr/local/lib/', '/usr/local/bin/')
+ANTLR_DIRS = ('.', '/usr/local/lib/', '/usr/local/bin/')
 
 QUERYPARSER_SRC = 'src/queryparser/'
 MYSQL_SRC = 'src/queryparser/mysql'

@@ -1,9 +1,4 @@
-import os
-import sys
 import unittest
-
-queryparser_dir = os.path.join(__file__, 'lib', 'python%d' % sys.version_info.major)
-sys.path.append(queryparser_dir)
 
 from queryparser.mysql import MySQLQueryProcessor
 from queryparser.adql import ADQLQueryTranslator

@@ -1,0 +1,25 @@
+language: python
+cache: pip
+
+matrix:
+  include:
+  - python: 2.7
+    env: SOURCE_DIR=lib/python2
+  - python: 3.4
+    env: SOURCE_DIR=lib/python3
+  - python: 3.5
+    env: SOURCE_DIR=lib/python3
+  - python: 3.6
+    env: SOURCE_DIR=lib/python3
+
+install:
+- wget http://www.antlr.org/download/antlr-4.7-complete.jar
+- make
+- pip install .
+- pip install pytest coverage coveralls
+
+script:
+- coverage run --source=$SOURCE_DIR -m pytest $SOURCE_DIR
+
+after_success:
+- coveralls
