@@ -3,6 +3,13 @@ queryparser
 
 **Let's parse some MySQL and ADQL!**
 
+.. image:: https://travis-ci.org/aipescience/queryparser.svg?branch=master
+   :alt: Build Status
+   :target: https://travis-ci.org/aipescience/queryparser
+
+.. image:: https://coveralls.io/repos/github/aipescience/queryparser/badge.svg?branch=master
+   :alt: Coverage Status
+   :target: https://coveralls.io/github/aipescience/queryparser?branch=master
 
 Parsing MySQL
 -------------
