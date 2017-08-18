@@ -20,6 +20,8 @@ package_dir = {
 }
 
 requirements = [
+    'pytest',
+    'coverage',
     'antlr4_python%d_runtime' % python_version
 ]
 print (requirements)
