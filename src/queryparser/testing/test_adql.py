@@ -17,7 +17,7 @@ class ADQLTestCase(TestCase):
     # def test_circle(self):
     #     self._test_mysql_parsing(
     #         """
-    #         SELECT CIRCLE('ICRS', "bla".RA, -20/4., 1) FROM b
+    #         SELECT CIRCLE('ICRS', RA, -20/4., 1) FROM b
     #         """,
     #         """
 

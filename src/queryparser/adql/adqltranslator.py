@@ -247,15 +247,15 @@ class FormatListener(ADQLParserListener):
             self.nodes.append(node.getText())
 
     def format_query(self):
-        query = ' '.join(self.nodes)
+        query = ' '.join(self.nodes).rstrip(';')
         # Remove some spaces
         query = query.replace(' . ', '.')
         query = query.replace(' , ', ', ')
         query = query.replace('( ', '(')
         query = query.replace(' )', ')')
         if self.limit:
-            query += ' LIMIT %d' % self.limit
-        return query
+            query += 'LIMIT %d' % self.limit
+        return '%s;' % query.rstrip()
 
 
 class ADQLQueryTranslator(object):

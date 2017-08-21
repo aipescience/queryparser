@@ -1,14 +1,14 @@
 queries = [
 
 """SELECT POINT('icrs', 10, 10) FROM db.b""",
-"""SELECT CIRCLE('ICRS', "bla".RA, -20/4., 1) FROM db.b""",
+"""SELECT CIRCLE('ICRS', RA, -20/4., 1) FROM db.b""",
 """SELECT BOX('ICRS', 25.4, -20, 1, 1) FROM db.b""",
-"""SELECT TOP 10 AREA(CIRCLE('ICRS', "bla".RA, -20, 1)) FROM db.b""",
+"""SELECT TOP 10 AREA(CIRCLE('ICRS', RA, -20, 1)) FROM db.b""",
 """SELECT TOP 10 CONTAINS(POINT('ICRS', 0, 0), CIRCLE('ICRS', 0, 0, 1)) FROM db.b""",
 """SELECT DISTANCE(POINT('ICRS', 0, 0), POINT('ICRS', 0, 1)) FROM db.b""",
 """SELECT INTERSECTS(CIRCLE('ICRS', 0, 0, 10), BOX('ICRS', 2, 0, 10, 10)) FROM db.b""",
 """SELECT TOP 10 AREA(CIRCLE('ICRS',  25.4, -20, 1)) FROM db.b""",
-"""SELECT CENTROID(CIRCLE('ICRS', "bla".RA, -20/4., 1)) FROM db.b""",
+"""SELECT CENTROID(CIRCLE('ICRS', RA, -20/4., 1)) FROM db.b""",
 """
 SELECT TOP 10 DISTANCE(POINT('ICRS',0,0), POINT('ICRS',"VII/233/xsc".RAJ2000,"VII/233/xsc".DEJ2000))
 FROM db."VII/233/xsc"

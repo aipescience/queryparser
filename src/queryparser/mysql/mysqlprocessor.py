@@ -19,6 +19,8 @@ from .MySQLLexer import MySQLLexer
 from .MySQLParser import MySQLParser
 from .MySQLParserListener import MySQLParserListener
 
+from queryparser import QueryError
+
 
 def parse_alias(alias):
     """
@@ -125,12 +127,6 @@ class RemoveSubqueriesListener(MySQLParserListener):
                 alias = parent.parentCtx.alias()
             except AttributeError:
                 alias = None
-            #  tn = process_table_name(self.table_name_listener, self.walker,
-                                    #  ctx)
-            #  print(tn)
-            #  print(dir(ctx.table_references()))
-            #  table_ref = ctx.table_references().getText()\
-                #  .split('JOIN')[0].replace('`', '')
 
             # subquery alias
             alias = parse_alias(alias)
@@ -290,6 +286,7 @@ class MySQLQueryProcessor(object):
     def extract_columns(self, subquery_aliases, query_names):
         sub_dct = {}
         columns = []
+
         
         for suba, qn in zip(subquery_aliases[::-1], query_names[::-1]):
             sub_columns = []
@@ -313,7 +310,13 @@ class MySQLQueryProcessor(object):
                         col[0][1] = val[1]
                         sub_columns.append(col)
                     except KeyError:
-                        sub_columns.append(col)
+                        if col[0][0] is None:
+                            for tab in qn[0]:
+                                if col[0][1] == tab[1][1]:
+                                    sub_columns.append([[tab[1][0], col[0][1],
+                                             col[0][2]], col[1]])
+                        else:
+                            sub_columns.append(col)
 
                 elif col[0][1] is None and col[0][0] is None:
                     for tab in qn[0]:
@@ -404,10 +407,12 @@ class MySQLQueryProcessor(object):
                         alias = col[0][2] 
                     display_columns.append((tuple(col[0]), alias))
                 else:
+                    
                     try:
                         sd = sub_dct[col[0][1]]
                     except KeyError:
-                        raise
+                        raise QueryError('Invalid database specification `%s`.'
+                                % col[0][1])
                     found_among_aliases = False
                     for c in sd:
                         if col[0][2] == c[1]:

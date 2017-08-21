@@ -14,7 +14,7 @@ class TestCase(unittest.TestCase):
             
         try:
             qp_columns = ['.'.join(i) for i in qp.columns]
-            qp_display_columns = [(i[0], '.'.join(i[1])) for i in
+            qp_display_columns = ['%s: %s' % (i[0], '.'.join(i[1])) for i in
                                   qp.display_columns]
         except TypeError:
             pass

@@ -6,7 +6,7 @@
 queries = [
     (
         """
-        SELECT db.tab.a AS col1 FROM db.tab;
+        SELECT tab.a AS col1 FROM db.tab;
         """,
         ('db.tab.a',),
         (),
@@ -460,8 +460,8 @@ queries = [
         r.`c14`, r.`c15`, r.`c16`, r.`c17`, r.`c18`, r.`c19`, r.`c20`,
         ra.`B`, ra.`eB` , ra.`V` , ra.`eV` , ra.`g`, ra.`eg` , ra.`r` ,
         ra.`er` , ra.`i` , ra.`ei`
-        FROM `RAVE_DR4` r
-        JOIN `RAVE_APASS` ra ON (r.`RAVE_OBS_ID` = ra.`RAVE_OBS_ID`);
+        FROM db.`RAVE_DR4` r
+        JOIN db.`RAVE_APASS` ra ON (r.`RAVE_OBS_ID` = ra.`RAVE_OBS_ID`);
         """,
         ('RAVE_DR4.XidQualityFLAG_TYCHO2', 'RAVE_DR4.Jmag_2MASS',
          'RAVE_DR4.PeakHeight', 'RAVE_DR4.Si', 'RAVE_DR4.Mg_N',
@@ -649,6 +649,17 @@ queries = [
          'GDR1.gaia_source.dec', 'GDR1.gaia_source.ra',
          'GDR1.tgas_source.dec', 'GDR1.tgas_source.ra'),
         ('limit', 'where', 'join'),
+        ()
+    ),
+    (
+        """
+        SELECT DEGREES(sdist(spoint(RADIANS(0.0), RADIANS(0.0)),
+                             spoint(RADIANS(`VII/233/xsc`.`RAJ2000`),
+                             RADIANS(`VII/233/xsc`.`DEJ2000`))))
+        FROM `db`.`VII/233/xsc` LIMIT 10;
+        """,
+        (),
+        (),
         ()
     )
 ]

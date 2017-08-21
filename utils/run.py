@@ -7,10 +7,11 @@ import time
 from queryparser.mysql import MySQLQueryProcessor
 from queryparser.adql import ADQLQueryTranslator
 
-import test_queries
+import old_test_queries as test_queries
 import broken_queries
 import adql_queries
 
+from queryparser import QueryError
 
 def not_so_pretty_print(q, columns, keywords, functions, process_time,
                         syntax=None):
@@ -151,11 +152,14 @@ def test_adql_translation(qs):
 def test_translated_mysql_parsing(qs):
     adt = ADQLQueryTranslator()
     qp = MySQLQueryProcessor()
-    for q in qs[:20]:
+    for q in qs[:]:
         adt.set_query(q)
         translated_query = adt.to_mysql()
         qp.set_query(translated_query)
-        qp.process_query()
+        try:
+            qp.process_query()
+        except QueryError:
+            raise
         cols, keys, funcs = qp.columns, qp.keywords, qp.functions
         s = 0.0
         not_so_pretty_print(translated_query, cols, keys, funcs, s,
@@ -163,9 +167,9 @@ def test_translated_mysql_parsing(qs):
 
 
 if __name__ == '__main__':
-    #  test_mysql_parsing(test_queries.queries[:1])
+    #  test_mysql_parsing(test_queries.queries[-1:])
     #  test_mysql_parsing(test_queries.queries[6:7])
-    #  test_mysql_parsing(test_queries.queries[:34])
+    #  test_mysql_parsing(test_queries.queries[:])
     #  test_mysql_parsing(test_queries.queries[35:42])
     #  test_mysql_parsing(broken_queries.queries[-1:])
     #  test_adql_translation(adql_queries.queries[-1:])
