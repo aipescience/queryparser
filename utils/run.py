@@ -17,6 +17,7 @@ def not_so_pretty_print(q, columns, keywords, functions, process_time,
     print(q)
     if syntax:
         print('  Query has syntax error(s).')
+        print(' ', q, syntax)
     else:
         print("  Columns: ", columns)
         print("  Keywords: ", keywords)
@@ -24,13 +25,13 @@ def not_so_pretty_print(q, columns, keywords, functions, process_time,
     print()
 
 
-def pretty_print(q, columns, keywords, functions, column_aliases, process_time,
-                 syntax=None, show_diff=True):
+def pretty_print(q, columns, keywords, functions, display_columns,
+                 process_time, syntax=None, show_diff=True):
 
-    print('+' + '=' * 78 + '+')
     sq = q[0].split('\n')
 
     proc = '\033[92m\033[1mDone\033[0m'
+    failed = False
     offset = [0] * len(sq)
     if len(syntax):
         for se in syntax:
@@ -41,24 +42,33 @@ def pretty_print(q, columns, keywords, functions, column_aliases, process_time,
                       orig[se[1] + len(se[2]) + offset[k]:]))
 
             proc = '\033[91m\033[1mFailed\033[0m'
+            failed = True
             offset[se[0] - 1] += 19
+
+    try:
+        columns = ['.'.join(i) for i in columns]
+        display_columns = [(i[0], '.'.join(i[1])) for i in display_columns]
+    except TypeError:
+        pass
+
+    print('+' + '=' * 78 + '+')
 
     for k, i in enumerate(sq):
         print('|\033[100m' + i + ' ' * (78 - len(i) + offset[k]) + '\033[49m|')
 
     if not len(syntax):
         print('|' + ' ' * 78 + '|')
-        print('|  Columns:' + ' ' * 68 + '|')
-        for i in sorted(columns):
-            print('|\t' + i + ' ' * (71 - len(i)) + '|')
+        if len(columns):
+            print('|  Columns:' + ' ' * 68 + '|')
+            for i in sorted(columns):
+                print('|\t' + i + ' ' * (71 - len(i)) + '|')
 
-        if len(column_aliases.items()):
+        if len(display_columns):
             print('|' + ' ' * 78 + '|')
-            print('|  Column aliases:' + ' ' * 61 + '|')
-            for i in sorted(column_aliases.items()):
+            print('|  Display columns:' + ' ' * 60 + '|')
+            for i in sorted(display_columns):
                 pstr = '%s: %s' % i
                 print('|\t' + pstr + ' ' * (71 - len(pstr)) + '|')
-
 
         if len(keywords):
             print('|' + ' ' * 78 + '|')
@@ -75,21 +85,19 @@ def pretty_print(q, columns, keywords, functions, column_aliases, process_time,
         print('|' + ' ' * 78 + '|')
 
         if show_diff:
-            if columns.symmetric_difference(q[1]) != set():
+            if set(columns).symmetric_difference(q[1]) != set():
                 print('|  Missing columns:' + ' ' * 60 + '|')
-                for i in columns.symmetric_difference(q[1]):
+                for i in set(columns).symmetric_difference(q[1]):
                     print('|\t' + i + ' ' * (71 - len(i)) + '|')
                 print('|' + ' ' * 78 + '|')
                 proc = '\033[91m\033[1mFailed\033[0m'
-            if keywords.symmetric_difference(q[2]) != set():
+            if set(keywords).symmetric_difference(q[2]) != set():
                 print('|  Missing keywords:' + ' ' * 59 + '|')
-                for i in keywords.symmetric_difference(q[2]):
+                for i in set(keywords).symmetric_difference(q[2]):
                     print('|\t' + i + ' ' * (71 - len(i)) + '|')
                 print('|' + ' ' * 78 + '|')
-                proc = '\033[91m\033[1mFailed\033[0m'
-            if functions.symmetric_difference(q[3]) != set():
                 print('|  Missing functions:' + ' ' * 58 + '|')
-                for i in functions.symmetric_difference(q[3]):
+                for i in set(functions).symmetric_difference(q[3]):
                     print('|\t' + i + ' ' * (71 - len(i)) + '|')
                 print('|' + ' ' * 78 + '|')
                 proc = '\033[91m\033[1mFailed\033[0m'
@@ -116,10 +124,10 @@ def test_mysql_parsing(qs):
         qp.process_query()
         s = time.time() - s
 
-        cols, keys, funcs, col_als = qp.columns, qp.keywords, qp.functions, \
-            qp.column_aliases
+        cols, keys, funcs, dispcols= qp.columns, qp.keywords, qp.functions, \
+            qp.display_columns
         #  not_so_pretty_print(q[0], cols, keys, funcs, s, qp.syntax_errors)
-        pretty_print(q, cols, keys, funcs, col_als, s, qp.syntax_errors,
+        pretty_print(q, cols, keys, funcs, dispcols, s, qp.syntax_errors,
                      show_diff=True)
 
 
@@ -143,7 +151,7 @@ def test_adql_translation(qs):
 def test_translated_mysql_parsing(qs):
     adt = ADQLQueryTranslator()
     qp = MySQLQueryProcessor()
-    for q in qs[10:20]:
+    for q in qs[:20]:
         adt.set_query(q)
         translated_query = adt.to_mysql()
         qp.set_query(translated_query)
@@ -155,7 +163,10 @@ def test_translated_mysql_parsing(qs):
 
 
 if __name__ == '__main__':
-    test_mysql_parsing(test_queries.queries[-1:])
+    #  test_mysql_parsing(test_queries.queries[:1])
+    #  test_mysql_parsing(test_queries.queries[6:7])
+    #  test_mysql_parsing(test_queries.queries[:34])
+    #  test_mysql_parsing(test_queries.queries[35:42])
     #  test_mysql_parsing(broken_queries.queries[-1:])
     #  test_adql_translation(adql_queries.queries[-1:])
-    #  test_translated_mysql_parsing(adql_queries.queries)
+    test_translated_mysql_parsing(adql_queries.queries)

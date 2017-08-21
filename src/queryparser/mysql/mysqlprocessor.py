@@ -10,6 +10,8 @@ from __future__ import (absolute_import, print_function)
 
 __all__ = ["MySQLQueryProcessor"]
 
+import re
+
 import antlr4
 from antlr4.error.ErrorListener import ErrorListener
 
@@ -33,6 +35,53 @@ def parse_alias(alias):
     return alias
 
 
+def process_column_name(column_name_listener, walker, ctx):
+    cn = []
+    column_name_listener.column_name = []
+    walker.walk(column_name_listener, ctx)
+    if column_name_listener.column_name:
+        for i in column_name_listener.column_name:
+            cni = [None, None, None]
+            if i.schema_name():
+                cni[0] = i.schema_name().getText().replace('`', '')
+            if i.table_name():
+                cni[1] = i.table_name().getText().replace('`', '')
+            if i.column_name():
+                cni[2] = i.column_name().getText().replace('`', '')
+            cn.append(cni)
+    else:
+        try:
+            ctx.ASTERISK()
+            ts = ctx.table_spec()
+            cn = [[None, None, '*']]
+            if ts.schema_name():
+                cn[0][0] = ts.schema_name().getText().replace('`', '')
+            if ts.table_name():
+                cn[0][1] = ts.table_name().getText().replace('`', '')
+        except AttributeError:
+            cn = [[None, None, None]]
+
+    return cn
+
+
+def process_table_name(table_name_listener, walker, ctx):
+    table_name_listener.table_names = []
+    walker.walk(table_name_listener, ctx)
+    tn = []
+    for tns in table_name_listener.table_names:
+        table_ref = tns.table_spec()
+        if table_ref is None:
+            continue
+        tni = [None, None]
+        if table_ref.schema_name():
+            tni[0] = table_ref.schema_name().getText().replace('`', '')
+        if table_ref.table_name():
+            tni[1] = table_ref.table_name().getText().replace('`', '')
+        tn.append(tni)
+
+    return tn
+
+
 class QueryListener(MySQLParserListener):
     """
     Extract all select_expressions.
@@ -40,6 +89,7 @@ class QueryListener(MySQLParserListener):
     """
     def __init__(self):
         self.select_expressions = []
+        self.select_list = None
         self.keywords = []
 
     def enterSelect_statement(self, ctx):
@@ -47,7 +97,12 @@ class QueryListener(MySQLParserListener):
             self.keywords.append('union')
 
     def enterSelect_expression(self, ctx):
+        # we need to keep track of unions as they act as subqueries
         self.select_expressions.append(ctx)
+
+    def enterSelect_list(self, ctx):
+        if not self.select_list:
+            self.select_list = ctx
 
 
 class RemoveSubqueriesListener(MySQLParserListener):
@@ -57,20 +112,29 @@ class RemoveSubqueriesListener(MySQLParserListener):
     """
     def __init__(self, depth):
         self.depth = depth
-        self.subquery_aliases = {}
+        self.subquery_aliases = []
+        #  self.walker = antlr4.ParseTreeWalker()
+        #  self.table_name_listener = TableNameListener()
 
     def enterSelect_expression(self, ctx):
         parent = ctx.parentCtx.parentCtx
+
         if isinstance(parent, MySQLParser.SubqueryContext) and ctx.depth() >\
                 self.depth:
             try:
                 alias = parent.parentCtx.alias()
             except AttributeError:
                 alias = None
-            table_ref = ctx.table_references().getText()\
-                .split('JOIN')[0].replace('`', '')
+            #  tn = process_table_name(self.table_name_listener, self.walker,
+                                    #  ctx)
+            #  print(tn)
+            #  print(dir(ctx.table_references()))
+            #  table_ref = ctx.table_references().getText()\
+                #  .split('JOIN')[0].replace('`', '')
+
+            # subquery alias
             alias = parse_alias(alias)
-            self.subquery_aliases[alias] = table_ref
+            self.subquery_aliases.append(alias)
             ctx.parentCtx.removeLastChild()
 
 
@@ -83,7 +147,21 @@ class ColumnNameListener(MySQLParserListener):
         self.column_name = []
 
     def enterColumn_spec(self, ctx):
-        self.column_name.append(ctx.getText())
+        #  self.column_name.append(ctx.getText())
+        self.column_name.append(ctx)
+
+
+class TableNameListener(MySQLParserListener):
+    """
+    Get table names.
+
+    """
+    def __init__(self):
+        self.table_names = []
+
+    def enterTable_atom(self, ctx):
+        #  self.column_name.append(ctx.getText())
+        self.table_names.append(ctx)
 
 
 class ColumnKeywordFunctionListener(MySQLParserListener):
@@ -98,24 +176,8 @@ class ColumnKeywordFunctionListener(MySQLParserListener):
         self.keywords = []
         self.functions = []
         self.column_name_listener = ColumnNameListener()
+        self.table_name_listener = TableNameListener()
         self.walker = antlr4.ParseTreeWalker()
-
-    def _process_column_name(self, ctx):
-        cn = []
-        self.column_name_listener.column_name = []
-        self.walker.walk(self.column_name_listener, ctx)
-        if self.column_name_listener.column_name:
-            for i in self.column_name_listener.column_name:
-                cn.append(i.replace('`', ''))
-        else:
-            try:
-                if ctx.ASTERISK():
-                    cn = [ctx.getText()]
-                else:
-                    cn = ['NULL']
-            except AttributeError:
-                cn = ['NULL']
-        return cn
 
     def _process_alias(self, ctx):
         try:
@@ -125,23 +187,34 @@ class ColumnKeywordFunctionListener(MySQLParserListener):
         alias = parse_alias(alias)
         return alias
 
-    def _extract_column(self, ctx):
-        cn = self._process_column_name(ctx)
+    def _extract_column(self, ctx, append=True):
+        cn = process_column_name(self.column_name_listener, self.walker,
+                                 ctx)
         alias = self._process_alias(ctx)
+        if len(cn) > 1:
+            columns = [[i, None] for i in cn]
+        else:
+            columns = [[cn[0], alias]]
+
+        if not append:
+            return alias, columns
+
         if alias is not None:
             self.column_aliases.append(alias)
 
         if cn[0] not in self.column_aliases:
-            if len(cn) > 1:
-                self.columns.extend([(i, None) for i in cn])
-            else:
-                self.columns.append((cn[0], alias))
+            self.columns.extend(columns)
 
     def enterTable_atom(self, ctx):
         alias = parse_alias(ctx.alias())
         ts = ctx.table_spec()
         if ts:
-            self.tables.append((ts.getText().replace('`', ''), alias))
+            tn = [None, None]
+            if ts.schema_name():
+                tn[0] = ts.schema_name().getText().replace('`', '')
+            if ts.table_name():
+                tn[1] = ts.table_name().getText().replace('`', '')
+            self.tables.append((alias, tn))
 
     def enterDisplayed_column(self, ctx):
         self._extract_column(ctx)
@@ -161,7 +234,9 @@ class ColumnKeywordFunctionListener(MySQLParserListener):
 
     def enterGroupby_clause(self, ctx):
         self.keywords.append('group by')
-        self._extract_column(ctx)
+        col = self._extract_column(ctx, append=False)
+        if col[1][0][0][2] not in self.column_aliases:
+            self._extract_column(ctx)
 
     def enterWhere_clause(self, ctx):
         self.keywords.append('where')
@@ -169,7 +244,9 @@ class ColumnKeywordFunctionListener(MySQLParserListener):
 
     def enterOrderby_clause(self, ctx):
         self.keywords.append('order by')
-        self._extract_column(ctx)
+        col = self._extract_column(ctx, append=False)
+        if col[1][0][0][2] not in self.column_aliases:
+            self._extract_column(ctx)
 
     def enterLimit_clause(self, ctx):
         self.keywords.append('limit')
@@ -177,7 +254,6 @@ class ColumnKeywordFunctionListener(MySQLParserListener):
     def enterJoin_condition(self, ctx):
         self.keywords.append('join')
         self._extract_column(ctx)
-
 
 class SyntaxErrorListener(ErrorListener):
     def __init__(self):
@@ -204,12 +280,52 @@ class MySQLQueryProcessor(object):
         self.columns = set()
         self.keywords = set()
         self.functions = set()
-        self.column_aliases = {}
+        self.display_columns = []
         self.syntax_error_listener = SyntaxErrorListener()
         self.syntax_errors = []
         if query is not None:
             self._query = query.rstrip(';') + ';'
             self.process_query()
+
+    def extract_columns(self, subquery_aliases, query_names):
+        sub_dct = {}
+        columns = []
+        
+        for suba, qn in zip(subquery_aliases[::-1], query_names[::-1]):
+            sub_columns = []
+            tab_dct = dict(qn[0])
+
+            # Replace the subquery aliases
+            for col in qn[1]:
+                if col[0] == '*':
+                    col = [[None, None, '*'], col[1]]
+
+                if not None in col[0]:
+                    sub_columns.append(col)
+
+                elif col[0][0] is None and col[0][1] is None and col[0][2] is None:
+                        pass
+
+                elif col[0][1] is not None:
+                    try:
+                        val = tab_dct[col[0][1]]
+                        col[0][0] = val[0]
+                        col[0][1] = val[1]
+                        sub_columns.append(col)
+                    except KeyError:
+                        sub_columns.append(col)
+
+                elif col[0][1] is None and col[0][0] is None:
+                    for tab in qn[0]:
+                        sub_columns.append([[tab[1][0], tab[1][1], col[0][2]],
+                                             col[1]])
+
+            if suba is not None:
+                sub_dct[suba] = sub_columns
+
+            columns.extend(sub_columns)
+
+        return columns, sub_dct
 
     def process_query(self):
         """
@@ -227,7 +343,7 @@ class MySQLQueryProcessor(object):
         tree = parser.query()
 
         query_listener = QueryListener()
-        subquery_aliases = {}
+        subquery_aliases = [None]
         query_names = []
         keywords = []
         functions = []
@@ -241,9 +357,8 @@ class MySQLQueryProcessor(object):
 
             # Remove nested subqueries from select_expressions
             self.walker.walk(remove_subquieries_listener, ctx)
-            for als in remove_subquieries_listener.subquery_aliases.items():
-                subquery_aliases[als[0]] = als[1]
-
+            subquery_aliases.extend(remove_subquieries_listener.subquery_aliases)
+            
             # Extract table and column names and keywords
             self.walker.walk(column_keyword_function_listener, ctx)
 
@@ -252,78 +367,83 @@ class MySQLQueryProcessor(object):
             keywords.extend(column_keyword_function_listener.keywords)
             functions.extend(column_keyword_function_listener.functions)
 
-        columns = []
-        col_aliases = {}
+        column_keyword_function_listener = ColumnKeywordFunctionListener()
+        self.walker.walk(column_keyword_function_listener,
+                         query_listener.select_list)
+        display_columns = column_keyword_function_listener.columns
 
-        for qn in query_names:
-            tab_dict = {}
-            tab = []
-            for i in qn[0]:
-                if i[1]:
-                    tab_dict[i[1]] = i[0]
+        # Unions are have independent select queries but are not counted in
+        # the subqueries
+        diff = len(query_listener.select_expressions) - len(subquery_aliases)
+        if diff > 0:
+            subquery_aliases.extend([None] * diff)
+
+        # If we only got table name without any database specification, we
+        # raise an error.
+        for table in [i[0] for i in query_names][0]:
+            assert table[1][0] is not None, "Missing database specification."
+            assert table[1][1] is not None, "Missing table specification."
+
+        columns, sub_dct = self.extract_columns(subquery_aliases, query_names)
+        touched_columns = [] 
+        for col in columns:
+            if col[0][0] is not None:
+                touched_columns.append(tuple(col[0]))
+
+        touched_columns = sorted(list(set(touched_columns)))
+
+        columns, _ = self.extract_columns([None], [[query_names[0][0],
+                                                    display_columns]])
+
+        for k in range(max(1, len(subquery_aliases) - 1)):
+            display_columns = [] 
+            for col in columns:
+                alias = col[1]
+                if col[0][0] is not None:
+                    if alias is None:
+                        alias = col[0][2] 
+                    display_columns.append((tuple(col[0]), alias))
                 else:
-                    tab.append(i[0])
-
-            for i in qn[1]:
-                parts = i[0].split('.')
-
-                if len(parts) == 3:
-                    columns.append(i[0])
-
-                if len(parts) == 2 and parts[0] not in subquery_aliases:
-                    # we need to replace the table name alias
                     try:
-                        update = tab_dict[parts[0]]
-                        cappend = '%s.%s' % (update, parts[1])
-                        if i[0] != 'NULL' and i[1] is not None:
-                            col_aliases[i[1]] = cappend
-                        columns.append(cappend)
+                        sd = sub_dct[col[0][1]]
                     except KeyError:
-                        pass
+                        raise
+                    found_among_aliases = False
+                    for c in sd:
+                        if col[0][2] == c[1]:
+                            if alias is None:
+                                alias = col[0][2] 
+                            display_columns.append((tuple(col[0]), alias))
+                            found_among_aliases = True
+                    if not found_among_aliases:
+                        for c in sd:
+                            if col[0][2] == c[0][2]:
+                                if alias is None:
+                                    alias = c[0][2] 
+                                display_columns.append((tuple(c[0]), alias))
 
-                elif len(parts) == 2 and parts[0] in subquery_aliases.keys():
-                    try:
-                        alias_key = i[0].split('.')
-                        if i[0] != 'NULL' and i[1] is not None:
-                            col_aliases[i[1]] = '.'.join(
-                                (subquery_aliases[alias_key[0]], alias_key[1]))
-                    except KeyError:
-                        pass
-
-                if len(parts) == 1:
-                    if i[0] != 'NULL' and i[1] is not None:
-                        col_aliases[i[1]] = i[0]
-                    dvs = list(tab_dict.values())
-                    if len(dvs) > 1 or len(tab) > 1:
-                        for k in dvs:
-                            columns.append('%s.%s' % (k, parts[0]))
-                        for k in tab:
-                            columns.append('%s.%s' % (k, parts[0]))
-
-                    else:
-                        if len(dvs):
-                            columns.append('%s.%s' % (dvs[0], parts[0]))
-                        elif len(tab):
-                            columns.append('%s.%s' % (tab[0], parts[0]))
+            columns = display_columns
 
         # Let's get rid of all columns that are already covered by
         # db.tab.*. Figure out a better way to do it and replace the code
         # below.
         asterisk_columns = []
         del_columns = []
-        for col in columns:
-            if col.split('.')[-1] == '*':
+        for col in touched_columns:
+            if col[2] == '*':
                 asterisk_columns.append(col)
+
         for acol in asterisk_columns:
-            for col in columns:
-                if acol != col and acol.split('.')[:-1] == col.split('.')[:-1]:
+            for col in touched_columns:
+                if acol[0] == col[0] and acol[1] == col[1] and \
+                        acol[2] != col[2]:
                     del_columns.append(col)
 
         if not len(self.syntax_error_listener.syntax_errors):
-            self.columns = set(columns).difference(del_columns)
-            self.keywords = set(keywords)
-            self.functions = set(functions)
-            self.column_aliases = col_aliases
+            self.columns = list(set(touched_columns).difference(del_columns))
+            self.keywords = list(set(keywords))
+            self.functions = list(set(functions))
+            self.display_columns = [(i[1], i[0]) for i in display_columns]
         else:
             self.syntax_errors = self.syntax_error_listener.syntax_errors
 
@@ -343,6 +463,6 @@ class MySQLQueryProcessor(object):
         self.columns = set()
         self.keywords = set()
         self.functions = set()
-        self.column_aliases = {}
+        self.display_columns = []
         self.syntax_errors = []
         self._query = query.rstrip(';') + ';'

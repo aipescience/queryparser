@@ -14,17 +14,17 @@ queries = [
     ),
     (
         """
-        SELECT a FROM tab1, tab2;
+        SELECT a FROM db.tab1, db.tab2;
         """,
-        ('tab1.a', 'tab2.a'),
+        ('db.tab1.a', 'db.tab2.a'),
         (),
         ()
     ),
     (
         """
-        SELECT (((((((1+2)*3)/4)^5)%6)&7)>>8) FROM tab;
+        SELECT (((((((1+2)*3)/4)^5)%6)&7)>>8) FROM db.tab;
         """,
-        ('tab.NULL',),
+        (),
         (),
         ()
     ),
@@ -32,7 +32,7 @@ queries = [
         """
         SELECT COUNT(*), a*2,b,100 FROM db.tab;
         """,
-        ('db.tab.a', 'db.tab.b', 'db.tab.NULL'),
+        ('db.tab.a', 'db.tab.b'),
         (),
         ('COUNT',)
     ),
@@ -122,10 +122,14 @@ queries = [
             FROM db.test_table WHERE foo = '1'
         UNION
         SELECT fi1, fi2
-            FROM bd.test_table WHERE bar = '1';
+            FROM bd.test_table WHERE bar = '1'
+        UNION
+        SELECT fi3, fi4
+            FROM rd.test_table WHERE bar = '1';
         """,
         ('db.test_table.fi@1', 'db.test_table.fi2', 'bd.test_table.fi1',
-         'bd.test_table.fi2', 'db.test_table.foo', 'bd.test_table.bar'),
+         'bd.test_table.fi2', 'db.test_table.foo', 'bd.test_table.bar',
+         'rd.test_table.fi3', 'rd.test_table.fi4', 'rd.test_table.bar'),
         ('where', 'union'),
         ()
     ),
@@ -216,7 +220,7 @@ queries = [
         GROUP BY snapnum
         ORDER BY snapnum
         """,
-        ('MDR1.FOF3.snapnum', 'MDR1.FOF3.NULL'),
+        ('MDR1.FOF3.snapnum',),
         ('group by', 'order by'),
         ('COUNT',)
     ),
@@ -244,7 +248,7 @@ queries = [
         FROM MDR1.FOF 
         GROUP BY snapnum
         """,
-        ('MDR1.FOF.NULL', 'MDR1.FOF.snapnum'),
+        ('MDR1.FOF.snapnum',),
         ('group by',),
         ('log10', 'COUNT')
     ),
@@ -293,8 +297,7 @@ queries = [
         GROUP BY FLOOR(LOG10(x)/0.25)
         ORDER BY log_mass
         """,
-        ('MDR1.BDMV.Mvir', 'MDR1.BDMV.snapnum', 'MDR1.BDMV.NULL',
-         'MDR1.BDMV.x'),
+        ('MDR1.BDMV.Mvir', 'MDR1.BDMV.snapnum', 'MDR1.BDMV.x'),
         ('where', 'group by', 'order by'),
         ('COUNT', 'FLOOR', 'LOG10')
     ),
@@ -519,9 +522,10 @@ queries = [
     ),
     (
         """
-        SELECT Data FROM Users WHERE Name ="" or ""="" AND Pass ="" or ""=""
+        SELECT Data FROM DB.Users
+        WHERE Name ="" OR ""="" AND Pass ="" OR ""=""
         """,
-        ('Users.Data', 'Users.Name', 'Users.Pass'),
+        ('DB.Users.Data', 'DB.Users.Name', 'DB.Users.Pass'),
         ('where',),
         ()
     ),
@@ -577,10 +581,74 @@ queries = [
         ('where', 'order by'),
         ('sdist', 'scircle', 'RADIANS', 'spoint', 'srcontainsl', 'DEGREES')
     ),
-    (("""
-    SELECT `hip` FROM `GDR1`.`tgas_source` WHERE  1;
-    """),
-    (),
-    (),
-    ())
+    (
+        """
+        SELECT t1.id, t2.id, t1.ra AS ra, t2.de AS de,
+               `t1`.`db.tab1.id` AS silly
+        FROM db.tab1 AS t1
+        JOIN (
+            SELECT u1.id, u2.id AS idu2, u1.de
+            FROM db.tab2 as u1
+            JOIN (
+                SELECT ra, id
+                FROM db.tab3
+                WHERE id > 10
+            ) AS u2 USING (id, ra)
+        ) AS t2 USING (id);
+        """,
+        ('db.tab3.id', 'db.tab3.ra', 'db.tab2.id', 'db.tab2.de', 'db.tab1.ra',
+         'db.tab1.id', 'db.tab1.ra', 'db.tab1.db.tab1.id', 'db.tab2.ra'),
+        ('where', 'join'),
+        ()
+    ),
+    (
+        """
+        SELECT a.`dec`, u.`dec` AS udec, b.`dec`, z.`dec` AS zdec
+        FROM GDR1.tgas_source AS a, GDR1.gaia_source AS b
+        JOIN (
+            SELECT a.ra AS ra, b.ra AS ra2, w.`dec`
+            FROM GDR1.gaia_source AS a, GDR1.tgas_source AS b 
+            JOIN (
+                SELECT a.ra AS ra, b.ra AS ra2, a.`dec`
+                FROM GDR1.gaia_source AS a, GDR1.tgas_source AS b 
+                WHERE a.source_id = b.source_id
+                LIMIT 10
+            ) AS w USING (ra)
+        ) AS u USING (ra)
+        JOIN (
+            SELECT a.ra AS ra, b.ra AS ra2, a.`dec`
+            FROM GDR1.foo_source AS a, GDR1.bar_source AS b 
+            WHERE a.source_id = b.source_id
+            LIMIT 10
+        ) AS z USING (ra);
+        """,
+        ('GDR1.bar_source.ra', 'GDR1.bar_source.source_id',
+         'GDR1.foo_source.ra', 'GDR1.foo_source.dec', 'GDR1.foo_source.source_id',
+         'GDR1.gaia_source.ra', 'GDR1.gaia_source.dec',
+         'GDR1.gaia_source.source_id',
+         'GDR1.tgas_source.ra', 'GDR1.tgas_source.dec',
+         'GDR1.tgas_source.source_id'),
+        ('limit', 'where', 'join'),
+        (),
+        ()
+    ),
+    (
+        """
+        SELECT a.`dec`, u.`dec` AS udec, b.`dec`
+        FROM GDR1.tgas_source AS a, GDR1.gaia_source AS b
+        JOIN (
+            SELECT a.ra AS ra, b.ra AS ra2, a.`dec`
+            FROM GDR1.foo_source AS a, GDR1.bar_source AS b 
+            WHERE a.source_id = b.source_id
+            LIMIT 10
+        ) AS u USING (ra);
+        """,
+        ('GDR1.bar_source.ra', 'GDR1.bar_source.source_id',
+         'GDR1.foo_source.ra', 'GDR1.foo_source.dec',
+         'GDR1.foo_source.source_id',
+         'GDR1.gaia_source.dec', 'GDR1.gaia_source.ra',
+         'GDR1.tgas_source.dec', 'GDR1.tgas_source.ra'),
+        ('limit', 'where', 'join'),
+        ()
+    )
 ]

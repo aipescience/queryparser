@@ -228,9 +228,6 @@ class ADQLtoMySQLFunctionsTranslationVisitor(ADQLParserVisitor):
         _remove_children(ctx)
         self.contexts[ctx] = ctx_text
 
-    def visitTable_reference(self, ctx):
-        print(ctx.getText())
-
 
 class FormatListener(ADQLParserListener):
     """
@@ -271,6 +268,7 @@ class ADQLQueryTranslator(object):
     """
     def __init__(self, query=None):
         self.syntax_error_listener = SyntaxErrorListener()
+        self.syntax_errors = []
         self.parsed = False
         self._query = None
 
@@ -290,10 +288,8 @@ class ADQLQueryTranslator(object):
 
         self.tree = self.parser.query_specification()
         self.parsed = True
+        self.syntax_errors = self.syntax_error_listener.syntax_errors
 
-        if len(self.syntax_error_listener.syntax_errors):
-            print(self.syntax_error_listener.syntax_errors)
-            raise RuntimeError("ADQL query has errors.")
         self.walker = antlr4.ParseTreeWalker()
 
     @property
@@ -312,6 +308,8 @@ class ADQLQueryTranslator(object):
             Query string.
 
         """
+        self.syntax_errors = []
+        self.parsed = False
         self._query = query.rstrip(';') + ';'
         self.parse()
 
@@ -322,6 +320,7 @@ class ADQLQueryTranslator(object):
 
         """
         assert self.parsed, 'No query given or query not parsed yet.'
+        assert len(self.syntax_errors) == 0, 'ADQL query has errors.'
         translator_visitor = ADQLtoMySQLGeometryTranslationVisitor()
         translator_visitor.visit(self.tree)
         limit = translator_visitor.limit
