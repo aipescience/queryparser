@@ -58,7 +58,9 @@ and calling
 
     adt.to_mysql()
 
-which returns a translated string.
+which returns a translated string representing a valid MySQL query if the
+the ADQL query had no errors. The MySQL query can then be parsed with the
+``MySQLQueryProcessor`` in the same way as shown above.
 
 
 Generating the parser from the git repository
