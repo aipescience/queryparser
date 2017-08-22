@@ -253,8 +253,9 @@ class FormatListener(ADQLParserListener):
         query = query.replace(' , ', ', ')
         query = query.replace('( ', '(')
         query = query.replace(' )', ')')
+        query = query.rstrip()
         if self.limit:
-            query += 'LIMIT %d' % self.limit
+            query += ' LIMIT %d' % self.limit
         return '%s;' % query.rstrip()
 
 
@@ -310,7 +311,7 @@ class ADQLQueryTranslator(object):
         """
         self.syntax_errors = []
         self.parsed = False
-        self._query = query.rstrip(';') + ';'
+        self._query = query.rstrip(';')
         self.parse()
 
     def to_mysql(self):
