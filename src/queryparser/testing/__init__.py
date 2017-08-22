@@ -31,13 +31,13 @@ class TestCase(unittest.TestCase):
         if display_columns:
             self.assertSetEqual(set(display_columns), set(qp_display_columns))
 
-    def _test_adql_translation(self, query, translated_query=None,
+    def _test_adql_translation(self, query, adql_query=None,
                                syntax_errors=None):
         adt = ADQLQueryTranslator()
         adt.set_query(query)
 
-        if translated_query:
-            self.assertEqual(translated_query, adt.to_mysql())
+        if adql_query:
+            self.assertEqual(adql_query.strip(), adt.to_mysql())
 
         if syntax_errors:
             self.assertEqual(syntax_errors,
