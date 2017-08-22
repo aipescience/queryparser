@@ -26,7 +26,7 @@ feeding it a MySQL query
 
 .. code-block:: python
 
-    sql = "SELECT a FROM b;"
+    sql = "SELECT a FROM db.tab;"
     qp.set_query(sql)
 
 and running it with
@@ -49,7 +49,7 @@ Translation of ADQL queries is done similarly by first creating an instance of t
 
     from queryparser.adql import ADQLQueryTranslator
 
-    adql = "SELECT TOP 100 a,b FROM c"
+    adql = 'SELECT TOP 100 POINT("ICRS", ra, de) FROM db.tab'
     adt = ADQLQueryTranslator(adql)
 
 and calling
