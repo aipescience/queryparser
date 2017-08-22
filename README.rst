@@ -71,7 +71,7 @@ After cloning the project, run
 
 .. code-block:: bash
 
-    python make.py
+    make
 
 and a `lib` directory will be created with the complete source for python2 and python3. After that, run:
 
