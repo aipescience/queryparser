@@ -2,13 +2,12 @@ import sys
 
 from setuptools import setup
 
-sys.path.append('src')
-
-from queryparser import __title__, __email__, __version__, __author__, __license__
-
 python_version = sys.version_info.major
 
-name = '%s-python%d' % (__title__ ,python_version)
+version = '0.1.4'
+
+author = 'Gal Matijevic'
+email = 'gmatijevic@aip.de'
 
 requirements = [
     'pytest',
@@ -21,13 +20,13 @@ if sys.version_info.major == 3 and sys.version_info.minor < 5:
     requirements += ['typing']
 
 setup(
-    name=name,
-    version=__version__,
-    author=__author__,
-    author_email=__email__,
-    maintainer=__author__,
-    maintainer_email=__email__,
-    license=__license__,
+    name='queryparser-python%d' % python_version,
+    version=version,
+    author=author,
+    author_email=email,
+    maintainer=author,
+    maintainer_email=email,
+    license='Apache-2.0',
     url='https://github.com/aipescience/queryparser',
     description=u'Parses MySQL and translates ADQL to MySQL.',
     long_description=open('README.rst').read(),
