@@ -246,11 +246,76 @@ class ADQLTestCase(TestCase):
             sqrt(power(2.5 / log(10) * gaia.phot_g_mean_flux_error / gaia.phot_g_mean_flux, 2)) <= 0.05 AND
             sqrt(power(2.5 / log(10) * gaia.phot_g_mean_flux_error / gaia.phot_g_mean_flux, 2)
             + power(tmass.ks_msigcom, 2)) <= 0.05
-
             )AS subquery
             GROUP BY g_min_ks_index, g_mag_abs_index
             """,
             """
             SELECT `g_min_ks_index` / 10 AS g_min_ks, `g_mag_abs_index` / 10 AS g_mag_abs, count (*) AS n FROM (SELECT `gaia`.`source_id`, floor ((`gaia`.`phot_g_mean_mag` + 5 * log10 (`gaia`.`parallax`) - 10) * 10) AS g_mag_abs_index, floor ((`gaia`.`phot_g_mean_mag` - `tmass`.`ks_m`) * 10) AS g_min_ks_index FROM `gaiadr1`.`tgas_source` AS `gaia` INNER JOIN `gaiadr1`.`tmass_best_neighbour` AS `xmatch` ON `gaia`.`source_id` = `xmatch`.`source_id` INNER JOIN `gaiadr1`.`tmass_original_valid` AS `tmass` ON `tmass`.`tmass_oid` = `xmatch`.`tmass_oid` WHERE `gaia`.`parallax` / `gaia`.`parallax_error` >= 5 AND `ph_qual` = ' AAA ' AND sqrt (power (2.5 / log (10) * `gaia`.`phot_g_mean_flux_error` / `gaia`.`phot_g_mean_flux`, 2)) <= 0.05 AND sqrt (power (2.5 / log (10) * `gaia`.`phot_g_mean_flux_error` / `gaia`.`phot_g_mean_flux`, 2) + power (`tmass`.`ks_msigcom`, 2)) <= 0.05) AS `subquery` GROUP BY `g_min_ks_index`, `g_mag_abs_index` LIMIT 10;
             """
+       )
+
+    def test_query100(self):
+        self._test_adql_mysql_translation_parsing(
+            """
+            SELECT POINT('icrs', ra, de) FROM db.tab
+            """,
+            ('db.tab.ra', 'db.tab.de'),
+            (),
+            ('spoint', 'RADIANS')
+        )
+
+    def test_query101(self):
+       self._test_adql_mysql_translation_parsing(
+            """
+            SELECT
+            g_min_ks_index / 10 AS g_min_ks,
+            g_mag_abs_index / 10 AS g_mag_abs,
+            count(*) AS n
+            FROM (
+                SELECT TOP 10 gaia.source_id,
+                floor((gaia.phot_g_mean_mag+5*log10(gaia.parallax)-10) * 10) AS g_mag_abs_index,
+                floor((gaia.phot_g_mean_mag-tmass.ks_m) * 10) AS g_min_ks_index
+                FROM gaiadr1.tgas_source AS gaia
+                INNER JOIN gaiadr1.tmass_best_neighbour AS xmatch
+                ON gaia.source_id = xmatch.source_id
+                INNER JOIN gaiadr1.tmass_original_valid AS tmass
+                ON tmass.tmass_oid = xmatch.tmass_oid
+                WHERE gaia.parallax/gaia.parallax_error >= 5 AND
+                xmatch.ph_qual = 'AAA' AND
+                sqrt(power(2.5 / log(10) * gaia.phot_g_mean_flux_error / gaia.phot_g_mean_flux, 2)) <= 0.05 AND
+                sqrt(power(2.5 / log(10) * gaia.phot_g_mean_flux_error / gaia.phot_g_mean_flux, 2)
+                + power(tmass.ks_msigcom, 2)) <= 0.05
+            ) AS subquery
+            GROUP BY g_min_ks_index, g_mag_abs_index
+            """,
+            ('gaiadr1.tgas_source.source_id',
+             'gaiadr1.tgas_source.parallax',
+             'gaiadr1.tgas_source.parallax_error',
+             'gaiadr1.tgas_source.phot_g_mean_flux',
+             'gaiadr1.tgas_source.phot_g_mean_flux_error',
+             'gaiadr1.tgas_source.phot_g_mean_mag',
+             'gaiadr1.tmass_best_neighbour.ph_qual',
+             'gaiadr1.tmass_best_neighbour.source_id',
+             'gaiadr1.tmass_best_neighbour.tmass_oid',
+             'gaiadr1.tmass_original_valid.ks_m',
+             'gaiadr1.tmass_original_valid.ks_msigcom',
+             'gaiadr1.tmass_original_valid.tmass_oid'
+             ),
+            ('limit', 'where', 'join', 'group by'),
+            ('sqrt', 'log10', 'log', 'count', 'floor', 'power')
+       )
+
+    def test_query102(self):
+       self._test_adql_mysql_translation_parsing(
+            """
+                SELECT TOP 1 source_id, ra, dec, DISTANCE(POINT('ICRS',ra,dec), 
+                     POINT('ICRS',266.41683,-29.00781)) AS dist
+                FROM GDR1.gaia_source 
+                WHERE 1=CONTAINS(POINT('ICRS',ra,dec),CIRCLE('ICRS',266.41683,-29.00781, 0.08333333))
+            """,
+            ('GDR1.gaia_source.source_id',
+             'GDR1.gaia_source.ra',
+             'GDR1.gaia_source.dec'),
+            (),
+            ()
        )

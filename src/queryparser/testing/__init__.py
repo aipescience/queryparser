@@ -42,3 +42,33 @@ class TestCase(unittest.TestCase):
         if syntax_errors:
             self.assertEqual(syntax_errors,
                              adt.syntax_error_listener.syntax_errors)
+
+    def _test_adql_mysql_translation_parsing(self, query, columns=None,
+                                             keywords=None, functions=None,
+                                             display_columns=None):
+        adt = ADQLQueryTranslator()
+        qp = MySQLQueryProcessor()
+
+        adt.set_query(query)
+
+        qp.set_query(adt.to_mysql())
+        qp.process_query()
+
+        try:
+            qp_columns = ['.'.join(i) for i in qp.columns]
+            qp_display_columns = ['%s: %s' % (i[0], '.'.join(i[1])) for i in
+                                  qp.display_columns]
+        except TypeError:
+            pass
+
+        if columns:
+            self.assertSetEqual(set(columns), set(qp_columns))
+
+        if keywords:
+            self.assertSetEqual(set(keywords), set(qp.keywords))
+
+        if functions:
+            self.assertSetEqual(set(functions), set(qp.functions))
+
+        if display_columns:
+            self.assertSetEqual(set(display_columns), set(qp_display_columns))

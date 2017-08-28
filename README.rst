@@ -58,7 +58,7 @@ and calling
 
     adt.to_mysql()
 
-which returns a translated string representing a valid MySQL query if the
+which returns a translated string representing a valid MySQL query if
 the ADQL query had no errors. The MySQL query can then be parsed with the
 ``MySQLQueryProcessor`` in the same way as shown above.
 
@@ -89,15 +89,15 @@ Testing
 
 First, install `pytest`
 
-```
+``
 pip install pytest
-```
+``
 
 then, run the test suite:
 
-```
+``
 pytest
-```
+``
 
 TODO
 ----

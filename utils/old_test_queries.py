@@ -14,9 +14,9 @@ queries = [
     ),
     (
         """
-        SELECT a FROM db.tab1, db.tab2;
+        SELECT foo.a FROM db.tab1 AS foo, db.tab2;
         """,
-        ('db.tab1.a', 'db.tab2.a'),
+        ('db.tab1.a',),
         (),
         ()
     ),
@@ -140,7 +140,7 @@ queries = [
             j.column_name AS jcol,
             k.column_name AS kcol
         FROM tap_schema.tabs AS t
-        JOIN (SELECT table_name, column_name
+        JOIN (SELECT table_name, column_name, foo.b
             FROM tap_schema.cols
             JOIN (SELECT a, b FROM db.tab) AS foo USING (a)
             WHERE ucd='phot.mag;em.IR.H') AS h USING (table_name)
@@ -657,6 +657,58 @@ queries = [
                              spoint(RADIANS(`VII/233/xsc`.`RAJ2000`),
                              RADIANS(`VII/233/xsc`.`DEJ2000`))))
         FROM `db`.`VII/233/xsc` LIMIT 10;
+        """,
+        (),
+        (),
+        ()
+    ),
+    (
+        """
+        SELECT gaia.source_id
+        FROM gaiadr1.tgas_source AS gaia
+        INNER JOIN gaiadr1.tmass_best_neighbour AS xmatch
+        ON gaia.source_id = xmatch.source_id
+        INNER JOIN gaiadr1.tmass_original_valid AS tmass
+        ON tmass.tmass_oid = xmatch.tmass_oid
+        WHERE gaia.parallax/gaia.parallax_error >= 5 AND
+        xmatch.ph_qual = 'AAA';
+        """,
+        (),
+        (),
+        ()
+    ),
+    (
+        """
+        SELECT COUNT(*), source_id, ra, ra2 AS qqq
+        FROM (
+            SELECT source_id, ra
+            FROM (
+                SELECT source_id, ra, parallax
+                FROM GDR1.tgas_source
+
+                JOIN (
+                    SELECT haha AS parallax, source_id
+                    FROM GDR1.bar_source
+                ) AS qwerty USING (source_id)
+            ) AS inner1
+            JOIN (
+                SELECT qqq, col2 AS ra2, parallax, subsub.col3
+                FROM (
+                    SELECT ra AS qqq, col2, col3, parallax
+                    FROM GDR1.gaia_source AS gaia
+                    WHERE col5 > 5
+                ) AS subsub
+            ) AS inner2 USING (parallax)
+        ) AS subq
+        GROUP BY source_id;
+        """,
+        (),
+        (),
+        ()
+    ),
+    (
+        """
+        SELECT col FROM db.b JOIN db.c USING (foo, bar)
         """,
         (),
         (),
