@@ -344,7 +344,6 @@ class MySQLQueryProcessor(object):
         select_list_table_references = []
         join = 0
         join_using = None
-        join_on = None
 
         for i in column_keyword_function_listener.data:
             if isinstance(i[1], MySQLParser.Displayed_columnContext):
@@ -378,14 +377,7 @@ class MySQLQueryProcessor(object):
                 if len(i[2]) > 1:
                     for j in i[2]:
                         other_columns.append([j])
-                try:
-                    i[1].USING_SYM
-                    join_using = i[2]
-                except AttributeError:
-                    try:
-                        i[1].ON
-                    except AttributeError:
-                        join_on = i[2]
+                join_using = i[2]
 
             if isinstance(i[1], MySQLParser.Orderby_clauseContext):
                 if len(i[2]) > 1:
@@ -402,7 +394,7 @@ class MySQLQueryProcessor(object):
 
         return select_list_columns, select_list_tables,\
                 select_list_table_references, other_columns, go_columns, join,\
-                join_using, join_on, column_aliases
+                join_using, column_aliases
 
     def _extract_columns(self, columns, select_list_tables, ref_dict,
                          touched_columns=None):
@@ -507,7 +499,7 @@ class MySQLQueryProcessor(object):
             # other touched columns and any posible join conditions
             select_list_columns, select_list_tables,\
                 select_list_table_references, other_columns, go_columns, join,\
-                join_using, join_on, column_aliases =\
+                join_using, column_aliases =\
                 self._extract_instances(column_keyword_function_listener)
 
             # Then we need to connect the column names s with tables and
@@ -551,7 +543,7 @@ class MySQLQueryProcessor(object):
             if join:
                 join_columns = []
                 join_columns.append(budget.pop(-1))
-                if join_using:
+                if len(join_using) == 1:
                     for tab in select_list_tables:
                         touched_columns.append([[tab[0][0][0], tab[0][0][1],
                                                  join_using[0][0][2]], None])

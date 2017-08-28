@@ -16,9 +16,9 @@ class MysqlTestCase(TestCase):
     def test_query001(self):
         self._test_mysql_parsing(
             """
-            SELECT a FROM db.tab1, db.tab2;
+            SELECT t.a FROM db.tab1 as t, db.tab2;
             """,
-            ('db.tab1.a', 'db.tab2.a'),
+            ('db.tab1.a',),
             (),
             ()
         )
