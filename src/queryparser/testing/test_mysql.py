@@ -549,3 +549,7 @@ class MysqlTestCase(TestCase):
             ()
         )
 
+    def test_syntax_error(self):
+        q = """SELECR a FROM db.tab;"""
+        self._test_mysql_parsing(q, syntax_errors=[(1, 0, 'SELECR')])
+

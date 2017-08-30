@@ -409,7 +409,7 @@ class MySQLQueryProcessor(object):
                 pass
 
             try:
-                # ref can be a table of a budget of columns
+                # ref can be a table or a budget of columns
                 ref = ref_dict[c[0][1]]
 
                 if isinstance(ref[0], int):
