@@ -1,4 +1,6 @@
 from . import TestCase
+from queryparser import QueryError, QuerySyntaxError
+
 
 class ADQLTestCase(TestCase):
 
@@ -266,7 +268,8 @@ class ADQLTestCase(TestCase):
 
     def test_syntax_error(self):
         q = """SELECR a FROM db.tab;"""
-        self._test_adql_mysql_translation(q, syntax_errors=[(1, 0, 'SELECR')])
+        with self.assertRaises(QuerySyntaxError):
+            self._test_adql_mysql_translation(q)
 
     def test_query100(self):
         self._test_adql_mysql_translation_parsing(

@@ -10,6 +10,8 @@ from .ADQLParser import ADQLParser
 from .ADQLParserVisitor import ADQLParserVisitor
 from .ADQLParserListener import ADQLParserListener
 
+from queryparser import QueryError, QuerySyntaxError
+
 
 def _remove_children(ctx):
         for i in range(ctx.getChildCount() - 1):
@@ -290,6 +292,9 @@ class ADQLQueryTranslator(object):
         self.tree = self.parser.query()
         self.parsed = True
         self.syntax_errors = self.syntax_error_listener.syntax_errors
+
+        if len(self.syntax_error_listener.syntax_errors):
+            raise QuerySyntaxError(self.syntax_error_listener.syntax_errors)
 
         self.walker = antlr4.ParseTreeWalker()
 
