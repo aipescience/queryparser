@@ -325,8 +325,9 @@ class ADQLQueryTranslator(object):
         for the spherical functions.
 
         """
-        assert self.parsed, 'No query given or query not parsed yet.'
-        assert len(self.syntax_errors) == 0, 'ADQL query has errors.'
+        if not self.parsed:
+            raise QueryError('No query given or query not parsed yet.')
+
         translator_visitor = ADQLtoMySQLGeometryTranslationVisitor()
         translator_visitor.visit(self.tree)
         limit = translator_visitor.limit
