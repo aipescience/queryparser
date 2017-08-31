@@ -204,5 +204,8 @@ POINT('ICRS', gaia.ra, gaia.dec),
 CIRCLE('ICRS', 56.75, 24.12, 5)) = 1
 AND sqrt(power(gaia.pmra - 20.5, 2) + power(gaia.pmdec + 45.5, 2)) < 6.0
 ) AS subquery
+""",
+"""
+SELECT POLYGON('ICRS', 1.0, -1.0, 2.0, -2.0, 3.0, -3.0) FROM db.tab
 """
 ]

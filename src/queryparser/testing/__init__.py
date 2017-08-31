@@ -35,8 +35,7 @@ class TestCase(unittest.TestCase):
 
     def _test_adql_mysql_translation(self, query, adql_query=None,
                                syntax_errors=None):
-        adt = ADQLQueryTranslator()
-        adt.set_query(query)
+        adt = ADQLQueryTranslator(query)
 
         if adql_query:
             self.assertEqual(adql_query.strip(), adt.to_mysql())

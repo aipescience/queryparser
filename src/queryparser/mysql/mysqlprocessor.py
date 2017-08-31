@@ -527,17 +527,19 @@ class MySQLQueryProcessor(object):
                 ref_found = False
                 for tab in select_list_tables:
                     if ref == tab[0][1]:
+                        print(ref, tab[0])
                         ref_dict[ref] = tab
                         ref_found = True
 
                 if not ref_found:
                     for b in budget:
                         if ref == b[1]:
+                            print(ref, b)
                             ref_dict[ref] = b
-                            ref_found = True
+                            #  ref_found = True
 
-                if not ref_found:
-                    raise QueryError('Missing table reference %s.' % ref)
+                #  if not ref_found:
+                    #  raise QueryError('Missing table reference %s.' % ref)
 
             if not len(select_list_table_references):
                 for table in select_list_tables:

@@ -254,9 +254,19 @@ class ADQLTestCase(TestCase):
             """
        )
 
+    def test_query029(self):
+        self._test_adql_mysql_translation(
+            """
+            SELECT POLYGON('ICRS', 1.0, -1.0, 2.0, -2.0, 3.0, -3.0) FROM db.tab
+            """,
+            """
+            SELECT spoly('{(1.0d,-1.0d),(2.0d,-2.0d),(3.0d,-3.0d)}') FROM `db`.`tab`;
+            """
+        )
+
     def test_syntax_error(self):
         q = """SELECR a FROM db.tab;"""
-        self._test_mysql_parsing(q, syntax_errors=[(1, 0, 'SELECR')])
+        self._test_adql_mysql_translation(q, syntax_errors=[(1, 0, 'SELECR')])
 
     def test_query100(self):
         self._test_adql_mysql_translation_parsing(
