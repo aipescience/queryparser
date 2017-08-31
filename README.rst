@@ -98,10 +98,3 @@ then, run the test suite:
 .. code-block:: bash
     
     pytest
-
-TODO
-----
-
-* more Documentation
-* ADQL coordinate systems
-* ADQL mixed coordinates
