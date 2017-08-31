@@ -26,7 +26,12 @@ class TestCase(unittest.TestCase):
         if display_columns:
             self.assertSetEqual(set(display_columns), set(qp_display_columns))
 
+<<<<<<< HEAD
     def _test_adql_mysql_translation(self, query, adql_query=None):
+=======
+    def _test_adql_mysql_translation(self, query, adql_query=None,
+                               syntax_errors=None):
+>>>>>>> 8f342a505271bdeed9de99b1fb9d901d7c471f9e
         adt = ADQLQueryTranslator(query)
 
         if adql_query:
