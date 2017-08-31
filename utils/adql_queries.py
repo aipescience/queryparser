@@ -1,6 +1,6 @@
 queries = [
 
-"""SELECT POINT('icrs', 10, 10) FROM db.b""",
+"""SELECT POINT('icrs', 10, 10) FROM db.b;""",
 """SELECT CIRCLE('ICRS', RA, -20/4., 1) FROM db.b""",
 """SELECT BOX('ICRS', 25.4, -20, 1, 1) FROM db.b""",
 """SELECT TOP 10 AREA(CIRCLE('ICRS', RA, -20, 1)) FROM db.b""",

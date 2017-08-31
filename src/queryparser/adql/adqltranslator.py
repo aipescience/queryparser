@@ -287,7 +287,7 @@ class ADQLQueryTranslator(object):
         self.parser = ADQLParser(self.stream)
         self.parser._listeners = [self.syntax_error_listener]
 
-        self.tree = self.parser.query_specification()
+        self.tree = self.parser.query()
         self.parsed = True
         self.syntax_errors = self.syntax_error_listener.syntax_errors
 
@@ -311,7 +311,7 @@ class ADQLQueryTranslator(object):
         """
         self.syntax_errors = []
         self.parsed = False
-        self._query = query.rstrip(';')
+        self._query = query.rstrip(';') + ';'
         self.parse()
 
     def to_mysql(self):

@@ -7,11 +7,8 @@ from queryparser.adql import ADQLQueryTranslator
 class TestCase(unittest.TestCase):
 
     def _test_mysql_parsing(self, query, columns=None, keywords=None,
-                            functions=None, display_columns=None,
-                            syntax_errors=None):
+                            functions=None, display_columns=None):
         qp = MySQLQueryProcessor(query)
-        #  qp.set_query(query)
-        #  qp.process_query()
 
         qp_columns = ['.'.join(i) for i in qp.columns]
         qp_display_columns = ['%s: %s' % (i[0], '.'.join(i[1])) for i in
@@ -28,10 +25,6 @@ class TestCase(unittest.TestCase):
 
         if display_columns:
             self.assertSetEqual(set(display_columns), set(qp_display_columns))
-
-        if syntax_errors:
-            print(syntax_errors, qp.syntax_errors)
-            self.assertSetEqual(set(syntax_errors), set(qp.syntax_errors))
 
     def _test_adql_mysql_translation(self, query, adql_query=None,
                                syntax_errors=None):

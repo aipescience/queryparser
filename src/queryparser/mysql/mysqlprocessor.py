@@ -20,7 +20,7 @@ from .MySQLLexer import MySQLLexer
 from .MySQLParser import MySQLParser
 from .MySQLParserListener import MySQLParserListener
 
-from queryparser import QueryError
+from queryparser import QueryError, QuerySyntaxError
 
 
 def parse_alias(alias):
@@ -32,10 +32,10 @@ def parse_alias(alias):
 
     """
     if alias:
-        try:
-            alias = alias.ID().getText().strip('`')
-        except AttributeError:
-            alias = None
+        #  try:
+        alias = alias.ID().getText().strip('`')
+        #  except AttributeError:
+            #  alias = None
     else:
         alias = None
     return alias
@@ -330,7 +330,6 @@ class MySQLQueryProcessor(object):
         self.functions = set()
         self.display_columns = []
         self.syntax_error_listener = SyntaxErrorListener()
-        self.syntax_errors = []
         if query is not None:
             self._query = query.rstrip(';') + ';'
             self.process_query()
@@ -459,6 +458,8 @@ class MySQLQueryProcessor(object):
 
         # Parse the query
         tree = parser.query()
+        if len(self.syntax_error_listener.syntax_errors):
+            raise QuerySyntaxError(self.syntax_error_listener.syntax_errors)
 
         query_listener = QueryListener()
         subquery_aliases = [None]
@@ -616,13 +617,10 @@ class MySQLQueryProcessor(object):
                         acol[2] != col[2]:
                     del_columns.append(col)
 
-        if not len(self.syntax_error_listener.syntax_errors):
-            self.columns = list(set(touched_columns).difference(del_columns))
-            self.keywords = list(set(keywords))
-            self.functions = list(set(functions))
-            self.display_columns = [(i[0], i[1]) for i in display_columns]
-        else:
-            self.syntax_errors = self.syntax_error_listener.syntax_errors
+        self.columns = list(set(touched_columns).difference(del_columns))
+        self.keywords = list(set(keywords))
+        self.functions = list(set(functions))
+        self.display_columns = [(i[0], i[1]) for i in display_columns]
 
     @property
     def query(self):
@@ -641,5 +639,4 @@ class MySQLQueryProcessor(object):
         self.keywords = set()
         self.functions = set()
         self.display_columns = []
-        self.syntax_errors = []
         self._query = query.rstrip(';') + ';'
