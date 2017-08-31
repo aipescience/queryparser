@@ -60,8 +60,8 @@ def process_column_name(column_name_listener, walker, ctx):
             ctx.ASTERISK()
             ts = ctx.table_spec()
             cn = [[None, None, '*']]
-            #  if ts.schema_name():
-                #  cn[0][0] = ts.schema_name().getText().replace('`', '')
+            if ts.schema_name():
+                cn[0][0] = ts.schema_name().getText().replace('`', '')
             if ts.table_name():
                 cn[0][1] = ts.table_name().getText().replace('`', '')
         except AttributeError:

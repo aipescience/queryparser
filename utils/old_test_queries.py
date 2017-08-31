@@ -719,7 +719,7 @@ queries = [
     ),
     (
         """
-        SELECT * FROM tab;
+        SELECT `db`.`tab`.* FROM `db`.`tab`;
         """,
         (),
         (),

@@ -554,6 +554,17 @@ class MysqlTestCase(TestCase):
             ('a: db.tab.a',)
         )
 
+    def test_query040(self):
+        self._test_mysql_parsing(
+            """
+            SELECT `db`.`tab`.* FROM `db`.`tab`;
+            """,
+            ('db.tab.*',),
+            ('*'),
+            (),
+            ('*: db.tab.*',)
+        )
+
     def test_syntax_error(self):
         q = """SELECR a FROM db.tab;"""
         self._test_mysql_parsing(q, syntax_errors=[(1, 0, 'SELECR')])
