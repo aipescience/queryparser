@@ -32,10 +32,10 @@ def parse_alias(alias):
 
     """
     if alias:
-        try:
-            alias = alias.ID().getText().strip('`')
-        except AttributeError:
-            alias = None
+        #  try:
+        alias = alias.ID().getText().strip('`')
+        #  except AttributeError:
+            #  alias = None
     else:
         alias = None
     return alias
@@ -60,8 +60,8 @@ def process_column_name(column_name_listener, walker, ctx):
             ctx.ASTERISK()
             ts = ctx.table_spec()
             cn = [[None, None, '*']]
-            if ts.schema_name():
-                cn[0][0] = ts.schema_name().getText().replace('`', '')
+            #  if ts.schema_name():
+                #  cn[0][0] = ts.schema_name().getText().replace('`', '')
             if ts.table_name():
                 cn[0][1] = ts.table_name().getText().replace('`', '')
         except AttributeError:
@@ -245,9 +245,9 @@ class ColumnKeywordFunctionListener(MySQLParserListener):
         logging.info(ctx.depth(), ctx.__class__.__name__)
         self.data.append([ctx.depth(), ctx])
        
-    def enterQuery(self, ctx):
-        logging.info(ctx.depth(), ctx.__class__.__name__)
-        self.data.append([ctx.depth(), ctx])
+    #  def enterQuery(self, ctx):
+        #  logging.info(ctx.depth(), ctx.__class__.__name__)
+        #  self.data.append([ctx.depth(), ctx])
 
     def enterSelect_list(self, ctx):
         if ctx.ASTERISK():
@@ -396,8 +396,12 @@ class MySQLQueryProcessor(object):
                 select_list_table_references, other_columns, go_columns, join,\
                 join_using, column_aliases
 
-    def _extract_columns(self, columns, select_list_tables, ref_dict,
+    def _extract_columns(self, columns, select_list_tables, ref_dict, join,
                          touched_columns=None):
+
+        # Here we store all columns that might have references somewhere
+        # higer up in the tree structure. We'll revisit them later.
+        missing_columns = []
 
         for i, col in enumerate(columns):
             c = col[0]
@@ -422,12 +426,22 @@ class MySQLQueryProcessor(object):
                     tab = ref[0]
 
             except KeyError:
-                pass
+                # we don't need to bother if there are no selected columns
+                if c[0][2] is not None and c[0][1] is not None:
+                    missing_columns.append(c)
+                    columns[i] = [[c[0][0], c[0][1], c[0][2]], c[1]]
+                    continue
+
+                elif c[0][2] is not None and c[0][1] is None and\
+                        len(ref_dict.keys()) > 1 and not join:
+                    raise QueryError('Column `%s` is ambiguous.' % c[0][2])
 
             if touched_columns is not None:
                 touched_columns.append([[tab[0][0], tab[0][1], c[0][2]], c[1]])
             else:
                 columns[i] = [[tab[0][0], tab[0][1], c[0][2]], c[1]]
+
+        return missing_columns
 
     def process_query(self):
         """
@@ -463,6 +477,8 @@ class MySQLQueryProcessor(object):
         # Are there any joins in the query?
         join = 0
 
+        missing_columns = []
+
         # Check if we have non-unique subquery aliases
         if len(set(subquery_aliases.values())) !=\
                 len(subquery_aliases.values()):
@@ -483,9 +499,9 @@ class MySQLQueryProcessor(object):
             functions.extend(column_keyword_function_listener.functions)
 
             # Let's make sure we have a select expression context
-            if not isinstance(column_keyword_function_listener.data[0][1],
-                              MySQLParser.Select_expressionContext):
-                continue
+            #  if not isinstance(column_keyword_function_listener.data[0][1],
+                              #  MySQLParser.Select_expressionContext):
+                #  continue
 
             # Does the subquery has an alias?
             try:
@@ -523,11 +539,16 @@ class MySQLQueryProcessor(object):
                 if not ref_found:
                     raise QueryError('Missing table reference %s.' % ref)
 
-            if len(select_list_tables) > len(ref_dict.keys()) + 1:
-                raise QueryError('Some columns are ambiguous.')
+            if not len(select_list_table_references):
+                for table in select_list_tables:
+                    ref_dict[table[0][0][1]] = table
 
-            self._extract_columns(select_list_columns, select_list_tables,
-                                  ref_dict)
+            #  if len(select_list_tables) > len(ref_dict.keys()) + 1:
+                #  raise QueryError('Some columns are ambiguous.')
+
+            mc = self._extract_columns(select_list_columns, select_list_tables,
+                                       ref_dict, join)
+            missing_columns.extend([[i] for i in mc])
 
             touched_columns.extend(select_list_columns)
             budget.append([current_depth, subquery_alias, select_list_columns])
@@ -537,8 +558,9 @@ class MySQLQueryProcessor(object):
                 if col[0][0][2] not in aliases:
                     other_columns.append(col)
 
-            self._extract_columns(other_columns, select_list_tables, ref_dict,
-                                  touched_columns)
+            mc = self._extract_columns(other_columns, select_list_tables,
+                                       ref_dict, join, touched_columns)
+            missing_columns.extend([[i] for i in mc])
 
             if join:
                 join_columns = []
@@ -561,7 +583,15 @@ class MySQLQueryProcessor(object):
                                          join_using[0][0][2])
                 budget.extend(join_columns)
 
+        if len(missing_columns):
+            mc = self._extract_columns(missing_columns, select_list_tables,
+                                       ref_dict, join, touched_columns)
 
+            if len(mc):
+                unref_cols = ', '.join(['.'.join([j for j in i[0] if j])
+                                        for i in mc])
+                raise QueryError('Unreferenced column(s): %s' % unref_cols)
+        
         touched_columns = set([tuple(i[0]) for i in touched_columns
                                if not None in i[0]])
         display_columns = []

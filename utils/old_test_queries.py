@@ -87,13 +87,16 @@ queries = [
     ),
     (
         """
-        SELECT article, dealer, price
+        SELECT dealer, price
         FROM   db.shop s1
         WHERE  price=(SELECT MAX(s2.price)
-                      FROM db.shop s2
-                      WHERE s1.article = s2.article);
+                      FROM db.warehouse s2
+                      WHERE s1.article = s2.article
+                      AND s1.foo = s2.bar);
         """,
-        ('db.shop.article','db.shop.dealer', 'db.shop.price'),
+        ('db.shop.article','db.shop.dealer', 'db.shop.price',
+         'db.warehouse.price', 'db.warehouse.article',
+         'db.shop.foo', 'db.warehouse.bar'),
         ('where',),
         ('MAX', )
     ),
@@ -709,6 +712,14 @@ queries = [
     (
         """
         SELECT col FROM db.b JOIN db.c USING (foo, bar)
+        """,
+        (),
+        (),
+        ()
+    ),
+    (
+        """
+        SELECT * FROM tab;
         """,
         (),
         (),

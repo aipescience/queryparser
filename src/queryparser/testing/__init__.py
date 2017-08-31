@@ -9,16 +9,13 @@ class TestCase(unittest.TestCase):
     def _test_mysql_parsing(self, query, columns=None, keywords=None,
                             functions=None, display_columns=None,
                             syntax_errors=None):
-        qp = MySQLQueryProcessor()
-        qp.set_query(query)
-        qp.process_query()
-            
-        try:
-            qp_columns = ['.'.join(i) for i in qp.columns]
-            qp_display_columns = ['%s: %s' % (i[0], '.'.join(i[1])) for i in
-                                  qp.display_columns]
-        except TypeError:
-            pass
+        qp = MySQLQueryProcessor(query)
+        #  qp.set_query(query)
+        #  qp.process_query()
+
+        qp_columns = ['.'.join(i) for i in qp.columns]
+        qp_display_columns = ['%s: %s' % (i[0], '.'.join(i[1])) for i in
+                              qp.display_columns]
 
         if columns:
             self.assertSetEqual(set(columns), set(qp_columns))

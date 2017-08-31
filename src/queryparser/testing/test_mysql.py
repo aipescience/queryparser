@@ -1,4 +1,5 @@
 from . import TestCase
+from queryparser import QueryError
 
 
 class MysqlTestCase(TestCase):
@@ -102,15 +103,18 @@ class MysqlTestCase(TestCase):
     def test_query009(self):
         self._test_mysql_parsing(
             """
-            SELECT article, dealer, price
-        FROM   db.shop s1
-        WHERE  price=(SELECT MAX(s2.price)
-                      FROM db.shop s2
-                      WHERE s1.article = s2.article);
+            SELECT dealer, price
+            FROM   db.shop s1
+            WHERE  price=(SELECT MAX(s2.price)
+                          FROM db.warehouse s2
+                          WHERE s1.article = s2.article
+                          AND s1.foo = s2.bar);
             """,
-            ('db.shop.article', 'db.shop.dealer', 'db.shop.price'),
+            ('db.shop.article','db.shop.dealer', 'db.shop.price',
+             'db.warehouse.price', 'db.warehouse.article',
+             'db.shop.foo', 'db.warehouse.bar'),
             ('where',),
-            ('MAX',)
+            ('MAX', )
         )
 
     def test_query010(self):
@@ -542,14 +546,52 @@ class MysqlTestCase(TestCase):
     def test_query039(self):
         self._test_mysql_parsing(
             """
-            SELECT `hip` FROM `GDR1`.`tgas_source` WHERE  1;
+            SELECT db.tab.a FROM db.tab;
             """,
+            ('db.tab.a',),
             (),
             (),
-            ()
+            ('a: db.tab.a',)
         )
 
     def test_syntax_error(self):
         q = """SELECR a FROM db.tab;"""
         self._test_mysql_parsing(q, syntax_errors=[(1, 0, 'SELECR')])
 
+    def test_query_error_001(self):
+        q = """SELECT a FROM db.tab1, db.tab2"""
+        with self.assertRaises(QueryError):
+            self._test_mysql_parsing(q)
+            
+    def test_query_error_002(self):
+        q = """SELECT a FROM db.tab1
+               JOIN (
+                   SELECT ra, dec
+                   FROM db.tab2
+               ) AS sub USING (b)"""
+        with self.assertRaises(QueryError):
+            self._test_mysql_parsing(q)
+
+    def test_query_error_003(self):
+        q = """
+            SELECT a.b, a.c
+            FROM (
+                SELECT ra, dec
+                FROM db.tab
+            ) AS sub
+            """
+        with self.assertRaises(QueryError):
+            self._test_mysql_parsing(q)
+
+    def test_query_error_004(self):
+        q = """
+            SELECT a FROM db.tab
+            JOIN (
+                SELECT a FROM db.foo
+            ) AS sub USING(a)
+            JOIN (
+                SELECT a FROM db.bar
+            ) AS sub USING(a)
+            """
+        with self.assertRaises(QueryError):
+            self._test_mysql_parsing(q)

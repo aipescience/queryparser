@@ -254,6 +254,10 @@ class ADQLTestCase(TestCase):
             """
        )
 
+    def test_syntax_error(self):
+        q = """SELECR a FROM db.tab;"""
+        self._test_mysql_parsing(q, syntax_errors=[(1, 0, 'SELECR')])
+
     def test_query100(self):
         self._test_adql_mysql_translation_parsing(
             """
@@ -317,5 +321,8 @@ class ADQLTestCase(TestCase):
              'GDR1.gaia_source.ra',
              'GDR1.gaia_source.dec'),
             (),
-            ()
+            (),
+            ('source_id: GDR1.gaia_source.source_id',
+             'ra: GDR1.gaia_source.ra',
+             'dec: GDR1.gaia_source.dec')
        )
