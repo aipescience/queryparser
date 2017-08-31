@@ -4,7 +4,7 @@ from setuptools import setup
 
 python_version = sys.version_info.major
 
-version = '0.1.4'
+version = '0.2.0'
 
 author = 'Gal Matijevic'
 email = 'gmatijevic@aip.de'
