@@ -1,5 +1,5 @@
 from . import TestCase
-from queryparser import QueryError
+from queryparser import QueryError, QuerySyntaxError
 
 
 class MysqlTestCase(TestCase):
@@ -567,7 +567,8 @@ class MysqlTestCase(TestCase):
 
     def test_syntax_error(self):
         q = """SELECR a FROM db.tab;"""
-        self._test_mysql_parsing(q, syntax_errors=[(1, 0, 'SELECR')])
+        with self.assertRaises(QuerySyntaxError):
+            self._test_mysql_parsing(q)
 
     def test_query_error_001(self):
         q = """SELECT a FROM db.tab1, db.tab2"""
