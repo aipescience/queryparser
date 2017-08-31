@@ -207,5 +207,8 @@ AND sqrt(power(gaia.pmra - 20.5, 2) + power(gaia.pmdec + 45.5, 2)) < 6.0
 """,
 """
 SELECT POLYGON('ICRS', 1.0, -1.0, 2.0, -2.0, 3.0, -3.0) FROM db.tab
+""",
+"""
+SELECT a FROM db.tab USING(q)
 """
 ]

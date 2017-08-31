@@ -719,7 +719,7 @@ queries = [
     ),
     (
         """
-        SELECT `db`.`tab`.* FROM `db`.`tab`;
+        SELECT `db`.`tab`.* FROM `db`.`tab` USING(d); 
         """,
         (),
         (),

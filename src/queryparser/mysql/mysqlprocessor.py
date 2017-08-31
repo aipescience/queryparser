@@ -32,10 +32,10 @@ def parse_alias(alias):
 
     """
     if alias:
-        #  try:
-        alias = alias.ID().getText().strip('`')
-        #  except AttributeError:
-            #  alias = None
+        try:
+            alias = alias.ID().getText().strip('`')
+        except AttributeError:
+            alias = None
     else:
         alias = None
     return alias
