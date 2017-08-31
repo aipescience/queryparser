@@ -1,5 +1,5 @@
 from . import TestCase
-from queryparser import QueryError, QuerySyntaxError
+from ..exceptions import QueryError, QuerySyntaxError
 
 
 class MysqlTestCase(TestCase):

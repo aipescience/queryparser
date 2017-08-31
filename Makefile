@@ -9,6 +9,7 @@ python2: lib/python2/queryparser
 lib/python2/queryparser: \
 		lib/python2/queryparser/__init__.py \
 		lib/python2/queryparser/adql \
+		lib/python2/queryparser/exceptions \
 		lib/python2/queryparser/mysql \
 		lib/python2/queryparser/testing
 
@@ -25,6 +26,13 @@ lib/python2/queryparser/adql/ADQLParser.py: src/queryparser/adql/*.g4
 	python generate.py -l adql -p 2
 
 lib/python2/queryparser/adql/%.py: src/queryparser/adql/%.py
+	mkdir -p `dirname $@`
+	cp $< $@
+
+lib/python2/queryparser/exceptions: \
+	lib/python2/queryparser/exceptions/__init__.py
+
+lib/python2/queryparser/exceptions/%.py: src/queryparser/exceptions/%.py
 	mkdir -p `dirname $@`
 	cp $< $@
 
@@ -56,6 +64,7 @@ python3: lib/python3/queryparser
 lib/python3/queryparser: \
 		lib/python3/queryparser/__init__.py \
 		lib/python3/queryparser/adql \
+		lib/python3/queryparser/exceptions \
 		lib/python3/queryparser/mysql \
 		lib/python3/queryparser/testing
 
@@ -72,6 +81,13 @@ lib/python3/queryparser/adql/ADQLParser.py: src/queryparser/adql/*.g4
 	python generate.py -l adql -p 3
 
 lib/python3/queryparser/adql/%.py: src/queryparser/adql/%.py
+	mkdir -p `dirname $@`
+	cp $< $@
+
+lib/python3/queryparser/exceptions: \
+	lib/python3/queryparser/exceptions/__init__.py
+
+lib/python3/queryparser/exceptions/%.py: src/queryparser/exceptions/%.py
 	mkdir -p `dirname $@`
 	cp $< $@
 

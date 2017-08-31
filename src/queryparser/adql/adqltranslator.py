@@ -10,7 +10,7 @@ from .ADQLParser import ADQLParser
 from .ADQLParserVisitor import ADQLParserVisitor
 from .ADQLParserListener import ADQLParserListener
 
-from queryparser import QueryError, QuerySyntaxError
+from ..exceptions import QueryError, QuerySyntaxError
 
 
 def _remove_children(ctx):

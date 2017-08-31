@@ -20,7 +20,7 @@ from .MySQLLexer import MySQLLexer
 from .MySQLParser import MySQLParser
 from .MySQLParserListener import MySQLParserListener
 
-from queryparser import QueryError, QuerySyntaxError
+from ..exceptions import QueryError, QuerySyntaxError
 
 
 def parse_alias(alias):
