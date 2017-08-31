@@ -89,15 +89,15 @@ Testing
 
 First, install `pytest`
 
-``
-pip install pytest
-``
+.. code-block:: bash
+
+    pip install pytest
 
 then, run the test suite:
 
-``
-pytest
-``
+.. code-block:: bash
+    
+    pytest
 
 TODO
 ----
