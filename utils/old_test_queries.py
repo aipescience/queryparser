@@ -719,7 +719,10 @@ queries = [
     ),
     (
         """
-        SELECT COUNT(*), a*2, b, 100 FROM db.tab;
+        SELECT * FROM db.A
+        JOIN (
+            SELECT * FROM db.B
+        ) AS sub USING(id)
         """,
         (),
         (),

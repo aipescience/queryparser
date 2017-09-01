@@ -288,7 +288,8 @@ class MySQLQueryProcessor(object):
 
                 # check if the join_column is in each sub select_list
                 for b in bp:
-                    if join_using[0][0][2] not in [i[0][2] for i in b]:
+                    bcols = [i[0][2] for i in b]
+                    if join_using[0][0][2] not in bcols and '*' not in bcols:
                         raise QueryError('Missing join column `%s`.' %
                                          join_using[0][0][2])
                 budget.extend(join_columns)
