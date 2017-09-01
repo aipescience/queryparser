@@ -719,7 +719,7 @@ queries = [
     ),
     (
         """
-        select a from b.c join (select d from e.f) using (g); 
+        SELECT COUNT(*), a*2, b, 100 FROM db.tab;
         """,
         (),
         (),
