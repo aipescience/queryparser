@@ -49,8 +49,10 @@ def pretty_print(q, columns, keywords, functions, display_columns,
             offset[se[0] - 1] += 19
 
     try:
-        columns = ['.'.join(i) for i in columns]
-        display_columns = [(i[0], '.'.join(i[1])) for i in display_columns]
+        columns = ['.'.join([str(j) for j in i]) for i in columns]
+        display_columns = ['%s: %s' % (str(i[0]),
+                                          '.'.join([str(j) for j in i[1]]))
+                              for i in display_columns]
     except TypeError:
         pass
 
@@ -70,8 +72,7 @@ def pretty_print(q, columns, keywords, functions, display_columns,
             print('|' + ' ' * 78 + '|')
             print('|  Display columns:' + ' ' * 60 + '|')
             for i in sorted(display_columns):
-                pstr = '%s: %s' % i
-                print('|\t' + pstr + ' ' * (71 - len(pstr)) + '|')
+                print('|\t' + i + ' ' * (71 - len(i)) + '|')
 
         if len(keywords):
             print('|' + ' ' * 78 + '|')

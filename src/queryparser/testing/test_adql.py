@@ -314,7 +314,7 @@ class ADQLTestCase(TestCase):
              'gaiadr1.tmass_best_neighbour.tmass_oid',
              'gaiadr1.tmass_original_valid.ks_m',
              'gaiadr1.tmass_original_valid.ks_msigcom',
-             'gaiadr1.tmass_original_valid.tmass_oid'
+             'gaiadr1.tmass_original_valid.tmass_oid',
              ),
             ('limit', 'where', 'join', 'group by'),
             ('sqrt', 'log10', 'log', 'count', 'floor', 'power')

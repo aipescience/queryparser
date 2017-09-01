@@ -10,7 +10,7 @@ class TestCase(unittest.TestCase):
                             functions=None, display_columns=None):
         qp = MySQLQueryProcessor(query)
 
-        qp_columns = ['.'.join(i) for i in qp.columns]
+        qp_columns = ['.'.join([str(j) for j in i]) for i in qp.columns]
         qp_display_columns = ['%s: %s' % (str(i[0]),
                                           '.'.join([str(j) for j in i[1]]))
                               for i in qp.display_columns]
@@ -45,9 +45,10 @@ class TestCase(unittest.TestCase):
         qp.process_query()
 
         try:
-            qp_columns = ['.'.join(i) for i in qp.columns]
-            qp_display_columns = ['%s: %s' % (i[0], '.'.join(i[1])) for i in
-                                  qp.display_columns]
+            qp_columns = ['.'.join([str(j) for j in i]) for i in qp.columns]
+            qp_display_columns = ['%s: %s' % (str(i[0]),
+                                              '.'.join([str(j) for j in i[1]]))
+                                  for i in qp.display_columns]
         except TypeError:
             pass
 

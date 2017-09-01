@@ -41,10 +41,11 @@ class MysqlTestCase(TestCase):
             """
             SELECT COUNT(*), a*2, b, 100 FROM db.tab;
             """,
-            ('db.tab.a', 'db.tab.b'),
+            ('db.tab.a', 'db.tab.b', 'db.tab.None'),
             (),
             ('COUNT',),
-            ('None: db.tab.None', 'a: db.tab.a', 'b: db.tab.b')
+            ('None: db.tab.None', 'a: db.tab.a', 'b: db.tab.b',
+             'None: db.tab.None')
         )
 
     def test_query004(self):
@@ -303,10 +304,10 @@ class MysqlTestCase(TestCase):
             FROM MDR1.FOF
             GROUP BY snapnum
             """,
-            ('MDR1.FOF.snapnum',),
+            ('MDR1.FOF.snapnum', 'MDR1.FOF.None'),
             ('group by',),
             ('log10', 'COUNT'),
-            ()
+            ('None: MDR1.FOF.None', 'snapnum: MDR1.FOF.snapnum')
         )
 
     def test_query023(self):
@@ -364,7 +365,8 @@ class MysqlTestCase(TestCase):
             GROUP BY FLOOR(LOG10(x)/0.25)
             ORDER BY log_mass
             """,
-            ('MDR1.BDMV.Mvir', 'MDR1.BDMV.snapnum', 'MDR1.BDMV.x'),
+            ('MDR1.BDMV.Mvir', 'MDR1.BDMV.snapnum', 'MDR1.BDMV.x',
+             'MDR1.BDMV.None'),
             ('where', 'group by', 'order by'),
             ('COUNT', 'FLOOR', 'LOG10'),
             ('log_mass: MDR1.BDMV.Mvir', 'num: MDR1.BDMV.None')

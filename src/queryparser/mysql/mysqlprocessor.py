@@ -308,8 +308,8 @@ class MySQLQueryProcessor(object):
                                         for i in mc])
                 raise QueryError('Unreferenced column(s): %s' % unref_cols)
 
-        touched_columns = set([tuple(i[0]) for i in touched_columns
-                               if None not in i[0]])
+        touched_columns = set([tuple(i[0]) for i in touched_columns])
+                               #  if None not in i[0]])
         display_columns = []
         if len(budget):
             for i in budget[-1][2]:
