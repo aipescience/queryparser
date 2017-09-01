@@ -35,7 +35,9 @@ and running it with
 
     qp.process_query()
 
-After the processing, the processor object will include columns, functions, and keywords used in the query.
+After the processing, the processor object will include columns, functions,
+and keywords used in the query or will raise a ``QuerySyntaxError`` if there
+are any syntax errors in the query.
 
 Alternatively, passing the query at initialization automatically processes it.
 
