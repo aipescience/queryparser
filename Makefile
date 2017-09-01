@@ -39,6 +39,7 @@ lib/python2/queryparser/exceptions/%.py: src/queryparser/exceptions/%.py
 lib/python2/queryparser/mysql: \
 		lib/python2/queryparser/mysql/MySQLParser.py \
 		lib/python2/queryparser/mysql/mysqlprocessor.py \
+		lib/python2/queryparser/mysql/mysqllisteners.py \
 		lib/python2/queryparser/mysql/__init__.py
 
 lib/python2/queryparser/mysql/MySQLParser.py: src/queryparser/mysql/*.g4
@@ -94,6 +95,7 @@ lib/python3/queryparser/exceptions/%.py: src/queryparser/exceptions/%.py
 lib/python3/queryparser/mysql: \
 		lib/python3/queryparser/mysql/MySQLParser.py \
 		lib/python3/queryparser/mysql/mysqlprocessor.py \
+		lib/python3/queryparser/mysql/mysqllisteners.py \
 		lib/python3/queryparser/mysql/__init__.py
 
 lib/python3/queryparser/mysql/MySQLParser.py: src/queryparser/mysql/*.g4
