@@ -10,8 +10,6 @@ from __future__ import (absolute_import, print_function)
 
 __all__ = ["MySQLQueryProcessor"]
 
-import re
-
 import antlr4
 
 from .MySQLLexer import MySQLLexer
@@ -19,9 +17,10 @@ from .MySQLParser import MySQLParser
 
 from ..exceptions import QueryError, QuerySyntaxError
 
-from .mysqllisteners import ColumnNameListener, ColumnKeywordFunctionListener,\
-        QueryListener, RemoveSubqueriesListener, SyntaxErrorListener,\
-        TableNameListener, parse_alias
+from .mysqllisteners import ColumnKeywordFunctionListener,\
+        QueryListener, RemoveSubqueriesListener, SyntaxErrorListener
+from .mysqllisteners import parse_alias
+
 
 class MySQLQueryProcessor(object):
     """
@@ -103,8 +102,8 @@ class MySQLQueryProcessor(object):
                     go_columns.append(i[2])
 
         return select_list_columns, select_list_tables,\
-                select_list_table_references, other_columns, go_columns, join,\
-                join_using, column_aliases
+            select_list_table_references, other_columns, go_columns, join,\
+            join_using, column_aliases
 
     def _extract_columns(self, columns, select_list_tables, ref_dict, join,
                          touched_columns=None):
@@ -174,7 +173,6 @@ class MySQLQueryProcessor(object):
 
         query_listener = QueryListener()
         subquery_aliases = [None]
-        query_names = []
         keywords = []
         functions = []
 
@@ -203,7 +201,7 @@ class MySQLQueryProcessor(object):
 
             # Remove nested subqueries from select_expressions
             self.walker.walk(remove_subquieries_listener, ctx)
-            
+
             # Extract table and column names, keywords, functions
             self.walker.walk(column_keyword_function_listener, ctx)
 
@@ -212,8 +210,8 @@ class MySQLQueryProcessor(object):
 
             # Let's make sure we have a select expression context
             #  if not isinstance(column_keyword_function_listener.data[0][1],
-                              #  MySQLParser.Select_expressionContext):
-                #  continue
+            #                    MySQLParser.Select_expressionContext):
+            #      continue
 
             # Does the subquery has an alias?
             try:
@@ -234,7 +232,7 @@ class MySQLQueryProcessor(object):
             # databases
 
             ref_dict = {}
-            
+
             for ref in select_list_table_references:
                 ref_found = False
                 for tab in select_list_tables:
@@ -303,9 +301,9 @@ class MySQLQueryProcessor(object):
                 unref_cols = ', '.join(['.'.join([j for j in i[0] if j])
                                         for i in mc])
                 raise QueryError('Unreferenced column(s): %s' % unref_cols)
-        
+
         touched_columns = set([tuple(i[0]) for i in touched_columns
-                               if not None in i[0]])
+                               if None not in i[0]])
         display_columns = []
         if len(budget):
             for i in budget[-1][2]:
