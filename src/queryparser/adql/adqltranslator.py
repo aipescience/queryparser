@@ -14,11 +14,12 @@ from ..exceptions import QueryError, QuerySyntaxError
 
 
 # Function names need to recognized because there must not be any
-# space between the name and left parenthesis. 
+# space between the name and left parenthesis.
 adql_function_names = ('ABS', 'CEILING', 'DEGREES', 'EXP', 'FLOOR', 'LOG',
                        'LOG10', 'MOD', 'PI', 'POWER', 'RADIANS', 'SQRT',
                        'TRUNCATE', 'COUNT', 'ACOS', 'ASIN', 'ATAN', 'ATAN2',
                        'COS', 'COT', 'SIN', 'TAN')
+
 
 def _remove_children(ctx):
         for i in range(ctx.getChildCount() - 1):
@@ -261,7 +262,7 @@ class FormatListener(ADQLParserListener):
         if isinstance(node.parentCtx, ADQLParser.Set_function_typeContext)\
             or isinstance(node.parentCtx.parentCtx,
                           ADQLParser.User_defined_function_nameContext)\
-            or nd.upper() in adql_function_names:
+                or nd.upper() in adql_function_names:
             nd += '_'
 
         self.nodes.append(nd)

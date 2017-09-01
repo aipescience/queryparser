@@ -635,6 +635,20 @@ class MysqlTestCase(TestCase):
             ('*: db.tab.*',)
         )
 
+    def test_query041(self):
+        self._test_mysql_parsing(
+            """
+            SELECT * FROM db.A
+            JOIN (
+                SELECT * FROM db.B
+            ) AS sub USING(id)
+            """,
+            ('db.A.*', 'db.B.*'),
+            (),
+            (),
+            ('*: db.A.*',)
+        )
+
     def test_syntax_error(self):
         q = """SELECR a FROM db.tab;"""
         with self.assertRaises(QuerySyntaxError):
