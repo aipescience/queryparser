@@ -7,13 +7,13 @@ import re
 
 from queryparser.mysql import MySQLQueryProcessor
 from queryparser.adql import ADQLQueryTranslator
+from queryparser.exceptions import QueryError, QuerySyntaxError
 
 import old_test_queries as test_queries
 import broken_queries
 import adql_queries
 import mysql_adql_queries
 
-from queryparser import QueryError
 
 def not_so_pretty_print(q, columns, keywords, functions, process_time,
                         syntax=None):
@@ -125,13 +125,17 @@ def test_mysql_parsing(qs):
     for q in qs:
         qp.set_query(q[0])
         s = time.time()
-        qp.process_query()
+        try:
+            qp.process_query()
+            syntax_errors = []
+        except QuerySyntaxError as e:
+            syntax_errors = e.syntax_errors
         s = time.time() - s
         #  continue
         cols, keys, funcs, dispcols= qp.columns, qp.keywords, qp.functions, \
             qp.display_columns
         #  not_so_pretty_print(q[0], cols, keys, funcs, s, qp.syntax_errors)
-        pretty_print(q, cols, keys, funcs, dispcols, s, qp.syntax_errors,
+        pretty_print(q, cols, keys, funcs, dispcols, s, syntax_errors,
                      show_diff=True)
 
 
@@ -140,12 +144,15 @@ def test_adql_translation(qs):
     for q in qs:
         adt.set_query(q)
         s = time.time()
-        translated_query = adt.to_mysql()
+        try:
+            translated_query = adt.to_mysql()
+            syntax_errors = []
+        except QuerySyntaxError as e:
+            syntax_errors = e.syntax_errors
         s = time.time() - s
 
-        se = adt.syntax_error_listener.syntax_errors
-        if len(se):
-            print(se)
+        if len(syntax_errors):
+            print(syntax_errors)
         print('Done in %.4fs' % s)
         print('input:  ', q)
         print('output: ', translated_query)
@@ -176,10 +183,10 @@ def test_translated_mysql_parsing(qs):
 
 
 if __name__ == '__main__':
-    #  test_mysql_parsing(test_queries.queries[-1:])
+    #  test_mysql_parsing(test_queries.queries[-2:-1])
     #  test_mysql_parsing(test_queries.queries[35:42])
     #  test_mysql_parsing(test_queries.queries[6:7])
     #  test_mysql_parsing(test_queries.queries[:])
     #  test_mysql_parsing(broken_queries.queries[-1:])
-    test_adql_translation(adql_queries.queries[-11:-10])
+    test_adql_translation(adql_queries.queries[-2:])
     #  test_translated_mysql_parsing(mysql_adql_queries.queries)

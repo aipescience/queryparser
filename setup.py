@@ -35,7 +35,8 @@ setup(
     packages=[
         'queryparser',
         'queryparser.adql',
-        'queryparser.mysql'
+        'queryparser.mysql',
+        'queryparser.exceptions'
     ],
     package_dir={
         '': 'lib/python%d' % python_version

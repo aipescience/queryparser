@@ -13,6 +13,13 @@ from .ADQLParserListener import ADQLParserListener
 from ..exceptions import QueryError, QuerySyntaxError
 
 
+# Function names need to recognized because there must not be any
+# space between the name and left parenthesis. 
+adql_function_names = ('ABS', 'CEILING', 'DEGREES', 'EXP', 'FLOOR', 'LOG',
+                       'LOG10', 'MOD', 'PI', 'POWER', 'RADIANS', 'SQRT',
+                       'TRUNCATE', 'COUNT', 'ACOS', 'ASIN', 'ATAN', 'ATAN2',
+                       'COS', 'COT', 'SIN', 'TAN')
+
 def _remove_children(ctx):
         for i in range(ctx.getChildCount() - 1):
             ctx.removeLastChild()
@@ -79,6 +86,9 @@ class ADQLtoMySQLGeometryTranslationVisitor(ADQLParserVisitor):
         return vals
 
     def visitRegular_identifier(self, ctx):
+        if isinstance(ctx.parentCtx,
+                      ADQLParser.User_defined_function_nameContext):
+            return
         ri = ctx.getText().rstrip("'").lstrip("'").rstrip('"').lstrip('"')
         ri = '`' + ri + '`'
         self.contexts[ctx] = ri
@@ -244,12 +254,21 @@ class FormatListener(ADQLParserListener):
 
     def visitTerminal(self, node):
         try:
-            self.nodes.append(self.contexts[node.parentCtx])
+            nd = self.contexts[node.parentCtx]
         except KeyError:
-            self.nodes.append(node.getText())
+            nd = node.getText()
+
+        if isinstance(node.parentCtx, ADQLParser.Set_function_typeContext)\
+            or isinstance(node.parentCtx.parentCtx,
+                          ADQLParser.User_defined_function_nameContext)\
+            or nd.upper() in adql_function_names:
+            nd += '_'
+
+        self.nodes.append(nd)
 
     def format_query(self):
         query = ' '.join(self.nodes).rstrip(';')
+        query = query.replace('_ ', '')
         # Remove some spaces
         query = query.replace(' . ', '.')
         query = query.replace(' , ', ', ')
