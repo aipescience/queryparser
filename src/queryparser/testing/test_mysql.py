@@ -44,7 +44,7 @@ class MysqlTestCase(TestCase):
             ('db.tab.a', 'db.tab.b'),
             (),
             ('COUNT',),
-            ('a: db.tab.a', 'b: db.tab.b')
+            ('None: db.tab.None', 'a: db.tab.a', 'b: db.tab.b')
         )
 
     def test_query004(self):
@@ -367,7 +367,7 @@ class MysqlTestCase(TestCase):
             ('MDR1.BDMV.Mvir', 'MDR1.BDMV.snapnum', 'MDR1.BDMV.x'),
             ('where', 'group by', 'order by'),
             ('COUNT', 'FLOOR', 'LOG10'),
-            ('log_mass: MDR1.BDMV.Mvir',)
+            ('log_mass: MDR1.BDMV.Mvir', 'num: MDR1.BDMV.None')
         )
 
     def test_query026(self):

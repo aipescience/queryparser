@@ -69,18 +69,22 @@ class MySQLQueryProcessor(object):
 
             if isinstance(i[1], MySQLParser.Table_atomContext):
                 select_list_tables.append([i[2], i[0]])
+
             if isinstance(i[1], MySQLParser.Table_referencesContext):
                 if len(i) > 2:
                     select_list_table_references.extend(i[2])
+
             if isinstance(i[1], MySQLParser.Select_listContext):
                 if len(i) == 3:
                     select_list_columns.append(i[2])
+
             if isinstance(i[1], MySQLParser.Where_clauseContext):
                 if len(i[2]) > 1:
                     for j in i[2]:
                         other_columns.append([j])
                 else:
                     other_columns.append(i[2])
+
             if isinstance(i[1], MySQLParser.Join_conditionContext):
                 join = i[0]
                 if len(i[2]) > 1:
@@ -94,6 +98,7 @@ class MySQLQueryProcessor(object):
                         go_columns.append([j])
                 else:
                     go_columns.append(i[2])
+
             if isinstance(i[1], MySQLParser.Groupby_clauseContext):
                 if len(i[2]) > 1:
                     for j in i[2]:
@@ -308,9 +313,8 @@ class MySQLQueryProcessor(object):
         display_columns = []
         if len(budget):
             for i in budget[-1][2]:
-                if i[0][2] is not None:
-                    alias = i[1] if i[1] is not None else i[0][2]
-                    display_columns.append([alias, i[0]])
+                alias = i[1] if i[1] is not None else i[0][2]
+                display_columns.append([alias, i[0]])
 
         # Let's get rid of all columns that are already covered by
         # db.tab.*. Figure out a better way to do it and replace the code

@@ -11,8 +11,9 @@ class TestCase(unittest.TestCase):
         qp = MySQLQueryProcessor(query)
 
         qp_columns = ['.'.join(i) for i in qp.columns]
-        qp_display_columns = ['%s: %s' % (i[0], '.'.join(i[1])) for i in
-                              qp.display_columns]
+        qp_display_columns = ['%s: %s' % (str(i[0]),
+                                          '.'.join([str(j) for j in i[1]]))
+                              for i in qp.display_columns]
 
         if columns:
             self.assertSetEqual(set(columns), set(qp_columns))
