@@ -10,7 +10,8 @@ class TestCase(unittest.TestCase):
                             functions=None, display_columns=None):
         qp = MySQLQueryProcessor(query)
 
-        qp_columns = ['.'.join([str(j) for j in i]) for i in qp.columns]
+        qp_columns = ['.'.join([str(j) for j in i]) for i in qp.columns
+                      if i[0] is not None and i[1] is not None]
         qp_display_columns = ['%s: %s' % (str(i[0]),
                                           '.'.join([str(j) for j in i[1]]))
                               for i in qp.display_columns]
@@ -44,13 +45,11 @@ class TestCase(unittest.TestCase):
         qp.set_query(adt.to_mysql())
         qp.process_query()
 
-        try:
-            qp_columns = ['.'.join([str(j) for j in i]) for i in qp.columns]
-            qp_display_columns = ['%s: %s' % (str(i[0]),
-                                              '.'.join([str(j) for j in i[1]]))
-                                  for i in qp.display_columns]
-        except TypeError:
-            pass
+        qp_columns = ['.'.join([str(j) for j in i]) for i in qp.columns
+                      if i[0] is not None and i[1] is not None]
+        qp_display_columns = ['%s: %s' % (str(i[0]),
+                                          '.'.join([str(j) for j in i[1]]))
+                              for i in qp.display_columns]
 
         if columns:
             self.assertSetEqual(set(columns), set(qp_columns))

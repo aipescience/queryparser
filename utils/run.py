@@ -49,7 +49,8 @@ def pretty_print(q, columns, keywords, functions, display_columns,
             offset[se[0] - 1] += 19
 
     try:
-        columns = ['.'.join([str(j) for j in i]) for i in columns]
+        columns = ['.'.join([str(j) for j in i]) for i in columns
+                   if i[0] is not None and i[1] is not None]
         display_columns = ['%s: %s' % (str(i[0]),
                                           '.'.join([str(j) for j in i[1]]))
                               for i in display_columns]

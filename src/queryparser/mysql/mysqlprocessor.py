@@ -288,8 +288,6 @@ class MySQLQueryProcessor(object):
                 for b in budget[::-1]:
                     if b[0] > current_depth:
                         bp.append(budget.pop(-1)[2])
-                    else:
-                        break
 
                 # check if the join_column is in each sub select_list
                 for b in bp:
@@ -309,7 +307,6 @@ class MySQLQueryProcessor(object):
                 raise QueryError('Unreferenced column(s): %s' % unref_cols)
 
         touched_columns = set([tuple(i[0]) for i in touched_columns])
-                               #  if None not in i[0]])
         display_columns = []
         if len(budget):
             for i in budget[-1][2]:
