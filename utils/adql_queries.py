@@ -213,5 +213,13 @@ SELECT COUNT(*) FROM db.tab;
 """,
 """
 SELECT ACOS(DISTANCE(POINT('ICRS', 1.0, 1.0), POINT('ICRS', "atan", de))) FROM bla;
+""",
+"""
+SELECT TOP 10 a FROM (
+    SELECT TOP 20 foo AS a 
+    FROM (
+        SELECT TOP 30 ra AS foobar FROM db.tab
+    ) AS subsub
+) AS sub;
 """
 ]

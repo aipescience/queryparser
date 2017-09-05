@@ -293,7 +293,7 @@ function_call:
 	//| ( group_functions LPAREN ( ASTERISK | ALL | DISTINCT )? ( bit_expr )* RPAREN ) ;
 
 groupby_clause:         GROUP_SYM BY_SYM groupby_item ( COMMA groupby_item )* ( WITH ROLLUP_SYM )? ;
-groupby_item:	        column_spec | INTEGER_NUM | bit_expr ;
+groupby_item:	        (column_spec | INTEGER_NUM | bit_expr ) ( ASC | DESC )?;
 
 having_clause:          HAVING expression ;
 

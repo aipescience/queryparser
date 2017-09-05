@@ -259,6 +259,21 @@ class ADQLTestCase(TestCase):
             """
         )
 
+    def test_query030(self):
+        self._test_adql_mysql_translation(
+            """
+            SELECT TOP 10 a FROM (
+                SELECT TOP 20 foo AS a 
+                FROM (
+                    SELECT TOP 30 ra AS foo FROM db.tab
+                ) AS subsub
+            ) AS sub;
+            """,
+            """
+            SELECT `a` FROM (SELECT `foo` AS a FROM (SELECT `ra` AS foo FROM `db`.`tab` LIMIT 30) AS `subsub` LIMIT 20) AS `sub` LIMIT 10; 
+            """
+        )
+
     def test_syntax_error(self):
         q = """SELECR a FROM db.tab;"""
         with self.assertRaises(QuerySyntaxError):

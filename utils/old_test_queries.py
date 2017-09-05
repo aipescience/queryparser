@@ -738,5 +738,23 @@ queries = [
          'gaiadr1.tmass_best_neighbour.source_id'),
         ('join', 'limit', 'group by'),
         ('count', 'log10', 'floor')
+    ),
+    (
+        """
+        SELECT a, b
+        FROM (
+            SELECT (alpha + beta) AS a, gamma / delta AS b
+            FROM db.tab AS foo
+            INNER JOIN db.bar AS bas
+            ON foo.id = bas.id 
+            WHERE zeta > 10
+        ) AS sub
+        GROUP BY a ASC, b DESC WITH ROLLUP
+        """,
+        ('db.tab.alpha', 'db.tab.beta', 'db.tab.gamma', 'db.tab.delta',
+         'db.tab.zeta', 'db.tab.id', 'db.bar.id'),
+        ('group by', 'where', 'join'),
+        (),
+        ('a: None.None.a', 'b: None.None.b')
     )
 ]

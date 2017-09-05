@@ -651,6 +651,26 @@ class MysqlTestCase(TestCase):
             ('*: db.A.*',)
         )
 
+    def test_query042(self):
+        self._test_mysql_parsing(
+            """
+            SELECT a, b
+            FROM (
+                SELECT (alpha + beta) AS a, gamma / delta AS b
+                FROM db.tab AS foo
+                INNER JOIN db.bar AS bas
+                ON foo.id = bas.id 
+                WHERE zeta > 10
+            ) AS sub
+            GROUP BY a ASC, b DESC WITH ROLLUP
+            """,
+            ('db.tab.alpha', 'db.tab.beta', 'db.tab.gamma', 'db.tab.delta',
+             'db.tab.zeta', 'db.tab.id', 'db.bar.id'),
+            ('group by', 'where', 'join'),
+            (),
+            ('a: None.None.a', 'b: None.None.b')
+        )
+
     def test_syntax_error(self):
         q = """SELECR a FROM db.tab;"""
         with self.assertRaises(QuerySyntaxError):
