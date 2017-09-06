@@ -110,6 +110,28 @@ class MySQLQueryProcessor(object):
             select_list_table_references, other_columns, go_columns, join,\
             join_using, column_aliases
 
+    def _get_budget_column(self, c, tab, ref):
+        cname = c[0][2]
+        calias = c[1]
+        t = tab
+
+        column_found = False
+
+        for bc in ref:
+            if bc[1] and c[0][2] == bc[1]:
+                t = [[bc[0][0], bc[0][1]], 'None']
+                cname = bc[0][2]
+                if c[1] is None:
+                    calias = c[0][2]
+                column_found = True
+                break
+            elif c[0][2] == bc[0][2] and bc[1] is None:
+                t = [[bc[0][0], bc[0][1]], 'None']
+                column_found = True
+                break
+
+        return cname, calias, column_found, t
+
     def _extract_columns(self, columns, select_list_tables, ref_dict, join,
                          budget, column_aliases, touched_columns=None,
                          subquery_contents=None):
@@ -129,8 +151,6 @@ class MySQLQueryProcessor(object):
                 tab = select_list_tables[0][0]
             except IndexError:
                 pass
-            #  print(c)
-            #  print('T1', tab)
 
             try:
                 # ref can be a table or a budget of columns
@@ -138,24 +158,12 @@ class MySQLQueryProcessor(object):
                 column_found = False
 
                 if isinstance(ref[0], int):
-                    #  print('BB', tab, c, ref)
                     # ref is a budget column
-                    for bc in ref[2]:
-                        #  print('   ', bc)
-                        if bc[1] and c[0][2] == bc[1]:
-                            tab = [[bc[0][0], bc[0][1]], 'None']
-                            cname = bc[0][2]
-                            if c[1] is None:
-                                calias = c[0][2]
-                            column_found = True
-                            break
-                        elif c[0][2] == bc[0][2] and bc[1] is None:
-                            tab = [[bc[0][0], bc[0][1]], 'None']
-                            column_found = True
-                            #  print('   TAB', tab)
-                            break
+                    cname, calias, column_found, tab =\
+                            self._get_budget_column(c, tab, ref[2])
 
-                    if not column_found and c[0][1] is not None and c[0][1] != tab[0][1]:
+                    if not column_found and c[0][1] is not None\
+                            and c[0][1] != tab[0][1]:
                         raise QueryError('Unknown column %s.%s.' % (c[0][1],
                                                                     c[0][2]))
 
@@ -164,39 +172,28 @@ class MySQLQueryProcessor(object):
                     tab = ref[0]
 
             except KeyError:
-                print(c)
-                #  print('B', budget)
 
                 # we don't need to bother if there are no selected columns
                 if c[0][2] is not None and c[0][1] is not None:
                     if subquery_contents is not None:
                         try:
                             contents = subquery_contents[c[0][1]]
-                            for bc in contents:
-                                #  print('   ', bc)
-                                if bc[1] and c[0][2] == bc[1]:
-                                    tab = [[bc[0][0], bc[0][1]], 'None']
-                                    cname = bc[0][2]
-                                    if c[1] is None:
-                                        calias = c[0][2]
-                                    column_found = True
-                                    break
-                                elif c[0][2] == bc[0][2]:
-                                    tab = [[bc[0][0], bc[0][1]], 'None']
-                                    column_found = True
-                                    break
+                            cname, calias, column_found, tab =\
+                                self._get_budget_column(c, tab, contents)
 
                         except KeyError:
                             missing_columns.append(c)
                             columns[i] = [[c[0][0], c[0][1], c[0][2]], c[1]]
                             if touched_columns is not None:
-                                touched_columns.append([[c[0][0], c[0][1], c[0][2]], c[1]])
+                                touched_columns.append([[c[0][0], c[0][1],
+                                                       c[0][2]], c[1]])
                             continue
                     else:
                         missing_columns.append(c)
                         columns[i] = [[c[0][0], c[0][1], c[0][2]], c[1]]
                         if touched_columns is not None:
-                            touched_columns.append([[c[0][0], c[0][1], c[0][2]], c[1]])
+                            touched_columns.append([[c[0][0], c[0][1],
+                                                   c[0][2]], c[1]])
                         continue
 
                 elif c[0][2] is not None and c[0][1] is None and\
@@ -208,47 +205,22 @@ class MySQLQueryProcessor(object):
                     column_found = False
 
                     if isinstance(ref[0], int):
-                        print('BBB', tab, c, ref, column_aliases)
                         # ref is a budget column
-                        for bc in ref[2]:
-                            #  print('   ', bc)
-                            if bc[1] and c[0][2] == bc[1]:
-                                tab = [[bc[0][0], bc[0][1]], 'None']
-                                cname = bc[0][2]
-                                if c[1] is None:
-                                    calias = c[0][2]
-                                column_found = True
-                                break
-                            elif c[0][2] == bc[0][2]:
-                                tab = [[bc[0][0], bc[0][1]], 'None']
-                                column_found = True
-                                #  print('   TAB', tab)
-                                break
+                        cname, calias, column_found, tab =\
+                                self._get_budget_column(c, tab, ref[2])
 
-                        # We allow None.None colunms because they are produced by count(*)
-                        if not column_found and c[0][2] is not None and c[0][2] not in column_aliases:
-                            raise QueryError('Unknown column %s.%s.' % (c[0][1],
-                                                                        c[0][2]))
-                    #  if isinstance(ref[0], int):
-                        #  # ref is a budget column
-                        #  for bc in ref[2]:
-                            #  if bc[1] and c[0][2] == bc[1]:
-                                #  tab = [[bc[0][0], bc[0][1]], 'None']
-                                #  cname = bc[0][2]
-                                #  if c[1] is None:
-                                    #  calias = c[0][2]
-                            #  elif c[0][2] == bc[0][2]:
-                                #  tab = [[bc[0][0], bc[0][1]], 'None']
+                        # We allow None.None colunms because they are produced
+                        # by count(*)
+                        if not column_found and c[0][2] is not None\
+                                and c[0][2] not in column_aliases:
+                            raise QueryError('Unknown column %s.%s.'
+                                             % (c[0][1], c[0][2]))
 
-            #  print('T2', tab)
-            #  print()
             if touched_columns is not None:
-                #  print('C', [[tab[0][0], tab[0][1], cname], calias])
                 touched_columns.append([[tab[0][0], tab[0][1], cname], calias])
             else:
                 columns[i] = [[tab[0][0], tab[0][1], cname], calias]
 
-        #  print()
         return missing_columns
 
     def process_query(self):
@@ -291,9 +263,7 @@ class MySQLQueryProcessor(object):
         column_aliases = []
         column_aliases_from_previous = []
 
-        subquery_contents= {}
-        columns_current = []
-
+        subquery_contents = {}
 
         # Check if we have non-unique subquery aliases
         if len(set(subquery_aliases.values())) !=\
@@ -329,7 +299,6 @@ class MySQLQueryProcessor(object):
 
             # We get the columns from the select list along with all
             # other touched columns and any posible join conditions
-            #  print('column_aliases', column_aliases)
             column_aliases_from_previous = [i for i in column_aliases]
             select_list_columns, select_list_tables,\
                 select_list_table_references, other_columns, go_columns, join,\
@@ -361,9 +330,6 @@ class MySQLQueryProcessor(object):
                 for table in select_list_tables:
                     ref_dict[table[0][0][1]] = table
 
-            #  if len(select_list_tables) > len(ref_dict.keys()) + 1:
-                #  raise QueryError('Some columns are ambiguous.')
-
             mc = self._extract_columns(select_list_columns, select_list_tables,
                                        ref_dict, join, budget,
                                        column_aliases_from_previous)
@@ -371,7 +337,6 @@ class MySQLQueryProcessor(object):
 
             touched_columns.extend(select_list_columns)
             current_columns = [i for i in select_list_columns]
-            #  print('TCs', touched_columns)
             budget.append([current_depth, subquery_alias, select_list_columns])
 
             aliases = [i[1] for i in select_list_columns] + column_aliases
@@ -384,8 +349,6 @@ class MySQLQueryProcessor(object):
                                        column_aliases_from_previous,
                                        touched_columns)
 
-
-            #  print('TCs', touched_columns)
             missing_columns.extend([[i] for i in mc])
 
             if join:
@@ -402,26 +365,20 @@ class MySQLQueryProcessor(object):
 
                 # check if the join_column is in each sub select_list
                 #  for b in bp:
-                    #  print('join_using', join_using)
-                    #  bcols = [i[0][2] for i in b]
-                    #  if join_using[0][0][2] not in bcols and '*' not in bcols:
-                        #  raise QueryError('Missing join column `%s`.' %
-                                         #  join_using[0][0][2])
+                #  bcols = [i[0][2] for i in b]
+                #  if join_using[0][0][2] not in bcols and '*' not in bcols
+                #  raise QueryError('Missing join column `%s`.' %
+                #                         #  join_using[0][0][2])
                 budget.extend(join_columns)
 
             if subquery_alias is not None:
                 subquery_contents[subquery_alias] = current_columns
 
-        #  print('B', budget)
-        #  print('SA', subquery_aliases)
         if len(missing_columns):
-            #  print()
-            #  print('MISSING', missing_columns)
             mc = self._extract_columns(missing_columns, select_list_tables,
                                        ref_dict, join, budget,
                                        column_aliases_from_previous,
                                        touched_columns, subquery_contents)
-            #  print('TCs', touched_columns)
             if len(mc):
                 unref_cols = ', '.join(['.'.join([j for j in i[0] if j])
                                         for i in mc])
@@ -435,13 +392,9 @@ class MySQLQueryProcessor(object):
                                    select_list_tables, ref_dict, join, budget,
                                    column_aliases_from_previous,
                                    display_columns, subquery_contents)
-        
+
         display_columns = [[i[1] if i[1] else i[0][2], i[0]]
                            for i in display_columns]
-        #  if len(budget):
-            #  for i in budget[-1][2]:
-                #  alias = i[1] if i[1] is not None else i[0][2]
-                #  display_columns.append([alias, i[0]])
 
         # Let's get rid of all columns that are already covered by
         # db.tab.*. Figure out a better way to do it and replace the code
