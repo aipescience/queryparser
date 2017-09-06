@@ -691,9 +691,9 @@ class MysqlTestCase(TestCase):
     def test_query044(self):
         self._test_mysql_parsing(
             """
-            SELECT COUNT(*) AS n, id, mra, mlem AS qqq, col3
+            SELECT COUNT(*) AS n, id, mra, mlem AS qqq, blem
             FROM (
-                SELECT id, mra, mlem, inner2.col3
+                SELECT id, mra, mlem, inner2.col3 + inner2.parallax AS blem
                 FROM (
                     SELECT id, MAX(ra) AS mra, parallax, qwerty.mlem mlem
                     FROM db.tab
@@ -720,7 +720,7 @@ class MysqlTestCase(TestCase):
             ('join', 'where', 'group by'),
             ('MAX', 'COUNT'),
             ('n: None.None.None', 'id: db.tab.id', 'mra: db.tab.ra',
-             'qqq: db.bar.mlem', 'col3: db.gaia.col3')
+             'qqq: db.bar.mlem', 'blem: None.None.blem'),
         )
 
     def test_query045(self):
@@ -801,6 +801,26 @@ class MysqlTestCase(TestCase):
             JOIN (
                 SELECT a FROM db.bar
             ) AS sub USING(a)
+            """
+        with self.assertRaises(QueryError):
+            self._test_mysql_parsing(q)
+
+    def test_query_error_005(self):
+        q = """
+            SELECT b
+            FROM (
+                SELECT a FROM db.tab
+            ) AS sub
+            """
+        with self.assertRaises(QueryError):
+            self._test_mysql_parsing(q)
+
+    def test_query_error_006(self):
+        q = """
+            SELECT sub.b
+            FROM (
+                SELECT a FROM db.tab
+            ) AS sub
             """
         with self.assertRaises(QueryError):
             self._test_mysql_parsing(q)

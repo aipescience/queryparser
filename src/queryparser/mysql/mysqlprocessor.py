@@ -164,8 +164,8 @@ class MySQLQueryProcessor(object):
 
                     if not column_found and c[0][1] is not None\
                             and c[0][1] != tab[0][1]:
-                        raise QueryError('Unknown column %s.%s.' % (c[0][1],
-                                                                    c[0][2]))
+                        raise QueryError("Unknown column '%s.%s'." % (c[0][1],
+                                                                      c[0][2]))
 
                 else:
                     # ref is a table
@@ -198,7 +198,7 @@ class MySQLQueryProcessor(object):
 
                 elif c[0][2] is not None and c[0][1] is None and\
                         len(ref_dict.keys()) > 1 and not join:
-                    raise QueryError('Column `%s` is ambiguous.' % c[0][2])
+                    raise QueryError("Column '%s' is ambiguous." % c[0][2])
 
                 elif len(budget) and tab[0][0] is None and tab[0][1] is None:
                     ref = budget[-1]
@@ -213,8 +213,7 @@ class MySQLQueryProcessor(object):
                         # by count(*)
                         if not column_found and c[0][2] is not None\
                                 and c[0][2] not in column_aliases:
-                            raise QueryError('Unknown column %s.%s.'
-                                             % (c[0][1], c[0][2]))
+                            raise QueryError("Unknown column '%s'." % c[0][2])
 
             if touched_columns is not None:
                 touched_columns.append([[tab[0][0], tab[0][1], cname], calias])
@@ -382,7 +381,7 @@ class MySQLQueryProcessor(object):
             if len(mc):
                 unref_cols = ', '.join(['.'.join([j for j in i[0] if j])
                                         for i in mc])
-                raise QueryError('Unreferenced column(s): %s' % unref_cols)
+                raise QueryError("Unreferenced column(s): %s." % unref_cols)
 
         touched_columns = set([tuple(i[0]) for i in touched_columns])
 

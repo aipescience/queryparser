@@ -786,9 +786,9 @@ queries = [
     ),
     (
         """
-        SELECT COUNT(*) AS n, id, mra, mlem AS qqq, col3
+        SELECT COUNT(*) AS n, id, mra, mlem AS qqq, blem
         FROM (
-            SELECT id, mra, mlem, inner2.col3
+            SELECT id, mra, mlem, inner2.col3 + inner2.parallax AS blem
             FROM (
                 SELECT id, MAX(ra) AS mra, parallax, qwerty.mlem mlem
                 FROM db.tab
@@ -815,7 +815,7 @@ queries = [
         ('join', 'where', 'group by'),
         ('MAX', 'COUNT'),
         ('n: None.None.None', 'id: db.tab.id', 'mra: db.tab.ra',
-         'qqq: db.bar.mlem', 'col3: db.gaia.col3'),
+         'qqq: db.bar.mlem', 'blem: None.None.blem'),
     ),
     (
         """
@@ -862,5 +862,17 @@ queries = [
         ('g_min_ks: None.None.g_min_ks_index',
          'g_mag_abs: None.None.g_mag_abs_index',
          'n: None.None.None')
+    ),
+    (
+        """
+        SELECT sub.b
+        FROM (
+            SELECT a FROM db.tab
+        ) AS sub
+        """,
+        (),
+        (),
+        (),
+        ()
     ),
 ]
