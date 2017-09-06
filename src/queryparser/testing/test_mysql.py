@@ -671,6 +671,106 @@ class MysqlTestCase(TestCase):
             ('a: None.None.a', 'b: None.None.b')
         )
 
+    def test_query043(self):
+        self._test_mysql_parsing(
+            """
+            SELECT a, sub.a AS qqq, de, sub.de, bar, sub.bar
+            FROM (
+                SELECT ra a, de, foo AS bar
+                FROM db.tab
+                LIMIT 10
+            ) AS sub
+            """,
+            ('db.tab.ra', 'db.tab.de', 'db.tab.foo'),
+            ('limit',),
+            (),
+            ('a: db.tab.ra', 'qqq: db.tab.ra', 'de: db.tab.de',
+             'de: db.tab.de', 'bar: db.tab.foo', 'bar: db.tab.foo')
+        )
+
+    def test_query044(self):
+        self._test_mysql_parsing(
+            """
+            SELECT COUNT(*) AS n, id, mra, mlem AS qqq, col3
+            FROM (
+                SELECT id, mra, mlem, inner2.col3
+                FROM (
+                    SELECT id, MAX(ra) AS mra, parallax, qwerty.mlem mlem
+                    FROM db.tab
+                    JOIN (
+                        SELECT rekt AS parallax, id, mlem
+                        FROM db.bar
+                    ) AS qwerty USING (id)
+                ) AS inner1
+                JOIN (
+                    SELECT qqq, col2 AS ra2, parallax, subsub.col3
+                    FROM (
+                        SELECT ra AS qqq, col2, col3, parallax
+                        FROM db.gaia AS gaia
+                        WHERE col5 > 5
+                    ) AS subsub
+                ) AS inner2
+                ON inner1.parallax = inner2.parallax
+            ) AS subq
+            GROUP BY id;
+            """,
+            ('db.bar.id', 'db.bar.rekt', 'db.bar.mlem', 'db.tab.id',
+             'db.tab.ra', 'db.tab.parallax', 'db.gaia.ra', 'db.gaia.col2',
+             'db.gaia.col3', 'db.gaia.parallax', 'db.gaia.col5'),
+            ('join', 'where', 'group by'),
+            ('MAX', 'COUNT'),
+            ('n: None.None.None', 'id: db.tab.id', 'mra: db.tab.ra',
+             'qqq: db.bar.mlem', 'col3: db.gaia.col3')
+        )
+
+    def test_query045(self):
+        self._test_mysql_parsing(
+            """
+            SELECT
+            g_min_ks_index / 10 AS g_min_ks,
+            g_mag_abs_index / 10 AS g_mag_abs,
+            count(*) AS n
+            FROM (
+                SELECT gaia.source_id,
+                floor((gaia.phot_g_mean_mag+5*log10(gaia.parallax)-10) * 10)
+                    AS g_mag_abs_index,
+                floor((gaia.phot_g_mean_mag-tmass.ks_m) * 10)
+                    AS g_min_ks_index
+                FROM gaiadr1.tgas_source AS gaia
+                INNER JOIN gaiadr1.tmass_best_neighbour AS xmatch
+                ON gaia.source_id = xmatch.source_id
+                INNER JOIN gaiadr1.tmass_original_valid AS tmass
+                ON tmass.tmass_oid = xmatch.tmass_oid
+                WHERE gaia.parallax/gaia.parallax_error >= 5 AND
+                xmatch.ph_qual = 'AAA' AND
+                sqrt(power(2.5 / log(10) * gaia.phot_g_mean_flux_error
+                    / gaia.phot_g_mean_flux, 2)) <= 0.05 AND
+                sqrt(power(2.5 / log(10) * gaia.phot_g_mean_flux_error
+                    / gaia.phot_g_mean_flux, 2)
+                + power(tmass.ks_msigcom, 2)) <= 0.05
+            ) AS subquery
+            GROUP BY g_min_ks_index, g_mag_abs_index
+            """,
+            ('gaiadr1.tgas_source.source_id',
+             'gaiadr1.tgas_source.parallax',
+             'gaiadr1.tgas_source.parallax_error',
+             'gaiadr1.tgas_source.phot_g_mean_flux',
+             'gaiadr1.tgas_source.phot_g_mean_flux_error',
+             'gaiadr1.tgas_source.phot_g_mean_mag',
+             'gaiadr1.tmass_best_neighbour.ph_qual',
+             'gaiadr1.tmass_best_neighbour.source_id',
+             'gaiadr1.tmass_best_neighbour.tmass_oid',
+             'gaiadr1.tmass_original_valid.ks_m',
+             'gaiadr1.tmass_original_valid.ks_msigcom',
+             'gaiadr1.tmass_original_valid.tmass_oid',
+             ),
+            ('where', 'join', 'group by'),
+            ('sqrt', 'log10', 'log', 'count', 'floor', 'power'),
+            ('g_min_ks: None.None.g_min_ks_index',
+             'g_mag_abs: None.None.g_mag_abs_index',
+             'n: None.None.None')
+        )
+
     def test_syntax_error(self):
         q = """SELECR a FROM db.tab;"""
         with self.assertRaises(QuerySyntaxError):
@@ -678,15 +778,6 @@ class MysqlTestCase(TestCase):
 
     def test_query_error_001(self):
         q = """SELECT a FROM db.tab1, db.tab2"""
-        with self.assertRaises(QueryError):
-            self._test_mysql_parsing(q)
-
-    def test_query_error_002(self):
-        q = """SELECT a FROM db.tab1
-               JOIN (
-                   SELECT ra, dec
-                   FROM db.tab2
-               ) AS sub USING (b)"""
         with self.assertRaises(QueryError):
             self._test_mysql_parsing(q)
 

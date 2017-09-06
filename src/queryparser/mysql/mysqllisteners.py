@@ -121,10 +121,10 @@ class ColumnKeywordFunctionListener(MySQLParserListener):
         self.walker.walk(self.table_name_listener, ctx)
         tas = self.table_name_listener.table_aliases
         if len(tas):
-            logging.info(ctx.depth(), ctx.__class__.__name__, tas)
+            logging.info((ctx.depth(), ctx.__class__.__name__, tas))
             self.data.append([ctx.depth(), ctx, tas])
         else:
-            logging.info(ctx.depth(), ctx.__class__.__name__)
+            logging.info((ctx.depth(), ctx.__class__.__name__))
             self.data.append([ctx.depth(), ctx])
 
     def enterTable_atom(self, ctx):
@@ -138,12 +138,12 @@ class ColumnKeywordFunctionListener(MySQLParserListener):
                 tn[1] = ts.table_name().getText().replace('`', '')
             self.tables.append((alias, tn, ctx.depth()))
 
-            logging.info(ctx.depth(), ctx.__class__.__name__, [tn, alias])
+            logging.info((ctx.depth(), ctx.__class__.__name__, [tn, alias]))
             self.data.append([ctx.depth(), ctx, [tn, alias]])
 
     def enterDisplayed_column(self, ctx):
-        logging.info(ctx.depth(), ctx.__class__.__name__,
-                     self._extract_column(ctx, append=False)[1])
+        logging.info((ctx.depth(), ctx.__class__.__name__,
+                     self._extract_column(ctx, append=False)[1]))
         self.data.append([ctx.depth(), ctx,
                           self._extract_column(ctx, append=False)[1]])
         self._extract_column(ctx)
@@ -151,13 +151,13 @@ class ColumnKeywordFunctionListener(MySQLParserListener):
             self.keywords.append('*')
 
     def enterSelect_expression(self, ctx):
-        logging.info(ctx.depth(), ctx.__class__.__name__)
+        logging.info((ctx.depth(), ctx.__class__.__name__))
         self.data.append([ctx.depth(), ctx])
 
     def enterSelect_list(self, ctx):
         if ctx.ASTERISK():
-            logging.info(ctx.depth(), ctx.__class__.__name__,
-                         [[None, None, '*'], None])
+            logging.info((ctx.depth(), ctx.__class__.__name__,
+                         [[None, None, '*'], None]))
             self.data.append([ctx.depth(), ctx, [[[None, None, '*'], None]]])
             self.columns.append(('*', None))
             self.keywords.append('*')
@@ -173,16 +173,16 @@ class ColumnKeywordFunctionListener(MySQLParserListener):
         col = self._extract_column(ctx, append=False)
         if col[1][0][0][2] not in self.column_aliases:
             self._extract_column(ctx)
-        logging.info(ctx.depth(), ctx.__class__.__name__,
-                     self._extract_column(ctx, append=False)[1])
+        logging.info((ctx.depth(), ctx.__class__.__name__,
+                     self._extract_column(ctx, append=False)[1]))
         self.data.append([ctx.depth(), ctx,
                           self._extract_column(ctx, append=False)[1]])
 
     def enterWhere_clause(self, ctx):
         self.keywords.append('where')
         self._extract_column(ctx)
-        logging.info(ctx.depth(), ctx.__class__.__name__,
-                     self._extract_column(ctx, append=False)[1])
+        logging.info((ctx.depth(), ctx.__class__.__name__,
+                     self._extract_column(ctx, append=False)[1]))
         self.data.append([ctx.depth(), ctx,
                           self._extract_column(ctx, append=False)[1]])
 
@@ -191,8 +191,8 @@ class ColumnKeywordFunctionListener(MySQLParserListener):
         col = self._extract_column(ctx, append=False)
         if col[1][0][0][2] not in self.column_aliases:
             self._extract_column(ctx)
-        logging.info(ctx.depth(), ctx.__class__.__name__,
-                     self._extract_column(ctx, append=False)[1])
+        logging.info((ctx.depth(), ctx.__class__.__name__,
+                     self._extract_column(ctx, append=False)[1]))
         self.data.append([ctx.depth(), ctx,
                           self._extract_column(ctx, append=False)[1]])
 
@@ -202,8 +202,8 @@ class ColumnKeywordFunctionListener(MySQLParserListener):
     def enterJoin_condition(self, ctx):
         self.keywords.append('join')
         self._extract_column(ctx, join_columns=ctx)
-        logging.info(ctx.depth(), ctx.__class__.__name__,
-                     self._extract_column(ctx, append=False)[1])
+        logging.info((ctx.depth(), ctx.__class__.__name__,
+                     self._extract_column(ctx, append=False)[1]))
         self.data.append([ctx.depth(), ctx,
                           self._extract_column(ctx, append=False)[1]])
 
