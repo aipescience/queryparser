@@ -379,9 +379,9 @@ class MySQLQueryProcessor(object):
                                        column_aliases_from_previous,
                                        touched_columns, subquery_contents)
             if len(mc):
-                unref_cols = ', '.join(['.'.join([j for j in i[0] if j])
-                                        for i in mc])
-                raise QueryError("Unreferenced column(s): %s." % unref_cols)
+                unref_cols = "', '".join(['.'.join([j for j in i[0] if j])
+                                         for i in mc])
+                raise QueryError("Unreferenced column(s): '%s'." % unref_cols)
 
         touched_columns = set([tuple(i[0]) for i in touched_columns])
 

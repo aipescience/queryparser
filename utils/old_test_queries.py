@@ -865,7 +865,7 @@ queries = [
     ),
     (
         """
-        SELECT sub.b
+        SELECT sb.b, sub.a, a
         FROM (
             SELECT a FROM db.tab
         ) AS sub
