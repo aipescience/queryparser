@@ -865,14 +865,27 @@ queries = [
     ),
     (
         """
-        SELECT sb.b, sub.a, a
-        FROM (
-            SELECT a FROM db.tab
-        ) AS sub
+            SELECT a, b FROM db.tab1
+            JOIN (
+                SELECT id, col AS b FROM db.tab2
+            ) AS sub USING(id)
         """,
+        ('db.blem.col1', 'db.blem.col2', 'db.blem.id', 'db.blem.foo',
+         'db.tab.ra', 'db.tab.bar', 'db.tab.id'),
+        ('join', 'limit'),
         (),
         (),
-        (),
-        ()
+        """
+        SELECT ra, sub.qqq, t1.bar
+        FROM db.tab AS t1
+        JOIN (
+            SELECT subsub.col1 AS qqq, subsub.col2, subsub.id, bar 
+            FROM (
+                SELECT col1, col2, id, foo AS bar
+                FROM db.blem
+                LIMIT 10
+            ) AS subsub
+        ) sub USING(id);
+        """,
     ),
 ]

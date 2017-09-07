@@ -715,11 +715,11 @@ class MysqlTestCase(TestCase):
             GROUP BY id;
             """,
             ('db.bar.id', 'db.bar.rekt', 'db.bar.mlem', 'db.tab.id',
-             'db.tab.ra', 'db.tab.parallax', 'db.gaia.ra', 'db.gaia.col2',
+             'db.tab.ra', 'db.gaia.ra', 'db.gaia.col2',
              'db.gaia.col3', 'db.gaia.parallax', 'db.gaia.col5'),
             ('join', 'where', 'group by'),
             ('MAX', 'COUNT'),
-            ('n: None.None.None', 'id: db.tab.id', 'mra: db.tab.ra',
+            ('n: None.None.None', 'id: db.bar.id', 'mra: db.tab.ra',
              'qqq: db.bar.mlem', 'blem: None.None.blem'),
         )
 
@@ -769,6 +769,28 @@ class MysqlTestCase(TestCase):
             ('g_min_ks: None.None.g_min_ks_index',
              'g_mag_abs: None.None.g_mag_abs_index',
              'n: None.None.None')
+        )
+
+    def test_query046(self):
+        self._test_mysql_parsing(
+            """
+            SELECT ra, sub.qqq, t1.bar
+            FROM db.tab t1
+            JOIN (
+                SELECT subsub.col1 AS qqq, subsub.col2, subsub.id, bar 
+                FROM (
+                    SELECT col1, col2, id, foo AS bar
+                    FROM db.blem
+                    LIMIT 10
+                ) AS subsub
+            ) sub USING(id);
+            """,
+            ('db.blem.col1', 'db.blem.col2', 'db.blem.id', 'db.blem.foo',
+             'db.tab.ra', 'db.tab.bar', 'db.tab.id'),
+            ('join', 'limit'),
+            (),
+            (),
+            strict=True
         )
 
     def test_syntax_error(self):
@@ -824,3 +846,20 @@ class MysqlTestCase(TestCase):
             """
         with self.assertRaises(QueryError):
             self._test_mysql_parsing(q)
+
+    def test_query_error_007(self):
+        q = """
+            SELECT a FROM tab
+            """
+        with self.assertRaises(QueryError):
+            self._test_mysql_parsing(q)
+
+    def test_query_error_008(self):
+        q = """
+            SELECT a, b FROM db.tab1
+            JOIN (
+                SELECT id, col AS b FROM db.tab2
+            ) AS sub USING(id)
+            """
+        with self.assertRaises(QueryError):
+            self._test_mysql_parsing(q, strict=True)

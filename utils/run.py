@@ -123,7 +123,7 @@ def pretty_print(q, columns, keywords, functions, display_columns,
 
 
 def test_mysql_parsing(qs):
-    qp = MySQLQueryProcessor()
+    qp = MySQLQueryProcessor(strict=True)
     for q in qs:
         qp.set_query(q[0])
         s = time.time()

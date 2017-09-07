@@ -7,8 +7,11 @@ from queryparser.adql import ADQLQueryTranslator
 class TestCase(unittest.TestCase):
 
     def _test_mysql_parsing(self, query, columns=None, keywords=None,
-                            functions=None, display_columns=None):
-        qp = MySQLQueryProcessor(query)
+                            functions=None, display_columns=None,
+                            strict=False):
+        qp = MySQLQueryProcessor(query, strict=strict)
+        if strict:
+            qp.strict
 
         qp_columns = ['.'.join([str(j) for j in i]) for i in qp.columns
                       if i[0] is not None and i[1] is not None]

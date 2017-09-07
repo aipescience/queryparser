@@ -31,8 +31,16 @@ class MySQLQueryProcessor(object):
     :param query:
         MySQL query string.
 
+    :param strict: (optional)
+        If set to True ambiguous columns (b) in queries such as
+            SELECT a, b FROM db.tab1
+            JOIN (
+                SELECT id, col AS b FROM db.tab2
+            ) AS sub USING(id)
+        will raise a ``QueryError``.
+
     """
-    def __init__(self, query=None):
+    def __init__(self, query=None, strict=False):
         self.walker = antlr4.ParseTreeWalker()
 
         self.columns = set()
@@ -40,6 +48,7 @@ class MySQLQueryProcessor(object):
         self.functions = set()
         self.display_columns = []
         self.syntax_error_listener = SyntaxErrorListener()
+        self._strict = strict
         if query is not None:
             self._query = query.rstrip(';') + ';'
             self.process_query()
@@ -149,6 +158,21 @@ class MySQLQueryProcessor(object):
             tab = [[None, None], None]
             try:
                 tab = select_list_tables[0][0]
+                if tab[0][0] is None:
+                    raise QueryError('Missing schema specification.')
+
+                # We have to check if we also have a join on the same level
+                # and we are actually touching a column from the joined table
+                if join and c[0][2] != '*' and\
+                        (tab[1] != c[0][1] or
+                         (tab[1] is None and c[0][1] is None)):
+                    cname, calias, column_found, tab =\
+                            self._get_budget_column(c, tab, budget[-1][2])
+                    # raise an ambigous column if using strict
+                    if column_found and self._strict and c[0][1] is None:
+                        raise QueryError("Column '%s' is possibly ambiguous."
+                                         % c[0][2])
+
             except IndexError:
                 pass
 
@@ -172,8 +196,6 @@ class MySQLQueryProcessor(object):
                     tab = ref[0]
 
             except KeyError:
-
-                # we don't need to bother if there are no selected columns
                 if c[0][2] is not None and c[0][1] is not None:
                     if subquery_contents is not None:
                         try:
@@ -205,7 +227,6 @@ class MySQLQueryProcessor(object):
                     column_found = False
 
                     if isinstance(ref[0], int):
-                        # ref is a budget column
                         cname, calias, column_found, tab =\
                                 self._get_budget_column(c, tab, ref[2])
 
@@ -422,6 +443,14 @@ class MySQLQueryProcessor(object):
 
         """
         return self._query
+
+    @property
+    def strict(self):
+        """
+        Get the strict flag.
+
+        """
+        return self._strict
 
     def set_query(self, query):
         """
