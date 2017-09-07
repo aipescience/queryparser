@@ -22,8 +22,8 @@ adql_function_names = ('ABS', 'CEILING', 'DEGREES', 'EXP', 'FLOOR', 'LOG',
 
 
 def _remove_children(ctx):
-        for i in range(ctx.getChildCount() - 1):
-            ctx.removeLastChild()
+    for i in range(ctx.getChildCount() - 1):
+        ctx.removeLastChild()
 
 
 class SyntaxErrorListener(ErrorListener):
