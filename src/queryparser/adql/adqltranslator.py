@@ -13,7 +13,7 @@ from .ADQLParserListener import ADQLParserListener
 from ..exceptions import QueryError, QuerySyntaxError
 
 
-# Function names need to recognized because there must not be any
+# Function names need to be recognized because there must not be any
 # space between the name and left parenthesis.
 adql_function_names = ('ABS', 'CEILING', 'DEGREES', 'EXP', 'FLOOR', 'LOG',
                        'LOG10', 'MOD', 'PI', 'POWER', 'RADIANS', 'SQRT',
