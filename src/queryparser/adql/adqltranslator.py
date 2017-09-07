@@ -241,8 +241,6 @@ class SelectQueryListener(ADQLParserListener):
         self.limit_visitor.visit(ctx)
         self.select_query_count = len(self.limit_visitor.limit_ctx)
 
-        #  if len(self.limit_visitor.limit_ctx) == 0:
-            #  self.select_query_count = 0
         if len(self.limit_visitor.limit_ctx) == 1:
 
             self.limit_remover.visit(ctx)

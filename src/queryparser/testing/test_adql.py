@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from . import TestCase
 from queryparser.adql import ADQLQueryTranslator
 from ..exceptions import QueryError, QuerySyntaxError
