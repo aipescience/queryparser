@@ -53,7 +53,6 @@ class MySQLQueryProcessor(object):
         self._strict = strict
         if query is not None:
             self._query = self._strip_query(query)
-            print(self._query)
             self.process_query()
 
     def _extract_instances(self, column_keyword_function_listener):
