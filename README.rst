@@ -11,6 +11,11 @@ queryparser
    :alt: Coverage Status
    :target: https://coveralls.io/github/aipescience/queryparser?branch=master
 
+.. image:: https://pypip.in/version/queryparser-python3/badge.svg
+   :alt: Latest Version
+   :target: https://pypi.python.org/pypi/queryparser-python3/
+
+
 Parsing MySQL
 -------------
 
