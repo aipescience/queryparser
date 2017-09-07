@@ -13,8 +13,9 @@ from .ADQLParserListener import ADQLParserListener
 from ..exceptions import QueryError, QuerySyntaxError
 
 
-# Function names need to be recognized because there must not be any
-# space between the name and left parenthesis.
+# Function names need to be trecognized because there whitespace 
+# between the name and left parenthesis is not allowed and needs to be
+# deleted.
 adql_function_names = ('ABS', 'CEILING', 'DEGREES', 'EXP', 'FLOOR', 'LOG',
                        'LOG10', 'MOD', 'PI', 'POWER', 'RADIANS', 'SQRT',
                        'TRUNCATE', 'COUNT', 'ACOS', 'ASIN', 'ATAN', 'ATAN2',
