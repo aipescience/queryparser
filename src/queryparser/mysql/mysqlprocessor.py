@@ -273,7 +273,7 @@ class MySQLQueryProcessor(object):
 
         # Columns that are accessed by the query
         touched_columns = []
-        # List we use to propage the columns through the tree
+        # List we use to propagete the columns through the tree
         budget = []
         # Are there any joins in the query?
         join = 0
