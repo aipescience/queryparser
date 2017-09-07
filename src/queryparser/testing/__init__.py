@@ -10,8 +10,15 @@ class TestCase(unittest.TestCase):
 
     def _test_mysql_parsing(self, query, columns=None, keywords=None,
                             functions=None, display_columns=None,
-                            strict=False):
-        qp = MySQLQueryProcessor(query, strict=strict)
+                            strict=False, replace_schema_name=None):
+
+        if replace_schema_name is None:
+            qp = MySQLQueryProcessor(query, strict=strict)
+        else:
+            qp = MySQLQueryProcessor(strict=strict)
+            qp.set_query(query)
+            qp.process_query(replace_schema_name=replace_schema_name)
+
         if strict:
             qp.strict
 

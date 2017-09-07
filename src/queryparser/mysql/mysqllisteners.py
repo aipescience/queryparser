@@ -267,6 +267,18 @@ class RemoveSubqueriesListener(MySQLParserListener):
             ctx.parentCtx.removeLastChild()
 
 
+class SchemaNameListener(MySQLParserListener):
+
+    def __init__(self, schema_name, new_schema_name):
+        self.schema_name = schema_name
+        self.new_schema_name = new_schema_name
+
+    def enterSchema_name(self, ctx):
+        sn = ctx.getTokens(ttype=637)[0].getSymbol().text
+        if sn == self.schema_name:
+            ctx.getTokens(ttype=637)[0].getSymbol().text = self.new_schema_name
+
+
 class SyntaxErrorListener(ErrorListener):
     def __init__(self):
         super(SyntaxErrorListener, self).__init__()

@@ -128,16 +128,19 @@ def test_mysql_parsing(qs):
         qp.set_query(q[0])
         s = time.time()
         try:
-            qp.process_query()
+            qp.process_query(replace_schema_name={'db': 'foo', 'db2': 'bar'})
+            #  qp.process_query()
             syntax_errors = []
         except QuerySyntaxError as e:
             syntax_errors = e.syntax_errors
         s = time.time() - s
         #  continue
+        qm = list(q)
+        qm[0] = '\n' + qp.query + '\n'
         cols, keys, funcs, dispcols= qp.columns, qp.keywords, qp.functions, \
             qp.display_columns
         #  not_so_pretty_print(q[0], cols, keys, funcs, s, qp.syntax_errors)
-        pretty_print(q, cols, keys, funcs, dispcols, s, syntax_errors,
+        pretty_print(qm, cols, keys, funcs, dispcols, s, syntax_errors,
                      show_diff=True)
 
 

@@ -18,7 +18,9 @@ from .MySQLParser import MySQLParser
 from ..exceptions import QueryError, QuerySyntaxError
 
 from .mysqllisteners import ColumnKeywordFunctionListener,\
-        QueryListener, RemoveSubqueriesListener, SyntaxErrorListener
+        QueryListener, RemoveSubqueriesListener, SyntaxErrorListener,\
+        SchemaNameListener
+
 from .mysqllisteners import parse_alias
 
 
@@ -50,7 +52,8 @@ class MySQLQueryProcessor(object):
         self.syntax_error_listener = SyntaxErrorListener()
         self._strict = strict
         if query is not None:
-            self._query = query.rstrip(';') + ';'
+            self._query = self._strip_query(query)
+            print(self._query)
             self.process_query()
 
     def _extract_instances(self, column_keyword_function_listener):
@@ -243,7 +246,7 @@ class MySQLQueryProcessor(object):
 
         return missing_columns
 
-    def process_query(self):
+    def process_query(self, replace_schema_name={}):
         """
         Parses and processes the query. After a successful run it fills up
         columns, keywords, functions and syntax_errors lists.
@@ -261,6 +264,14 @@ class MySQLQueryProcessor(object):
         tree = parser.query()
         if len(self.syntax_error_listener.syntax_errors):
             raise QuerySyntaxError(self.syntax_error_listener.syntax_errors)
+
+        schema_names = replace_schema_name.items()
+        if len(schema_names):
+            for schema_name, new_schema_name in schema_names:
+                schema_name_listener = SchemaNameListener(schema_name,
+                                                          new_schema_name)
+                self.walker.walk(schema_name_listener, tree)
+            self._query = stream.getText()
 
         query_listener = QueryListener()
         subquery_aliases = [None]
@@ -452,6 +463,9 @@ class MySQLQueryProcessor(object):
         """
         return self._strict
 
+    def _strip_query(self, query):
+        return query.lstrip('\n').rstrip().rstrip(';') + ';'
+
     def set_query(self, query):
         """
         Helper to set the query string.
@@ -461,4 +475,5 @@ class MySQLQueryProcessor(object):
         self.keywords = set()
         self.functions = set()
         self.display_columns = []
-        self._query = query.rstrip(';') + ';'
+        #  self._query = query.strip().replace('\n', ' ').rstrip(';') + ';'
+        self._query = self._strip_query(query)

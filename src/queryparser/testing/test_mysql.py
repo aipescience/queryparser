@@ -795,6 +795,18 @@ class MysqlTestCase(TestCase):
             strict=True
         )
 
+    def test_query047(self):
+        self._test_mysql_parsing(
+            """
+            SELECT t1.a, t2.b FROM db.tab t1, db2.tab t2;
+            """,
+            ('foo.tab.a', 'bar.tab.b'),
+            (),
+            (),
+            (),
+            replace_schema_name={'db': 'foo', 'db2': 'bar'}
+        )
+
     def test_syntax_error(self):
         q = """SELECR a FROM db.tab;"""
         with self.assertRaises(QuerySyntaxError):

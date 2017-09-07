@@ -718,7 +718,7 @@ ID:
 COMMENT: '#' ~( '\r' | '\n' )* -> skip ;
     
 
-WS : ( ' ' | '\t' | '\n' | '\r' )+ -> skip ;
+WS : ( ' ' | '\t' | '\n' | '\r' )+ -> channel(HIDDEN) ;//-> skip ;
 
 fragment USER_VAR_SUBFIX1:	(  '`' (~'`' )+ '`'  ) ;
 fragment USER_VAR_SUBFIX2:	( '\'' (~'\'')+ '\'' ) ;
