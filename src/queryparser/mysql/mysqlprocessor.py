@@ -251,8 +251,11 @@ class MySQLQueryProcessor(object):
         Parses and processes the query. After a successful run it fills up
         columns, keywords, functions and syntax_errors lists.
 
-        """
+        :param strict: (optional)
+            Dictionary of replacement schema names. If it is provided
+            each key schema name will be replaced with its value.
 
+        """
         # Antlr objects
         inpt = antlr4.InputStream(self.query)
         lexer = MySQLLexer(inpt)
