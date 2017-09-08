@@ -15,6 +15,9 @@ queryparser
    :alt: Latest Version
    :target: https://pypi.python.org/pypi/queryparser-python3/
 
+.. image:: http://img.shields.io/badge/license-APACHE-blue.svg?style=flat
+    :target: https://github.com/adrn/schwimmbad/blob/master/LICENSE
+
 
 Parsing MySQL
 -------------
