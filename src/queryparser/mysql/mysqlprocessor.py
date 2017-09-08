@@ -268,10 +268,13 @@ class MySQLQueryProcessor(object):
             raise QuerySyntaxError(self.syntax_error_listener.syntax_errors)
 
         schema_names = replace_schema_name.items()
+        replaced_schema_name_contexts = []
         if len(schema_names):
             for schema_name, new_schema_name in schema_names:
-                schema_name_listener = SchemaNameListener(schema_name,
-                                                          new_schema_name)
+                schema_name_listener =\
+                        SchemaNameListener(schema_name,
+                                           new_schema_name,
+                                           replaced_schema_name_contexts)
                 self.walker.walk(schema_name_listener, tree)
             self._query = stream.getText()
 

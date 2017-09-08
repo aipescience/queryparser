@@ -798,13 +798,14 @@ class MysqlTestCase(TestCase):
     def test_query047(self):
         self._test_mysql_parsing(
             """
-            SELECT t1.a, t2.b FROM db.tab t1, db2.tab t2;
+            SELECT t1.a, t2.b, t3.c
+            FROM d.tab t1, `db2`.`tab` t2, foo.tab t3
             """,
-            ('foo.tab.a', 'bar.tab.b'),
+            ('foo.tab.a', 'bar.tab.b', 'bas.tab.c'),
             (),
             (),
             (),
-            replace_schema_name={'db': 'foo', 'db2': 'bar'}
+            replace_schema_name={'d': 'foo', 'db2': 'bar', 'foo': 'bas'}
         )
 
     def test_syntax_error(self):

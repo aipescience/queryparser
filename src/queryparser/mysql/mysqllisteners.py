@@ -4,6 +4,7 @@ from __future__ import (absolute_import, print_function)
 
 import antlr4
 import logging
+import re
 
 from antlr4.error.ErrorListener import ErrorListener
 
@@ -269,19 +270,26 @@ class RemoveSubqueriesListener(MySQLParserListener):
 
 class SchemaNameListener(MySQLParserListener):
 
-    def __init__(self, schema_name, new_schema_name):
+    def __init__(self, schema_name, new_schema_name,
+                 replaced_schema_name_contexts):
         self.schema_name = schema_name
         self.new_schema_name = new_schema_name
+        self.replaced_schema_name_contexts = replaced_schema_name_contexts
 
     def enterSchema_name(self, ctx):
         ttype = ctx.start.type
         sn = ctx.getTokens(ttype)[0].getSymbol().text
-        if sn == self.schema_name:
+        if sn.replace('`', '') == self.schema_name\
+                and ctx not in self.replaced_schema_name_contexts:
             try:
                 nsn = unicode(self.new_schema_name, 'utf-8')
             except NameError:
                 nsn = self.new_schema_name
+
+            nsn = re.sub('(|`)(?!`)[\S]*[^`](|`)', r'\1%s\2' % nsn, sn)
+
             ctx.getTokens(ttype)[0].getSymbol().text = nsn
+            self.replaced_schema_name_contexts.append(ctx)
 
 
 class SyntaxErrorListener(ErrorListener):
