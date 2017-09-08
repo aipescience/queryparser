@@ -270,26 +270,22 @@ class RemoveSubqueriesListener(MySQLParserListener):
 
 class SchemaNameListener(MySQLParserListener):
 
-    def __init__(self, schema_name, new_schema_name,
-                 replaced_schema_name_contexts):
-        self.schema_name = schema_name
-        self.new_schema_name = new_schema_name
-        self.replaced_schema_name_contexts = replaced_schema_name_contexts
+    def __init__(self, replace_schema_name):
+        self.replace_schema_name = replace_schema_name
 
     def enterSchema_name(self, ctx):
         ttype = ctx.start.type
         sn = ctx.getTokens(ttype)[0].getSymbol().text
-        if sn.replace('`', '') == self.schema_name\
-                and ctx not in self.replaced_schema_name_contexts:
+        try:
+            nsn = self.replace_schema_name[sn.replace('`', '')]
             try:
-                nsn = unicode(self.new_schema_name, 'utf-8')
+                nsn = unicode(nsn, 'utf-8')
             except NameError:
-                nsn = self.new_schema_name
-
+                pass
             nsn = re.sub('(|`)(?!`)[\S]*[^`](|`)', r'\1%s\2' % nsn, sn)
-
             ctx.getTokens(ttype)[0].getSymbol().text = nsn
-            self.replaced_schema_name_contexts.append(ctx)
+        except KeyError:
+            pass
 
 
 class SyntaxErrorListener(ErrorListener):

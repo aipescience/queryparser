@@ -798,10 +798,10 @@ class MysqlTestCase(TestCase):
     def test_query047(self):
         self._test_mysql_parsing(
             """
-            SELECT t1.a, t2.b, t3.c
-            FROM d.tab t1, `db2`.`tab` t2, foo.tab t3
+            SELECT t1.a, t2.b, t3.c, t4.z
+            FROM d.tab t1, `db2`.`tab` t2, foo.tab t3, x.y t4
             """,
-            ('foo.tab.a', 'bar.tab.b', 'bas.tab.c'),
+            ('foo.tab.a', 'bar.tab.b', 'bas.tab.c', 'x.y.z'),
             (),
             (),
             (),
