@@ -1,7 +1,10 @@
 queryparser
 ===========
 
-**Let's parse some MySQL and ADQL!**
+**Tool for parsing and processing MySQL and ADQL queries**
+
+Designed to be used in conjunction with `django-daiquri <http://github.com/aipescience/django-daiquiri/>`_
+as a query processing backend but it can be easily used as a stand-alone tool or integrated into another project.
 
 .. image:: https://travis-ci.org/aipescience/queryparser.svg?branch=master
    :alt: Build Status
@@ -22,7 +25,8 @@ queryparser
 Parsing MySQL
 -------------
 
-Processing of MySQL queries is done by first creating an instance of the ``MySQLQueryProcessor`` class
+Parsing and processing of MySQL queries can be done by creating an instance
+of the ``MySQLQueryProcessor`` class
 
 .. code-block:: python
 
@@ -43,9 +47,9 @@ and running it with
 
     qp.process_query()
 
-After the processing, the processor object will include columns, functions,
-and keywords used in the query or will raise a ``QuerySyntaxError`` if there
-are any syntax errors in the query.
+After the processing, the processor object ``qp`` will include columns,
+functions, and keywords used in the query or will raise a ``QuerySyntaxError``
+if there are any syntax errors in the query.
 
 Alternatively, passing the query at initialization automatically processes it.
 
