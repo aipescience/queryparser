@@ -221,5 +221,8 @@ SELECT TOP 10 a FROM (
         SELECT TOP 30 ra AS foobar FROM db.tab
     ) AS subsub
 ) AS sub;
+""",
+"""
+            SELECT POINT('icrs', ra, dec) as "p", z AS y FROM "db".tab
 """
 ]

@@ -10,11 +10,12 @@ class ADQLTestCase(TestCase):
     def test_query000(self):
         self._test_adql_mysql_translation(
             """
-                SELECT POINT('icrs', 10, 10) FROM db.tab
+                SELECT POINT('icrs', 10, 10) AS "p" FROM "db".tab
             """,
-            """
-                SELECT spoint(RADIANS(10.0), RADIANS(10.0)) FROM `db`.`tab`;
-            """
+            ''.join((
+                'SELECT spoint(RADIANS(10.0), RADIANS(10.0)) AS `p` ',
+                'FROM `db`.`tab`;'
+            )).strip()
         )
 
     def test_query001(self):
@@ -188,12 +189,12 @@ class ADQLTestCase(TestCase):
             """,
             ''.join((
                 'SELECT gaia_healpix_index(6, `source_id`) AS healpix_6, ',
-                'count(*) / 0.83929 as sources_per_sq_deg, ',
+                'count(*) / 0.83929 AS sources_per_sq_deg, ',
                 'avg(`astrometric_n_good_obs_al`) AS avg_n_good_al, ',
                 'avg(`astrometric_n_good_obs_ac`) AS avg_n_good_ac, ',
                 'avg(`astrometric_n_good_obs_al` + ',
                 '`astrometric_n_good_obs_ac`) AS avg_n_good, ',
-                'avg(`astrometric_excess_noise`) as avg_excess_noise FROM ',
+                'avg(`astrometric_excess_noise`) AS avg_excess_noise FROM ',
                 '`gaiadr1`.`tgas_source` GROUP BY `healpix_6` LIMIT 10;'
             )).strip()
         )
@@ -468,4 +469,15 @@ class ADQLTestCase(TestCase):
             ('source_id: GDR1.gaia_source.source_id',
              'ra: GDR1.gaia_source.ra',
              'dec: GDR1.gaia_source.dec')
+        )
+
+    def test_query103(self):
+        self._test_adql_mysql_translation_parsing(
+            """
+            SELECT POINT('icrs', ra, dec) as "p", z AS y FROM "db".tab
+            """,
+            ('db.tab.ra', 'db.tab.dec', 'db.tab.z'),
+            (),
+            ('spoint', 'RADIANS'),
+            ('y: db.tab.z',)
         )

@@ -27,6 +27,11 @@ def _remove_children(ctx):
         ctx.removeLastChild()
 
 
+def _process_regular_identifier(ctx_text):
+        ri = ctx_text.rstrip("'").lstrip("'").rstrip('"').lstrip('"')
+        return '`' + ri + '`'
+
+
 class SyntaxErrorListener(ErrorListener):
     def __init__(self):
         super(SyntaxErrorListener, self).__init__()
@@ -90,19 +95,21 @@ class ADQLtoMySQLGeometryTranslationVisitor(ADQLParserVisitor):
         if isinstance(ctx.parentCtx,
                       ADQLParser.User_defined_function_nameContext):
             return
-        ri = ctx.getText().rstrip("'").lstrip("'").rstrip('"').lstrip('"')
-        ri = '`' + ri + '`'
+        ri = _process_regular_identifier(ctx.getText())
         self.contexts[ctx] = ri
 
     def visitSchema_name(self, ctx):
-        ri = ctx.getText().rstrip("'").lstrip("'").rstrip('"').lstrip('"')
-        ri = '`' + ri + '`'
+        ri = _process_regular_identifier(ctx.getText())
         self.contexts[ctx] = ri
 
     def visitAs_clause(self, ctx):
         # We need to visit the AS clause to avoid aliases being treated same
         # as regular identifiers and backticked.
-        pass
+        ri = _process_regular_identifier(ctx.children[1].getText())
+        if ctx.children[1].getText()[0] != '"':
+            ri = ri.replace('`', '')
+        _remove_children(ctx)
+        self.contexts[ctx] = 'AS ' + ri
 
     def visitPoint(self, ctx):
         coords = []
@@ -336,8 +343,6 @@ class ADQLQueryTranslator(object):
     """
     def __init__(self, query=None):
         self.syntax_error_listener = SyntaxErrorListener()
-        self.syntax_errors = []
-        self.parsed = False
         self._query = None
 
         if query is not None:
@@ -355,7 +360,7 @@ class ADQLQueryTranslator(object):
         self.parser._listeners = [self.syntax_error_listener]
 
         self.tree = self.parser.query()
-        self.parsed = True
+        #  self.parsed = True
         self.syntax_errors = self.syntax_error_listener.syntax_errors
 
         if len(self.syntax_error_listener.syntax_errors):
@@ -379,9 +384,7 @@ class ADQLQueryTranslator(object):
             Query string.
 
         """
-        self.syntax_errors = []
-        self.parsed = False
-        self._query = query.rstrip(';') + ';'
+        self._query = query.lstrip('\n').rstrip().rstrip(';') + ';'
         self.parse()
 
     def to_mysql(self):
@@ -390,8 +393,10 @@ class ADQLQueryTranslator(object):
         for the spherical functions.
 
         """
-        if not self.parsed:
-            raise QueryError('No query given or query not parsed yet.')
+        if self._query is None:
+            raise QueryError('No query given.')
+
+        self.parse()
 
         translator_visitor = ADQLtoMySQLGeometryTranslationVisitor()
         translator_visitor.visit(self.tree)

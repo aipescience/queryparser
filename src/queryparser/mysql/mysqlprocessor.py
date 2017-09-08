@@ -474,5 +474,4 @@ class MySQLQueryProcessor(object):
         self.keywords = set()
         self.functions = set()
         self.display_columns = []
-        #  self._query = query.strip().replace('\n', ' ').rstrip(';') + ';'
         self._query = self._strip_query(query)

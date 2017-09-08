@@ -865,16 +865,12 @@ queries = [
     ),
     (
         """
-        SELECT LEFT(t1.rid, 16), COUNT(t1.rid) n1,
-               LEFT(t2.rid, 16), COUNT(t2.rid) n2
-        FROM `db`.tab AS t1
-        JOIN db2.tab2 t2
-        ON t1.rid = t2.rid
-        GROUP BY LEFT(t1.rid, 16);
+        SELECT spoint(RADIANS(`ra`), RADIANS(`dec`)) AS `p`,
+               MAX(t) as mt, `z` AS y
+        FROM `db`.`tab`;
         """,
-        ('db.blem.col1', 'db.blem.col2', 'db.blem.id', 'db.blem.foo',
-         'db.tab.ra', 'db.tab.bar', 'db.tab.id'),
-        ('join', 'limit'),
+        (),
+        (),
         (),
         (),
         """
