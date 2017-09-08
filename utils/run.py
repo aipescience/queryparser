@@ -134,7 +134,7 @@ def test_mysql_parsing(qs):
         except QuerySyntaxError as e:
             syntax_errors = e.syntax_errors
         s = time.time() - s
-        continue
+        #  continue
         qm = list(q)
         qm[0] = '\n' + qp.query + '\n'
         cols, keys, funcs, dispcols= qp.columns, qp.keywords, qp.functions, \

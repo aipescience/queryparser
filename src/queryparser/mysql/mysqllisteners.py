@@ -277,7 +277,11 @@ class SchemaNameListener(MySQLParserListener):
         ttype = ctx.start.type
         sn = ctx.getTokens(ttype)[0].getSymbol().text
         if sn == self.schema_name:
-            ctx.getTokens(ttype)[0].getSymbol().text = self.new_schema_name
+            try:
+                nsn = unicode(self.new_schema_name, 'utf-8')
+            except NameError:
+                nsn = self.new_schema_name
+            ctx.getTokens(ttype)[0].getSymbol().text = nsn
 
 
 class SyntaxErrorListener(ErrorListener):

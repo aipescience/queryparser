@@ -11,7 +11,7 @@ queryparser
    :alt: Coverage Status
    :target: https://coveralls.io/github/aipescience/queryparser?branch=master
 
-.. image:: https://pypi.in/version/queryparser-python3/badge.svg
+.. image:: https://img.shields.io/pypi/v/queryparser-python3.svg?style=flat
    :alt: Latest Version
    :target: https://pypi.python.org/pypi/queryparser-python3/
 
