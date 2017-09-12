@@ -223,6 +223,20 @@ SELECT TOP 10 a FROM (
 ) AS sub;
 """,
 """
-            SELECT POINT('icrs', ra, dec) as "p", z AS y FROM "db".tab
+SELECT
+                ATLASsource.*,
+                2*DEGREES(ASIN(sqrt(power(-0.997825033922517-cx, 2) + power(-0.052293794140904105-cy, 2) + power(-0.040131792532559725-cz,2)) / 2)) * 60 as dist
+            FROM
+                ATLASsource
+            WHERE
+                dec > -2.3166666666666664
+            AND
+                dec < -2.283333333333333
+            AND
+                RA >= 182.98331970017435
+            AND
+                RA <= 183.01668029982565
+            AND
+                ((cx * -0.997825033922517 + cy * -0.052293794140904105 + cz * -0.040131792532559725 ) >= 0.9999999576920253)
 """
 ]

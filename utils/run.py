@@ -174,8 +174,9 @@ def test_translated_mysql_parsing(qs):
         qp.set_query(translated_query)
         try:
             qp.process_query()
-        except QueryError:
-            raise
+            syntax_errors = []
+        except QuerySyntaxError as e:
+            syntax_errors = e.syntax_errors
         s = time.time() - s
         #  cols, keys, funcs = qp.columns, qp.keywords, qp.functions
         #  s = 0.0
@@ -183,15 +184,15 @@ def test_translated_mysql_parsing(qs):
                             #  qp.syntax_errors)
         cols, keys, funcs, dispcols= qp.columns, qp.keywords, qp.functions, \
             qp.display_columns
-        pretty_print(q, cols, keys, funcs, dispcols, s, qp.syntax_errors,
+        pretty_print(q, cols, keys, funcs, dispcols, s, syntax_errors,
                      show_diff=True)
 
 
 if __name__ == '__main__':
-    test_mysql_parsing(test_queries.queries[-1:])
+    #  test_mysql_parsing(test_queries.queries[-1:])
     #  test_mysql_parsing(test_queries.queries[35:42])
     #  test_mysql_parsing(test_queries.queries[6:7])
     #  test_mysql_parsing(test_queries.queries[:])
     #  test_mysql_parsing(broken_queries.queries[-1:])
     #  test_adql_translation(adql_queries.queries[-1:])
-    #  test_translated_mysql_parsing(mysql_adql_queries.queries)
+    test_translated_mysql_parsing(mysql_adql_queries.queries[-1:])
