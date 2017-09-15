@@ -636,6 +636,7 @@ HILBERTKEY                              : H_ I_ L_ B_ E_ R_ T_ K_ E_ Y_ ;
 COORDFROMHILBERTKEY                     : C_ O_ O_ R_ D_ F_ R_ O_ M_ H_ I_ L_ B_ E_ R_ T_ K_ E_ Y_ ;
 SUM_OF_SQUARES                          : S_ U_ M_ '_' O_ F_ '_' S_ Q_ U_ A_ R_ E_ S_ ;
 PARTITADD_SUM_OF_SQARES                 : P_ A_ R_ T_ I_ T_ A_ D_ D_ '_' S_ U_ M_ '_' O_ F_ '_' S_ Q_ A_ R_ E_ S_ ;
+GAIA_HEALPIX                            : G_ A_ I_ A_ '_' H_ E_ A_ L_ P_ I_ X_ ;
 
 // cutstom tokens
 
