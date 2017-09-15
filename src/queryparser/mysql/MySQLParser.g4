@@ -341,7 +341,9 @@ predicate:
 query:                  select_statement SEMI;
 
 schema_name:            ID ;
-select_list:            ( ( displayed_column ( COMMA displayed_column )* ) | ASTERISK ) ;
+select_list:            ( ( displayed_column ( COMMA displayed_column )* ) |
+                          ( ASTERISK ( COMMA displayed_column ( COMMA displayed_column )* )? )
+                        ) ;
 select_statement:       select_expression ( (UNION_SYM ( ALL )? ) select_expression )* ;
 
 simple_expr:
