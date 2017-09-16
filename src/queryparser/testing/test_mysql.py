@@ -808,6 +808,18 @@ class MysqlTestCase(TestCase):
             replace_schema_name={'d': 'foo', 'db2': 'bar', 'foo': 'bas'}
         )
 
+    def test_query048(self):
+        self._test_mysql_parsing(
+            """
+            SELECT *, AVG(par) as apar
+            FROM db.tab;
+            """,
+            ('db.tab.*',),
+            (),
+            ('AVG',),
+            ('*: db.tab.*', 'apar: db.tab.par'),
+        )
+
     def test_syntax_error(self):
         q = """SELECR a FROM db.tab;"""
         with self.assertRaises(QuerySyntaxError):
