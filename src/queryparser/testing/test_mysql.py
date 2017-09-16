@@ -820,8 +820,13 @@ class MysqlTestCase(TestCase):
             ('*: db.tab.*', 'apar: db.tab.par'),
         )
 
-    def test_syntax_error(self):
+    def test_syntax_error_001(self):
         q = """SELECR a FROM db.tab;"""
+        with self.assertRaises(QuerySyntaxError):
+            self._test_mysql_parsing(q)
+
+    def test_syntax_error_002(self):
+        q = """SELECR a, *, b FROM db.tab;"""
         with self.assertRaises(QuerySyntaxError):
             self._test_mysql_parsing(q)
 
