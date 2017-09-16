@@ -80,8 +80,9 @@ the ADQL query had no errors. The MySQL query can then be parsed with the
 Generating the parser from the git repository
 ---------------------------------------------
 
-To generate the parsers you need `python` (either 2 or 3), `java` above version 7, and `antlr4` (which
-has to be installed inside the `/usr/local/lib/` or `/usr/local/bin/` directories).
+To generate the parsers you need `python` (either 2 or 3), `java` above version 
+7, and `antlr4` (`antlr-4.*-complete.jar` has to be installed inside the 
+`/usr/local/lib/` or `/usr/local/bin/` directories).
 
 After cloning the project, run
 
