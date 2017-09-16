@@ -38,7 +38,7 @@ feeding it a MySQL query
 
 .. code-block:: python
 
-    sql = 'SELECT a FROM db.tab;'
+    sql = "SELECT a FROM db.tab;"
     qp.set_query(sql)
 
 and running it with
@@ -63,7 +63,7 @@ Translation of ADQL queries is done similarly by first creating an instance of t
 
     from queryparser.adql import ADQLQueryTranslator
 
-    adql = 'SELECT TOP 100 POINT("ICRS", ra, de) FROM db.tab;'
+    adql = "SELECT TOP 100 POINT('ICRS', ra, de) FROM db.tab;"
     adt = ADQLQueryTranslator(adql)
 
 and calling
@@ -90,7 +90,7 @@ After cloning the project run
 
     make
 
-and a `lib` directory will be created with the complete source for python2 and python3. After that run:
+and a `lib` directory will be created with the complete source for python2 and python3. After that run
 
 .. code-block:: bash
 
@@ -108,7 +108,7 @@ First, install `pytest`
 
     pip install pytest
 
-then run the test suite for a version of python you would like to test with:
+then run the test suite for a version of python you would like to test with
 
 .. code-block:: bash
     
