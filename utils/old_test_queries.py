@@ -886,4 +886,15 @@ queries = [
         ) sub USING(id);
         """,
     ),
+    (
+        """
+        SELECT ra1 FROM db.spatial
+        JOIN db.spatial2 USING (dist, ra1)
+        JOIN misc ON (dist=mass)
+        """,
+        ('db.spatial.*', 'db.spatial2.dist'),
+        ('join', '*'),
+        (),
+        (),
+    )
 ]
