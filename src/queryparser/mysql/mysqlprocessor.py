@@ -33,16 +33,8 @@ class MySQLQueryProcessor(object):
     :param query:
         MySQL query string.
 
-    :param strict: (optional)
-        If set to True ambiguous columns (b) in queries such as
-            SELECT a, b FROM db.tab1
-            JOIN (
-                SELECT id, col AS b FROM db.tab2
-            ) AS sub USING(id)
-        will raise a ``QueryError``.
-
     """
-    def __init__(self, query=None, strict=False):
+    def __init__(self, query=None):
         self.walker = antlr4.ParseTreeWalker()
 
         self.columns = set()
@@ -50,7 +42,6 @@ class MySQLQueryProcessor(object):
         self.functions = set()
         self.display_columns = []
         self.syntax_error_listener = SyntaxErrorListener()
-        self._strict = strict
         if query is not None:
             self._query = self._strip_query(query)
             self.process_query()
@@ -65,6 +56,9 @@ class MySQLQueryProcessor(object):
         join = 0
         join_using = None
 
+        # Keep track of the ctx stack
+        ctx_stack = []
+
         for i in column_keyword_function_listener.data:
             if isinstance(i[1], MySQLParser.Displayed_columnContext):
                 # this happens if there is an expression involving
@@ -77,17 +71,21 @@ class MySQLQueryProcessor(object):
                 alias = parse_alias(i[1].alias())
                 if alias is not None:
                     column_aliases.append(alias)
+                ctx_stack.append(i)
 
             if isinstance(i[1], MySQLParser.Table_atomContext):
                 select_list_tables.append([i[2], i[0]])
+                ctx_stack.append(i)
 
             if isinstance(i[1], MySQLParser.Table_referencesContext):
                 if len(i) > 2:
                     select_list_table_references.extend(i[2])
+                    ctx_stack.append(i)
 
             if isinstance(i[1], MySQLParser.Select_listContext):
                 if len(i) == 3:
                     select_list_columns.append(i[2])
+                    ctx_stack.append(i)
 
             if isinstance(i[1], MySQLParser.Where_clauseContext):
                 if len(i[2]) > 1:
@@ -95,13 +93,29 @@ class MySQLQueryProcessor(object):
                         other_columns.append([j])
                 else:
                     other_columns.append(i[2])
+                ctx_stack.append(i)
 
             if isinstance(i[1], MySQLParser.Join_conditionContext):
                 join = i[0]
-                if len(i[2]) > 1:
-                    for j in i[2]:
-                        other_columns.append([j])
                 join_using = i[2]
+
+                # if USING we need all columns in all columns if they
+                # have no references
+                if i[1].USING_SYM():
+                    for ctx in ctx_stack[::-1]:
+                        if not isinstance(ctx[1],
+                                          MySQLParser.Table_atomContext):
+                            break
+                        for ju in join_using:
+                            if ju[0][1] is None:
+                                other_columns.append([[[ctx[2][0], ctx[2][1],
+                                                        ju[0][2]], None]])
+                elif i[1].ON():
+                    if len(i[2]) > 1:
+                        for j in i[2]:
+                            other_columns.append([j])
+
+                ctx_stack.append(i)
 
             if isinstance(i[1], MySQLParser.Orderby_clauseContext):
                 if len(i[2]) > 1:
@@ -109,6 +123,7 @@ class MySQLQueryProcessor(object):
                         go_columns.append([j])
                 else:
                     go_columns.append(i[2])
+                ctx_stack.append(i)
 
             if isinstance(i[1], MySQLParser.Groupby_clauseContext):
                 if len(i[2]) > 1:
@@ -116,6 +131,7 @@ class MySQLQueryProcessor(object):
                         go_columns.append([j])
                 else:
                     go_columns.append(i[2])
+                ctx_stack.append(i)
 
         return select_list_columns, select_list_tables,\
             select_list_table_references, other_columns, go_columns, join,\
@@ -170,8 +186,8 @@ class MySQLQueryProcessor(object):
                          (tab[1] is None and c[0][1] is None)):
                     cname, calias, column_found, tab =\
                             self._get_budget_column(c, tab, budget[-1][2])
-                    # raise an ambigous column if using strict
-                    if column_found and self._strict and c[0][1] is None:
+                    # raise an ambigous column
+                    if column_found and c[0][1] is None:
                         raise QueryError("Column '%s' is possibly ambiguous."
                                          % c[0][2])
 
@@ -188,8 +204,9 @@ class MySQLQueryProcessor(object):
                     cname, calias, column_found, tab =\
                             self._get_budget_column(c, tab, ref[2])
 
+                    ref_cols = [j[0][2] for j in ref[2]]
                     if not column_found and c[0][1] is not None\
-                            and c[0][1] != tab[0][1]:
+                            and c[0][1] != tab[0][1] and '*' not in ref_cols:
                         raise QueryError("Unknown column '%s.%s'." % (c[0][1],
                                                                       c[0][2]))
 
@@ -249,10 +266,6 @@ class MySQLQueryProcessor(object):
         """
         Parses and processes the query. After a successful run it fills up
         columns, keywords, functions and syntax_errors lists.
-
-        :param strict: (optional)
-            Dictionary of replacement schema names. If it is provided
-            each key schema name will be replaced with its value.
 
         """
         # Antlr objects
@@ -453,14 +466,6 @@ class MySQLQueryProcessor(object):
 
         """
         return self._query
-
-    @property
-    def strict(self):
-        """
-        Get the strict flag.
-
-        """
-        return self._strict
 
     def _strip_query(self, query):
         return query.lstrip('\n').rstrip().rstrip(';') + ';'

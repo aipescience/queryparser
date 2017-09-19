@@ -888,13 +888,28 @@ queries = [
     ),
     (
         """
-        SELECT ra1 FROM db.spatial
-        JOIN db.spatial2 USING (dist, ra1)
-        JOIN misc ON (dist=mass)
+        SELECT q.ra, de, par
+        FROM (
+            SELECT *, MAX(meh) FROM db.tab
+        ) as q
+        LEFT OUTER JOIN db.tab2 AS t2 USING(ra, dist)
+        JOIN db.undef AS ud ON ud.dist = q.par
         """,
-        ('db.spatial.*', 'db.spatial2.dist'),
+        ('db.tab.*', 'db.tab2.ra', 'db.tab2.dist',
+         'db.undef.dist', 'db.tab2.de', 'db.tab2.par'),
         ('join', '*'),
+        ('MAX',),
+        ('ra1: db.tab.ra1', 'dec: db.tab.de', 'mass:db.tab.mass')
+    ),
+    (
+        """
+            ON q.ra = t2.ra AND q.dist = t2.dist
+        SELECT * FROM db.t1 LEFT JOIN (db.t2, db.t3, db.t4)
+        ON (t2.a = t1.a AND t3.b = t1.b AND t4.c = t1.c)
+        """,
         (),
         (),
-    )
+        (),
+        (),
+    ),
 ]

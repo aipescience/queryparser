@@ -11,6 +11,8 @@ from antlr4.error.ErrorListener import ErrorListener
 from .MySQLParser import MySQLParser
 from .MySQLParserListener import MySQLParserListener
 
+# logging.basicConfig(level=logging.INFO)
+
 
 def parse_alias(alias):
     """

@@ -577,8 +577,8 @@ class MysqlTestCase(TestCase):
                    h.`logg_SC` AS c3, h.`TEFF` AS c4
             FROM `RAVEPUB_DR5`.`RAVE_DR5` AS t
             JOIN (
-                SELECT `RAVE_OBS_ID`, `logg_SC`, k.`TEFF`
-                FROM `RAVEPUB_DR5`.`RAVE_Gravity_SC`
+                SELECT sc.`RAVE_OBS_ID`, `logg_SC`, k.`TEFF`
+                FROM `RAVEPUB_DR5`.`RAVE_Gravity_SC` sc
                 JOIN (
                     SELECT `RAVE_OBS_ID`, `TEFF`
                     FROM `RAVEPUB_DR5`.`RAVE_ON`
@@ -695,10 +695,12 @@ class MysqlTestCase(TestCase):
             """
             SELECT COUNT(*) AS n, id, mra, mlem AS qqq, blem
             FROM (
-                SELECT id, mra, mlem, inner2.col3 + inner2.parallax AS blem
+                SELECT inner1.id, mra, mlem,
+                       inner2.col3 + inner2.parallax AS blem
                 FROM (
-                    SELECT id, MAX(ra) AS mra, parallax, qwerty.mlem mlem
-                    FROM db.tab
+                    SELECT qwerty.id, MAX(ra) AS mra, inner1.parallax,
+                           qwerty.mlem mlem
+                    FROM db.tab dbt
                     JOIN (
                         SELECT rekt AS parallax, id, mlem
                         FROM db.bar
@@ -792,7 +794,6 @@ class MysqlTestCase(TestCase):
             ('join', 'limit'),
             (),
             (),
-            strict=True
         )
 
     def test_query047(self):
@@ -894,4 +895,4 @@ class MysqlTestCase(TestCase):
             ) AS sub USING(id)
             """
         with self.assertRaises(QueryError):
-            self._test_mysql_parsing(q, strict=True)
+            self._test_mysql_parsing(q)
