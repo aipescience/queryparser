@@ -243,7 +243,7 @@ class MySQLQueryProcessor(object):
                                 if t[1] == c[0][1]:
                                     cname = c[0][2]
                                     calias = c[1]
-                                    tab = [t] 
+                                    tab = [t]
                                     column_found = True
 
                             if not column_found:
@@ -280,7 +280,6 @@ class MySQLQueryProcessor(object):
                                 and c[0][2] not in column_aliases:
                             raise QueryError("Unknown column '%s'." % c[0][2])
 
-            print([[tab[0][0], tab[0][1], cname], calias])
             if touched_columns is not None:
                 touched_columns.append([[tab[0][0], tab[0][1], cname], calias])
             else:
