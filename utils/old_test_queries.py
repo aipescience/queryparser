@@ -892,8 +892,7 @@ queries = [
         FROM (
             SELECT *, MAX(meh) FROM db.tab
         ) as q
-        LEFT OUTER JOIN db.tab2 AS t2 USING(ra, dist)
-        JOIN db.undef AS ud ON ud.dist = q.par
+        JOIN db.tab2 USING(ra, dist)
         """,
         ('db.tab.*', 'db.tab2.ra', 'db.tab2.dist',
          'db.undef.dist', 'db.tab2.par'),
@@ -903,7 +902,6 @@ queries = [
     ),
     (
         """
-            ON q.ra = t2.ra AND q.dist = t2.dist
         SELECT * FROM db.t1 LEFT JOIN (db.t2, db.t3, db.t4)
         ON (t2.a = t1.a AND t3.b = t1.b AND t4.c = t1.c)
         """,

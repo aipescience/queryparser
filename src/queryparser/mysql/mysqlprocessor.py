@@ -108,7 +108,8 @@ class MySQLQueryProcessor(object):
                             break
                         for ju in join_using:
                             if ju[0][1] is None:
-                                other_columns.append([[[ctx[2][0], ctx[2][1],
+                                other_columns.append([[[ctx[2][0][0],
+                                                        ctx[2][0][1],
                                                         ju[0][2]], None]])
                 elif i[1].ON():
                     if len(i[2]) > 1:
@@ -234,8 +235,9 @@ class MySQLQueryProcessor(object):
                                 self._get_budget_column(c, tab, contents)
 
                         except KeyError:
-                            tabs = [j[0][0] for j in
+                            tabs = [j[0][0][:2] for j in
                                     subquery_contents.values()]
+                            tabs += [j[0][0] for j in select_list_tables]
                             column_found = False
                             for t in tabs:
                                 if t[1] == c[0][1]:
