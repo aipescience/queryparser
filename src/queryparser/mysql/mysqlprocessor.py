@@ -145,7 +145,11 @@ class MySQLQueryProcessor(object):
         column_found = False
 
         for bc in ref:
-            if bc[1] and c[0][2] == bc[1]:
+            if bc[0][2] == '*':
+                t = [[bc[0][0], bc[0][1]], 'None']
+                column_found = True
+                break
+            elif bc[1] and c[0][2] == bc[1]:
                 t = [[bc[0][0], bc[0][1]], 'None']
                 cname = bc[0][2]
                 if c[1] is None:
@@ -215,7 +219,14 @@ class MySQLQueryProcessor(object):
                     tab = ref[0]
 
             except KeyError:
-                if c[0][2] is not None and c[0][1] is not None:
+                if None not in c[0]:
+                    cname = c[0][2]
+                    calias = c[1]
+                    tab = [[c[0][0], c[0][1]]]
+                    column_found = True
+
+                # table is either referenced directly or by an alias
+                elif c[0][2] is not None and c[0][1] is not None:
                     if subquery_contents is not None:
                         try:
                             contents = subquery_contents[c[0][1]]
@@ -223,19 +234,37 @@ class MySQLQueryProcessor(object):
                                 self._get_budget_column(c, tab, contents)
 
                         except KeyError:
+                            tabs = [j[0][0] for j in
+                                    subquery_contents.values()]
+                            column_found = False
+                            for t in tabs:
+                                if t[1] == c[0][1]:
+                                    cname = c[0][2]
+                                    calias = c[1]
+                                    tab = t
+                                    column_found = True
+
+                            if not column_found:
+                                missing_columns.append(c)
+                                columns[i] = [[c[0][0], c[0][1],
+                                               c[0][2]], c[1]]
+                                if touched_columns is not None:
+                                    touched_columns.append([[c[0][0], c[0][1],
+                                                           c[0][2]], c[1]])
+                            continue
+                    else:
+                        column_found = False
+                        if tab[0][1] == c[0][1]:
+                            cname = c[0][2]
+                            calias = c[1]
+                            column_found = True
+                        if not column_found:
                             missing_columns.append(c)
                             columns[i] = [[c[0][0], c[0][1], c[0][2]], c[1]]
                             if touched_columns is not None:
                                 touched_columns.append([[c[0][0], c[0][1],
                                                        c[0][2]], c[1]])
                             continue
-                    else:
-                        missing_columns.append(c)
-                        columns[i] = [[c[0][0], c[0][1], c[0][2]], c[1]]
-                        if touched_columns is not None:
-                            touched_columns.append([[c[0][0], c[0][1],
-                                                   c[0][2]], c[1]])
-                        continue
 
                 elif c[0][2] is not None and c[0][1] is None and\
                         len(ref_dict.keys()) > 1 and not join:

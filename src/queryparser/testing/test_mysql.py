@@ -645,7 +645,7 @@ class MysqlTestCase(TestCase):
             SELECT * FROM db.A
             JOIN (
                 SELECT * FROM db.B
-            ) AS sub USING(id)
+            ) AS sub ON A.id = B.id
             """,
             ('db.A.*', 'db.B.*'),
             (),
@@ -818,7 +818,24 @@ class MysqlTestCase(TestCase):
             ('db.tab.*',),
             (),
             ('AVG',),
-            ('*: db.tab.*', 'apar: db.tab.par'),
+            ('*: db.tab.*', 'apar: db.tab.par')
+        )
+
+    def test_query049(self):
+        self._test_mysql_parsing(
+            """
+            SELECT q.ra, q.de, t2.par
+            FROM (
+                SELECT *, MAX(meh) FROM db.tab
+            ) as q
+            LEFT OUTER JOIN db.tab2 AS t2 USING(ra, dist)
+            JOIN db.undef AS ud ON ud.dist = q.par
+            """,
+            ('db.tab.*', 'db.tab2.ra', 'db.tab2.dist',
+             'db.undef.dist', 'db.tab2.par'),
+            ('join', '*'),
+            ('MAX',),
+            ('ra: db.tab.ra', 'de: db.tab.de', 'par: db.tab2.par')
         )
 
     def test_syntax_error_001(self):
