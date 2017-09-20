@@ -243,7 +243,7 @@ class MySQLQueryProcessor(object):
                                 if t[1] == c[0][1]:
                                     cname = c[0][2]
                                     calias = c[1]
-                                    tab = t
+                                    tab = [t] 
                                     column_found = True
 
                             if not column_found:
@@ -253,20 +253,14 @@ class MySQLQueryProcessor(object):
                                 if touched_columns is not None:
                                     touched_columns.append([[c[0][0], c[0][1],
                                                            c[0][2]], c[1]])
-                            continue
+                                continue
                     else:
-                        column_found = False
-                        if tab[0][1] == c[0][1]:
-                            cname = c[0][2]
-                            calias = c[1]
-                            column_found = True
-                        if not column_found:
-                            missing_columns.append(c)
-                            columns[i] = [[c[0][0], c[0][1], c[0][2]], c[1]]
-                            if touched_columns is not None:
-                                touched_columns.append([[c[0][0], c[0][1],
-                                                       c[0][2]], c[1]])
-                            continue
+                        missing_columns.append(c)
+                        columns[i] = [[c[0][0], c[0][1], c[0][2]], c[1]]
+                        if touched_columns is not None:
+                            touched_columns.append([[c[0][0], c[0][1],
+                                                   c[0][2]], c[1]])
+                        continue
 
                 elif c[0][2] is not None and c[0][1] is None and\
                         len(ref_dict.keys()) > 1 and not join:
@@ -286,6 +280,7 @@ class MySQLQueryProcessor(object):
                                 and c[0][2] not in column_aliases:
                             raise QueryError("Unknown column '%s'." % c[0][2])
 
+            print([[tab[0][0], tab[0][1], cname], calias])
             if touched_columns is not None:
                 touched_columns.append([[tab[0][0], tab[0][1], cname], calias])
             else:

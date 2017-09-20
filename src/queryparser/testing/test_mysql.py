@@ -876,11 +876,11 @@ class MysqlTestCase(TestCase):
     def test_query049(self):
         self._test_mysql_parsing(
             """
-            SELECT q.ra, q.de, t2.par
+            SELECT q.ra, q.de, tab2.par
             FROM (
                 SELECT *, MAX(meh) FROM db.tab
             ) as q
-            LEFT OUTER JOIN db.tab2 AS t2 USING(ra, dist)
+            LEFT OUTER JOIN db.tab2 USING(ra, dist)
             JOIN db.undef AS ud ON ud.dist = q.par
             """,
             ('db.tab.*', 'db.tab2.ra', 'db.tab2.dist',
