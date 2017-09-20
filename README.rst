@@ -47,7 +47,7 @@ and running it with
 
     qp.process_query()
 
-After the processing, the processor object ``qp`` will include columns,
+After the processing, the processor object ``qp`` will include tables, columns,
 functions, and keywords used in the query or will raise a ``QuerySyntaxError``
 if there are any syntax errors in the query.
 
