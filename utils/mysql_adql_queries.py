@@ -41,5 +41,14 @@ queries = [
          ),
         ('limit', 'where', 'join', 'group by'),
         ('sqrt', 'log10', 'log', 'count', 'floor', 'power')
-    )
+    ),
+    (
+        """
+        select log10(x), log(x), rand(), rand(5), 
+        TRUNCATE(x), TRUNCATE(x,3) from foo
+        """,
+        (),
+        (),
+        ()
+        )
 ]

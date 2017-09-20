@@ -912,7 +912,12 @@ queries = [
     ),
     (
         """
-            SELECT (((((((1+2)*3)/4)^5)%6)&7)>>8) FROM db.tab;
+        SELECT c.*
+        FROM db.companies AS c
+        JOIN db.users AS u USING(companyid)
+        JOIN db.jobs AS j USING(userid)
+        JOIN db.useraccounts AS us USING(userid)
+        WHERE j.jobid = 123;
         """,
         (),
         (),

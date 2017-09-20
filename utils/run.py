@@ -185,14 +185,14 @@ def test_translated_mysql_parsing(qs):
         cols, keys, funcs, dispcols= qp.columns, qp.keywords, qp.functions, \
             qp.display_columns
         pretty_print(q, cols, keys, funcs, dispcols, s, syntax_errors,
-                     show_diff=True)
+                     show_diff=False)
 
 
 if __name__ == '__main__':
-    test_mysql_parsing(test_queries.queries[-3:-2])
+    #  test_mysql_parsing(test_queries.queries[-1:])
     #  test_mysql_parsing(test_queries.queries[35:42])
     #  test_mysql_parsing(test_queries.queries[6:7])
     #  test_mysql_parsing(test_queries.queries[:])
     #  test_mysql_parsing(broken_queries.queries[-1:])
     #  test_adql_translation(adql_queries.queries[-1:])
-    #  test_translated_mysql_parsing(mysql_adql_queries.queries[-1:])
+    test_translated_mysql_parsing(mysql_adql_queries.queries[-1:])
