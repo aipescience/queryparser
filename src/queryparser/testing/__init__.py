@@ -9,7 +9,7 @@ from queryparser.adql import ADQLQueryTranslator
 class TestCase(unittest.TestCase):
 
     def _test_mysql_parsing(self, query, columns=None, keywords=None,
-                            functions=None, display_columns=None,
+                            functions=None, display_columns=None, tables=None,
                             replace_schema_name=None):
 
         if replace_schema_name is None:
@@ -24,6 +24,8 @@ class TestCase(unittest.TestCase):
         qp_display_columns = ['%s: %s' % (str(i[0]),
                                           '.'.join([str(j) for j in i[1]]))
                               for i in qp.display_columns]
+        qp_tables = ['.'.join([str(j) for j in i]) for i in qp.tables
+                      if i[0] is not None and i[1] is not None]
 
         if columns:
             self.assertSetEqual(set(columns), set(qp_columns))
@@ -36,6 +38,9 @@ class TestCase(unittest.TestCase):
 
         if display_columns:
             self.assertSetEqual(set(display_columns), set(qp_display_columns))
+
+        if tables:
+            self.assertSetEqual(set(tables), set(qp_tables))
 
     def _test_adql_mysql_translation(self, query, adql_query=None):
         adt = ADQLQueryTranslator(query)

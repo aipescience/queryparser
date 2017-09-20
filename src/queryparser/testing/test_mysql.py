@@ -14,7 +14,8 @@ class MysqlTestCase(TestCase):
             ('db.tab.a',),
             (),
             (),
-            ('col1: db.tab.a',)
+            ('col1: db.tab.a',),
+            ('db.tab',)
         )
 
     def test_query001(self):
@@ -25,7 +26,8 @@ class MysqlTestCase(TestCase):
             ('db.tab1.a',),
             (),
             (),
-            ('a: db.tab1.a',)
+            ('a: db.tab1.a',),
+            ('db.tab1', 'db.tab2')
         )
 
     def test_query002(self):
@@ -35,7 +37,9 @@ class MysqlTestCase(TestCase):
             """,
             (),
             (),
-            ()
+            (),
+            (),
+            ('db.tab',)
         )
 
     def test_query003(self):
@@ -47,7 +51,8 @@ class MysqlTestCase(TestCase):
             (),
             ('COUNT',),
             ('None: db.tab.None', 'a: db.tab.a', 'b: db.tab.b',
-             'None: db.tab.None')
+             'None: db.tab.None'),
+            ('db.tab',)
         )
 
     def test_query004(self):
@@ -58,7 +63,8 @@ class MysqlTestCase(TestCase):
             ('db.tab.a', 'db.tab.b'),
             (),
             ('AVG', 'ABS'),
-            ()
+            (),
+            ('db.tab',)
         )
 
     def test_query005(self):
@@ -69,7 +75,8 @@ class MysqlTestCase(TestCase):
             ('db.tab.a', 'db.tab.b'),
             (),
             ('AVG',),
-            ()
+            (),
+            ('db.tab',)
         )
 
     def test_query006(self):
@@ -80,7 +87,8 @@ class MysqlTestCase(TestCase):
             ('db.tab1.a', 'db.tab2.*'),
             ('limit', '*'),
             (),
-            ('a: db.tab1.a', '*: db.tab2.*')
+            ('a: db.tab1.a', '*: db.tab2.*'),
+            ('db.tab1', 'db.tab2')
         )
 
     def test_query007(self):
@@ -100,6 +108,7 @@ class MysqlTestCase(TestCase):
             ('fofid: MDR1.FOF.fofid', 'x: MDR1.FOF.x', 'y: MDR1.FOF.y',
              'z: MDR1.FOF.z', 'vx: MDR1.FOF.vx', 'vy: MDR1.FOF.vy',
              'vz: MDR1.FOF.vz'),
+            ('MDR1.FOF',)
         )
 
     def test_query008(self):
@@ -114,7 +123,8 @@ class MysqlTestCase(TestCase):
             ('where',),
             ('MAX',),
             ('article: world.shop.article', 'dealer: world.shop.dealer',
-             'price: world.shop.price')
+             'price: world.shop.price'),
+            ('world.shop', 'universe.shop')
         )
 
     def test_query009(self):
@@ -132,7 +142,8 @@ class MysqlTestCase(TestCase):
              'db.shop.foo', 'db.warehouse.bar'),
             ('where',),
             ('MAX',),
-            ('price: db.shop.price', 'dealer: db.shop.dealer')
+            ('price: db.shop.price', 'dealer: db.shop.dealer'),
+            ('db.shop', 'db.warehouse')
         )
 
     def test_query010(self):
@@ -146,7 +157,8 @@ class MysqlTestCase(TestCase):
             ('db1.table1.*', 'db2.table1.*'),
             ('join', '*'),
             (),
-            ('*: db1.table1.*', '*: db2.table1.*')
+            ('*: db1.table1.*', '*: db2.table1.*'),
+            ('db1.table1', 'db2.table1')
         )
 
     def test_query011(self):
@@ -159,7 +171,8 @@ class MysqlTestCase(TestCase):
             ('mmm.products.*',),
             ('where', '*'),
             (),
-            ('*: mmm.products.*',)
+            ('*: mmm.products.*',),
+            ('mmm.products',)
         )
 
     def test_query012(self):
@@ -175,7 +188,8 @@ class MysqlTestCase(TestCase):
              'bd.test_table.fi2', 'db.test_table.foo', 'bd.test_table.bar'),
             ('where', 'union'),
             (),
-            ('fi@1: db.test_table.fi@1', 'fi2: db.test_table.fi2')
+            ('fi@1: db.test_table.fi@1', 'fi2: db.test_table.fi2'),
+            ('db.test_table', 'bd.test_table')
         )
 
     def test_query013(self):
@@ -211,7 +225,8 @@ class MysqlTestCase(TestCase):
              'tdesc: tap_schema.tabs.description',
              'hcol: tap_schema.cols.column_name',
              'jcol: tap_schema.cols.column_name',
-             'kcol: tap_schema.cols.column_name')
+             'kcol: tap_schema.cols.column_name'),
+            ('tap_schema.tabs', 'tap_schema.cols')
         )
 
     def test_query014(self):
@@ -227,7 +242,8 @@ class MysqlTestCase(TestCase):
              'tap_schema.tabs.description', 'tap_schema.cols.ucd'),
             ('join', 'where'),
             (),
-            ('table_name: tap_schema.tabs.table_name',)
+            ('table_name: tap_schema.tabs.table_name',),
+            ('tap_schema.tabs', 'tap_schema.cols')
         )
 
     def test_query015(self):
@@ -241,7 +257,8 @@ class MysqlTestCase(TestCase):
             ('db.shirt.*', 'db.person.id', 'db.person.name'),
             ('join', 'where', '*'),
             (),
-            ('*: db.shirt.*',)
+            ('*: db.shirt.*',),
+            ('db.shirt', 'db.person')
         )
 
     def test_query016(self):
@@ -259,6 +276,7 @@ class MysqlTestCase(TestCase):
             (),
             ('x: MDR1.FOF.x', 'y: MDR1.FOF.y', 'z: MDR1.FOF.z',
              'mass: MDR1.FOF.mass'),
+            ('MDR1.FOF',)
         )
 
     def test_query017(self):
@@ -273,6 +291,7 @@ class MysqlTestCase(TestCase):
             (),
             ('x: MDR1.FOF.x', 'y: MDR1.FOF.y', 'z: MDR1.FOF.z',
              'mass: MDR1.FOF.mass'),
+            ('MDR1.FOF',)
         )
 
     def test_query020(self):
@@ -284,7 +303,8 @@ class MysqlTestCase(TestCase):
             ('MDR1.FOF.mass', 'MDR1.FOF.x'),
             (),
             ('log10', 'sqrt'),
-            ()
+            (),
+            ('MDR1.FOF',)
         )
 
     def test_query021(self):
@@ -296,7 +316,8 @@ class MysqlTestCase(TestCase):
             ('MDR1.FOF.x',),
             (),
             ('log10', 'ABS'),
-            ('log_x: MDR1.FOF.x',)
+            ('log_x: MDR1.FOF.x',),
+            ('MDR1.FOF',)
         )
 
     def test_query022(self):
@@ -309,7 +330,8 @@ class MysqlTestCase(TestCase):
             ('MDR1.FOF.snapnum', 'MDR1.FOF.None'),
             ('group by',),
             ('log10', 'COUNT'),
-            ('None: MDR1.FOF.None', 'snapnum: MDR1.FOF.snapnum')
+            ('None: MDR1.FOF.None', 'snapnum: MDR1.FOF.snapnum'),
+            ('MDR1.FOF',)
         )
 
     def test_query023(self):
@@ -332,7 +354,8 @@ class MysqlTestCase(TestCase):
             ('where', 'order by', 'limit'),
             (),
             ('bdmId: Bolshoi.BDMVProf.bdmId', 'Rbin: Bolshoi.BDMVProf.Rbin',
-             'mass: Bolshoi.BDMVProf.mass', 'dens: Bolshoi.BDMVProf.dens')
+             'mass: Bolshoi.BDMVProf.mass', 'dens: Bolshoi.BDMVProf.dens'),
+            ('Bolshoi.BDMVProf', 'Bolshoi.BDMV')
         )
 
     def test_query024(self):
@@ -354,7 +377,8 @@ class MysqlTestCase(TestCase):
             (),
             ('Mvir: MDPL2.Rockstar.Mvir',
              'diskMassStellar: MDPL2.Galacticus.diskMassStellar',
-             'spin: MDPL2.Rockstar.spin')
+             'spin: MDPL2.Rockstar.spin'),
+            ('MDPL2.Rockstar', 'MDPL2.Galacticus')
         )
 
     def test_query025(self):
@@ -371,7 +395,8 @@ class MysqlTestCase(TestCase):
              'MDR1.BDMV.None'),
             ('where', 'group by', 'order by'),
             ('COUNT', 'FLOOR', 'LOG10'),
-            ('log_mass: MDR1.BDMV.Mvir', 'num: MDR1.BDMV.None')
+            ('log_mass: MDR1.BDMV.Mvir', 'num: MDR1.BDMV.None'),
+            ('MDR1.BDMV',)
         )
 
     def test_query026(self):
@@ -387,7 +412,8 @@ class MysqlTestCase(TestCase):
             ('limit',),
             (),
             ('dens: Bolshoi.Dens256_z0.dens',
-             'snapnum: Bolshoi.Dens256_z0.snapnum')
+             'snapnum: Bolshoi.Dens256_z0.snapnum'),
+            ('Bolshoi.Dens256_z0',)
         )
 
     def test_query027(self):
@@ -404,7 +430,8 @@ class MysqlTestCase(TestCase):
             ('limit', 'where'),
             (),
             ('dens: Bolshoi.Dens256.dens', 'snapnum: Bolshoi.Dens256.snapnum',
-             'zred: Bolshoi.Redshifts.zred')
+             'zred: Bolshoi.Redshifts.zred'),
+            ('Bolshoi.Dens256', 'Bolshoi.Redshifts')
         )
 
     def test_query028(self):
@@ -422,7 +449,8 @@ class MysqlTestCase(TestCase):
             (),
             ('dens: Bolshoi.Dens256_z0.dens',
              'snapnum: Bolshoi.Dens256_z0.snapnum',
-             'zred: Bolshoi.Redshifts.zred')
+             'zred: Bolshoi.Redshifts.zred'),
+            ('Bolshoi.Dens256_z0', 'Bolshoi.Redshifts')
         )
 
     def test_query029(self):
@@ -443,6 +471,7 @@ class MysqlTestCase(TestCase):
             ('fofTreeId: MDR1.FOFMtree.fofTreeId', 'mass: MDR1.FOFMtree.mass',
              'np: MDR1.FOFMtree.np',
              'treeSnapnum: MDR1.FOFMtree.treeSnapnum'),
+            ('MDR1.FOFMtree',)
         )
 
     def test_query030(self):
@@ -461,7 +490,8 @@ class MysqlTestCase(TestCase):
             ('order by', 'where'),
             (),
             ('snapnum: Bolshoi.Dens256_z0.snapnum',
-             'aexp: Bolshoi.Redshifts.aexp', 'zred: Bolshoi.Redshifts.zred')
+             'aexp: Bolshoi.Redshifts.aexp', 'zred: Bolshoi.Redshifts.zred'),
+            ('Bolshoi.Dens256_z0', 'Bolshoi.Redshifts')
         )
 
     def test_query031(self):
@@ -481,7 +511,8 @@ class MysqlTestCase(TestCase):
             (),
             ('Mvir: MDR1.BDMV.Mvir', 'x: MDR1.BDMV.x', 'Rvir: MDR1.BDMV.Rvir',
              'y: MDR1.BDMV.y', 'z: MDR1.BDMV.z', 'bdmId: MDR1.BDMV.bdmId',
-             'hostFlag: MDR1.BDMV.hostFlag', 'dens: MDR1.Dens512_z0.dens')
+             'hostFlag: MDR1.BDMV.hostFlag', 'dens: MDR1.Dens512_z0.dens'),
+            ('MDR1.BDMV', 'MDR1.Dens512_z0')
         )
 
     def test_query032(self):
@@ -495,6 +526,7 @@ class MysqlTestCase(TestCase):
             ('where',),
             (),
             ('x: MDR1.FOF.x', 'y: MDR1.FOF.y', 'mass: MDR1.FOF.mass'),
+            ('MDR1.FOF',)
         )
 
     def test_query033(self):
@@ -527,7 +559,8 @@ class MysqlTestCase(TestCase):
             ('where', 'order by', 'limit'),
             ('STD',),
             ('bdmId: Bolshoi.BDMVProf.bdmId', 'Rbin: Bolshoi.BDMVProf.Rbin',
-             'mass: Bolshoi.BDMVProf.mass', 'dens: Bolshoi.BDMVProf.dens')
+             'mass: Bolshoi.BDMVProf.mass', 'dens: Bolshoi.BDMVProf.dens'),
+            ('Bolshoi.BDMVProf', 'Bolshoi.BDMV')
         )
 
     def test_query034(self):
@@ -541,7 +574,8 @@ class MysqlTestCase(TestCase):
             ('db.VII/233/xsc.DEJ2000', 'db.VII/233/xsc.RAJ2000'),
             ('limit',),
             ('DEGREES', 'RADIANS', 'sdist', 'spoint'),
-            ()
+            (),
+            ('db.VII/233/xsc',),
         )
 
     def test_query035(self):
@@ -553,7 +587,8 @@ class MysqlTestCase(TestCase):
             ('db.Users.Data', 'db.Users.Name', 'db.Users.Pass'),
             ('where',),
             (),
-            ('Data: db.Users.Data',)
+            ('Data: db.Users.Data',),
+            ('db.Users',)
         )
 
     def test_query036(self):
@@ -567,7 +602,8 @@ class MysqlTestCase(TestCase):
             ('GDR1.gaia_source.ra', 'GDR1.gaia_source.dec'),
             ('where',),
             (),
-            ('ra1: GDR1.gaia_source.ra', 'ra2: GDR1.gaia_source.ra')
+            ('ra1: GDR1.gaia_source.ra', 'ra2: GDR1.gaia_source.ra'),
+            ('GDR1.gaia_source',)
         )
 
     def test_query037(self):
@@ -596,7 +632,9 @@ class MysqlTestCase(TestCase):
             ('c1: RAVEPUB_DR5.RAVE_DR5.RAVE_OBS_ID',
              'c2: RAVEPUB_DR5.RAVE_DR5.HEALPix',
              'c3: RAVEPUB_DR5.RAVE_Gravity_SC.logg_SC',
-             'c4: RAVEPUB_DR5.RAVE_ON.TEFF')
+             'c4: RAVEPUB_DR5.RAVE_ON.TEFF'),
+            ('RAVEPUB_DR5.RAVE_DR5', 'RAVEPUB_DR5.RAVE_Gravity_SC',
+             'RAVEPUB_DR5.RAVE_ON')
         )
 
     def test_query038(self):
@@ -614,7 +652,10 @@ class MysqlTestCase(TestCase):
             """,
             ('GDR1.gaia_source.ra', 'GDR1.gaia_source.dec'),
             ('where', 'order by'),
-            ('sdist', 'scircle', 'RADIANS', 'spoint', 'srcontainsl', 'DEGREES')
+            ('sdist', 'scircle', 'RADIANS', 'spoint', 'srcontainsl',
+             'DEGREES'),
+            (),
+            ('GDR1.gaia_source',)
         )
 
     def test_query039(self):
@@ -625,7 +666,8 @@ class MysqlTestCase(TestCase):
             ('db.tab.a',),
             (),
             (),
-            ('a: db.tab.a',)
+            ('a: db.tab.a',),
+            ('db.tab',)
         )
 
     def test_query040(self):
@@ -636,7 +678,8 @@ class MysqlTestCase(TestCase):
             ('db.tab.*',),
             ('*'),
             (),
-            ('*: db.tab.*',)
+            ('*: db.tab.*',),
+            ('db.tab',)
         )
 
     def test_query041(self):
@@ -645,12 +688,13 @@ class MysqlTestCase(TestCase):
             SELECT * FROM db.A
             JOIN (
                 SELECT * FROM db.B
-            ) AS sub ON A.id = B.id
+            ) AS sub USING(id)
             """,
             ('db.A.*', 'db.B.*'),
             (),
             (),
-            ('*: db.A.*',)
+            ('*: db.A.*',),
+            ('db.A', 'db.B')
         )
 
     def test_query042(self):
@@ -670,7 +714,8 @@ class MysqlTestCase(TestCase):
              'db.tab.zeta', 'db.tab.id', 'db.bar.id'),
             ('group by', 'where', 'join'),
             (),
-            ('a: None.None.a', 'b: None.None.b')
+            ('a: None.None.a', 'b: None.None.b'),
+            ('db.tab', 'db.bar')
         )
 
     def test_query043(self):
@@ -687,7 +732,8 @@ class MysqlTestCase(TestCase):
             ('limit',),
             (),
             ('a: db.tab.ra', 'qqq: db.tab.ra', 'de: db.tab.de',
-             'de: db.tab.de', 'bar: db.tab.foo', 'bar: db.tab.foo')
+             'de: db.tab.de', 'bar: db.tab.foo', 'bar: db.tab.foo'),
+            ('db.tab',)
         )
 
     def test_query044(self):
@@ -725,6 +771,7 @@ class MysqlTestCase(TestCase):
             ('MAX', 'COUNT'),
             ('n: None.None.None', 'id: db.bar.id', 'mra: db.tab.ra',
              'qqq: db.bar.mlem', 'blem: None.None.blem'),
+            ('db.tab', 'db.bar', 'db.gaia')
         )
 
     def test_query045(self):
@@ -772,7 +819,9 @@ class MysqlTestCase(TestCase):
             ('sqrt', 'log10', 'log', 'count', 'floor', 'power'),
             ('g_min_ks: None.None.g_min_ks_index',
              'g_mag_abs: None.None.g_mag_abs_index',
-             'n: None.None.None')
+             'n: None.None.None'),
+            ('gaiadr1.tgas_source', 'gaiadr1.tmass_best_neighbour',
+             'gaiadr1.tmass_original_valid')
         )
 
     def test_query046(self):
@@ -794,6 +843,7 @@ class MysqlTestCase(TestCase):
             ('join', 'limit'),
             (),
             (),
+            ('db.tab', 'db.blem')
         )
 
     def test_query047(self):
@@ -806,6 +856,7 @@ class MysqlTestCase(TestCase):
             (),
             (),
             (),
+            ('foo.tab', 'bas.tab', 'bar.tab', 'x.y'),
             replace_schema_name={'d': 'foo', 'db2': 'bar', 'foo': 'bas'}
         )
 
@@ -818,7 +869,8 @@ class MysqlTestCase(TestCase):
             ('db.tab.*',),
             (),
             ('AVG',),
-            ('*: db.tab.*', 'apar: db.tab.par')
+            ('*: db.tab.*', 'apar: db.tab.par'),
+            ('db.tab',),
         )
 
     def test_query049(self):
@@ -835,7 +887,8 @@ class MysqlTestCase(TestCase):
              'db.undef.dist', 'db.tab2.par'),
             ('join', '*'),
             ('MAX',),
-            ('ra: db.tab.ra', 'de: db.tab.de', 'par: db.tab2.par')
+            ('ra: db.tab.ra', 'de: db.tab.de', 'par: db.tab2.par'),
+            ('db.tab', 'db.tab2', 'db.undef'),
         )
 
     def test_syntax_error_001(self):

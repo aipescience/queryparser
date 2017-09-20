@@ -320,6 +320,7 @@ class MySQLQueryProcessor(object):
         subquery_aliases = [None]
         keywords = []
         functions = []
+        tables = []
 
         self.walker.walk(query_listener, tree)
         keywords.extend(query_listener.keywords)
@@ -378,6 +379,8 @@ class MySQLQueryProcessor(object):
                 select_list_table_references, other_columns, go_columns, join,\
                 join_using, column_aliases =\
                 self._extract_instances(column_keyword_function_listener)
+
+            tables.extend([i[0][0] for i in select_list_tables])
 
             # Then we need to connect the column names s with tables and
             # databases
@@ -489,6 +492,7 @@ class MySQLQueryProcessor(object):
         self.keywords = list(set(keywords))
         self.functions = list(set(functions))
         self.display_columns = [(i[0], i[1]) for i in display_columns]
+        self.tables = tables
 
     @property
     def query(self):

@@ -189,7 +189,7 @@ def test_translated_mysql_parsing(qs):
 
 
 if __name__ == '__main__':
-    test_mysql_parsing(test_queries.queries[-3:-2])
+    test_mysql_parsing(test_queries.queries[-1:])
     #  test_mysql_parsing(test_queries.queries[35:42])
     #  test_mysql_parsing(test_queries.queries[6:7])
     #  test_mysql_parsing(test_queries.queries[:])
