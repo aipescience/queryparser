@@ -143,7 +143,7 @@ query_expression:
         | query_expression EXCEPT ( ALL )? query_term
         | joined_table ;
 query_name:                     ID ;
-query:                          query_specification SEMI;
+query:                          query_expression SEMI;
 query_specification:            ( WITH with_query )? select_query ;
 query_term:                     non_join_query_primary | query_term INTERSECT ( ALL )? query_expression | joined_table ;
 radius:                         numeric_value_expression ;

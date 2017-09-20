@@ -44,8 +44,12 @@ queries = [
     ),
     (
         """
-        select log10(x), log(x), rand(), rand(5), 
-        TRUNCATE(x), TRUNCATE(x,3) from foo
+        SELECT TAP_UPLOAD.user_table.ra
+        FROM TAP_UPLOAD.user_table a
+        WHERE (
+            1=CONTAINS(
+            POINT('ICRS', usnob.data.raj2000, usnob.data.dej2000),
+            CIRCLE('ICRS', TAP_UPLOAD.user_table.ra2000, a.dec2000, 0.016)))
         """,
         (),
         (),

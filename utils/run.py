@@ -72,7 +72,7 @@ def pretty_print(q, columns, keywords, functions, display_columns,
         if len(display_columns):
             print('|' + ' ' * 78 + '|')
             print('|  Display columns:' + ' ' * 60 + '|')
-            for i in sorted(display_columns):
+            for i in display_columns:
                 print('|\t' + i + ' ' * (71 - len(i)) + '|')
 
         if len(keywords):
