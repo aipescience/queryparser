@@ -44,7 +44,7 @@ queries = [
     ),
     (
         """
-        select x from db.t1 having x=z
+        select x from db.y where z iN (a)
         """,
         (),
         (),
