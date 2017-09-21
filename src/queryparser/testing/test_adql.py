@@ -499,3 +499,14 @@ class ADQLTestCase(TestCase):
             ('spoint', 'RADIANS'),
             ('y: db.tab.z',)
         )
+
+    def test_query104(self):
+        self._test_adql_mysql_translation_parsing(
+            """
+            SELECT a FROM db.tab WHERE a IN (b)
+            """,
+            ('db.tab.a', 'db.tab.b'),
+            ('where',),
+            (),
+            ('a: db.tab.a',)
+        )

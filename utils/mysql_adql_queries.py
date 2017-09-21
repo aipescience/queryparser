@@ -44,7 +44,7 @@ queries = [
     ),
     (
         """
-        select x from db.y where z iN (a)
+        select x from db.y where z in (a)
         """,
         (),
         (),
