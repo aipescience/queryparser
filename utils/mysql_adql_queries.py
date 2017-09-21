@@ -44,7 +44,10 @@ queries = [
     ),
     (
         """
-        select x from db.y where z in (a)
+        WITH t1 AS (
+            SELECT a FROM db.tab
+        )
+        SELECT t1.* FROM t1;
         """,
         (),
         (),

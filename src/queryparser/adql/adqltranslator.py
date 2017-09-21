@@ -304,15 +304,22 @@ class FormatListener(ADQLParserListener):
     def visitTerminal(self, node):
         try:
             if node.parentCtx.INTERSECT():
-                raise QueryError('INTERSECT not supported. Please rewrite ' +
-                                 'query using WHERE statement.')
+                raise QueryError('INTERSECT operator not supported. Please ' +
+                                 'rewrite query using WHERE statement.')
         except AttributeError:
             pass
 
         try:
             if node.parentCtx.EXCEPT():
-                raise QueryError('EXCEPT not supported. Please rewrite ' +
-                                 'query using WHERE statement.')
+                raise QueryError('EXCEPT operator not supported. Please ' +
+                                 'rewrite query using WHERE statement.')
+        except AttributeError:
+            pass
+
+        try:
+            if node.parentCtx.WITH():
+                raise QueryError('WITH clause not supported.')
+
         except AttributeError:
             pass
 

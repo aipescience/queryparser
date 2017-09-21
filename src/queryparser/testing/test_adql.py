@@ -416,6 +416,13 @@ class ADQLTestCase(TestCase):
         with self.assertRaises(QueryError):
             self._test_adql_mysql_translation_parsing(q)
 
+    def test_query_error_004(self):
+        q = """
+            WITH 
+            """
+        with self.assertRaises(QueryError):
+            self._test_adql_mysql_translation_parsing(q)
+
     def test_query100(self):
         self._test_adql_mysql_translation_parsing(
             """
