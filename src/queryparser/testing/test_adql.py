@@ -393,10 +393,28 @@ class ADQLTestCase(TestCase):
         with self.assertRaises(QuerySyntaxError):
             self._test_adql_mysql_translation(q)
 
-    def test_query_error(self):
+    def test_query_error_001(self):
         adt = ADQLQueryTranslator()
         with self.assertRaises(QueryError):
             adt.to_mysql()
+
+    def test_query_error_002(self):
+        q = """
+            SELECT a FROM db.tab
+            INTERSECT
+            SELECT b FROM db.tab;
+            """
+        with self.assertRaises(QueryError):
+            self._test_adql_mysql_translation_parsing(q)
+
+    def test_query_error_003(self):
+        q = """
+            SELECT a FROM db.tab
+            EXCEPT
+            SELECT b FROM db.tab;
+            """
+        with self.assertRaises(QueryError):
+            self._test_adql_mysql_translation_parsing(q)
 
     def test_query100(self):
         self._test_adql_mysql_translation_parsing(

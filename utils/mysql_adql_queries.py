@@ -44,11 +44,9 @@ queries = [
     ),
     (
         """
-        select dist, height from spatial
-        union
-        select dist, ra1 as height from spatial2
-        except
-        select "left-right" as dist, "plAin" as height from quoted
+            SELECT a FROM db.tab
+            INTERSECT
+            SELECT b FROM db.tab;
         """,
         (),
         (),
