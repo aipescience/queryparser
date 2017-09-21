@@ -171,6 +171,7 @@ def test_translated_mysql_parsing(qs):
         s = time.time()
         adt.set_query(q[0])
         translated_query = adt.to_mysql()
+        print(translated_query)
         qp.set_query(translated_query)
         try:
             qp.process_query()

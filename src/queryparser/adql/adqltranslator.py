@@ -17,9 +17,9 @@ from ..exceptions import QueryError, QuerySyntaxError
 # between the name and left parenthesis is not allowed and needs to be
 # deleted.
 adql_function_names = ('ABS', 'CEILING', 'DEGREES', 'EXP', 'FLOOR', 'LOG',
-                       'LOG10', 'MOD', 'PI', 'POWER', 'RADIANS', 'SQRT',
-                       'TRUNCATE', 'COUNT', 'ACOS', 'ASIN', 'ATAN', 'ATAN2',
-                       'COS', 'COT', 'SIN', 'TAN')
+                       'LOG10', 'MOD', 'PI', 'POWER', 'RADIANS', 'RAND',
+                       'SQRT', 'TRUNCATE', 'COUNT', 'ACOS', 'ASIN', 'ATAN',
+                       'ATAN2', 'COS', 'COT', 'SIN', 'TAN')
 
 
 def _remove_children(ctx):
@@ -303,6 +303,20 @@ class FormatListener(ADQLParserListener):
 
     def visitTerminal(self, node):
         try:
+            if node.parentCtx.INTERSECT():
+                raise QueryError('INTERSECT not supported. Please rewrite ' +
+                                 'query using WHERE statement.')
+        except AttributeError:
+            pass
+
+        try:
+            if node.parentCtx.EXCEPT():
+                raise QueryError('EXCEPT not supported. Please rewrite ' +
+                                 'query using WHERE statement.')
+        except AttributeError:
+            pass
+
+        try:
             nd = self.contexts[node.parentCtx]
         except KeyError:
             nd = node.getText()
@@ -360,8 +374,6 @@ class ADQLQueryTranslator(object):
         self.parser._listeners = [self.syntax_error_listener]
 
         self.tree = self.parser.query()
-        #  self.parsed = True
-        self.syntax_errors = self.syntax_error_listener.syntax_errors
 
         if len(self.syntax_error_listener.syntax_errors):
             raise QuerySyntaxError(self.syntax_error_listener.syntax_errors)

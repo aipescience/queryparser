@@ -311,7 +311,7 @@ REAL    : (  INT DOT INT | INT DOT | DOT INT  )
 	      (  ('E'|'e') ( PLUS | MINUS )? INT  )?
 ;
 
-fragment HEX_DIGIT_FRAGMENT: ( 'a'..'f' | 'A'..'F' | '0'..'9' ) ;
+    fragment HEX_DIGIT_FRAGMENT: ( 'a'..'f' | 'A'..'F' | '0'..'9' ) ;
 HEX_DIGIT:
 	(  '0x'     (HEX_DIGIT_FRAGMENT)+  )
 ;

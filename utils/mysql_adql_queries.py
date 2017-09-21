@@ -44,12 +44,11 @@ queries = [
     ),
     (
         """
-        SELECT TAP_UPLOAD.user_table.ra
-        FROM TAP_UPLOAD.user_table a
-        WHERE (
-            1=CONTAINS(
-            POINT('ICRS', usnob.data.raj2000, usnob.data.dej2000),
-            CIRCLE('ICRS', TAP_UPLOAD.user_table.ra2000, a.dec2000, 0.016)))
+        select dist, height from spatial
+        union
+        select dist, ra1 as height from spatial2
+        except
+        select "left-right" as dist, "plAin" as height from quoted
         """,
         (),
         (),
