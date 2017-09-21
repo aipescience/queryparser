@@ -87,7 +87,8 @@ class MySQLQueryProcessor(object):
                     select_list_columns.append(i[2])
                     ctx_stack.append(i)
 
-            if isinstance(i[1], MySQLParser.Where_clauseContext):
+            if isinstance(i[1], MySQLParser.Where_clauseContext) or\
+               isinstance(i[1], MySQLParser.Having_clauseContext):
                 if len(i[2]) > 1:
                     for j in i[2]:
                         other_columns.append([j])

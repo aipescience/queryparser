@@ -705,7 +705,7 @@ class MysqlTestCase(TestCase):
                 SELECT (alpha + beta) AS a, gamma / delta AS b
                 FROM db.tab AS foo
                 INNER JOIN db.bar AS bas
-                ON foo.id = bas.id 
+                ON foo.id = bas.id
                 WHERE zeta > 10
             ) AS sub
             GROUP BY a ASC, b DESC WITH ROLLUP
@@ -830,7 +830,7 @@ class MysqlTestCase(TestCase):
             SELECT ra, sub.qqq, t1.bar
             FROM db.tab t1
             JOIN (
-                SELECT subsub.col1 AS qqq, subsub.col2, subsub.id, bar 
+                SELECT subsub.col1 AS qqq, subsub.col2, subsub.id, bar
                 FROM (
                     SELECT col1, col2, id, foo AS bar
                     FROM db.blem
@@ -897,15 +897,27 @@ class MysqlTestCase(TestCase):
             SELECT a, b
             FROM (
                 SELECT * FROM db.tab1
-                UNION 
+                UNION
                 SELECT c, d FROM db.tab2
-            ) AS sub 
+            ) AS sub
             """,
             ('db.tab1.*', 'db.tab2.c', 'db.tab2.d'),
             ('union', '*'),
             (),
             ('a: db.tab1.a', 'b: db.tab1.b'),
             ('db.tab1', 'db.tab2')
+        )
+
+    def test_query051(self):
+        self._test_mysql_parsing(
+            """
+            SELECT a FROM db.tab HAVING b > 0
+            """,
+            ('db.tab.a', 'db.tab.b'),
+            ('having',),
+            (),
+            ('a: db.tab.a',),
+            ('db.tab',)
         )
 
     def test_syntax_error_001(self):

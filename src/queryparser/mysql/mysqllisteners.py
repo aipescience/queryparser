@@ -11,7 +11,7 @@ from antlr4.error.ErrorListener import ErrorListener
 from .MySQLParser import MySQLParser
 from .MySQLParserListener import MySQLParserListener
 
-# logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO)
 
 
 def parse_alias(alias):
@@ -184,6 +184,14 @@ class ColumnKeywordFunctionListener(MySQLParserListener):
 
     def enterWhere_clause(self, ctx):
         self.keywords.append('where')
+        self._extract_column(ctx)
+        logging.info((ctx.depth(), ctx.__class__.__name__,
+                     self._extract_column(ctx, append=False)[1]))
+        self.data.append([ctx.depth(), ctx,
+                          self._extract_column(ctx, append=False)[1]])
+
+    def enterHaving_clause(self, ctx):
+        self.keywords.append('having')
         self._extract_column(ctx)
         logging.info((ctx.depth(), ctx.__class__.__name__,
                      self._extract_column(ctx, append=False)[1]))

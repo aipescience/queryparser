@@ -44,20 +44,13 @@ queries = [
     ),
     (
         """
-        SELECT a, b
-        FROM (
-            SELECT * FROM db.tab1
-            UNION 
-            SELECT c, d FROM db.tab2
-        ) AS sub 
+        select x from db.t1 having x=z
         """,
-        ('db.tab1.*', 'db.tab2.c', 'db.tab2.d'),
-        ('union', '*'),
         (),
-        ('a: db.tab1.a', 'b: db.tab1.b')
+        (),
+        (),
+        (),
         """
-        SELECT dist, height FROM db.spatial
-        UNION 
         """
         )
 ]
