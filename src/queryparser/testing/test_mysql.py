@@ -47,11 +47,10 @@ class MysqlTestCase(TestCase):
             """
             SELECT COUNT(*), a*2, b, 100 FROM db.tab;
             """,
-            ('db.tab.a', 'db.tab.b', 'db.tab.None'),
+            ('db.tab.a', 'db.tab.b'),
             (),
             ('COUNT',),
-            ('None: db.tab.None', 'a: db.tab.a', 'b: db.tab.b',
-             'None: db.tab.None'),
+            ('a: db.tab.a', 'b: db.tab.b'),
             ('db.tab',)
         )
 
@@ -327,10 +326,10 @@ class MysqlTestCase(TestCase):
             FROM MDR1.FOF
             GROUP BY snapnum
             """,
-            ('MDR1.FOF.snapnum', 'MDR1.FOF.None'),
+            ('MDR1.FOF.snapnum',),
             ('group by',),
             ('log10', 'COUNT'),
-            ('None: MDR1.FOF.None', 'snapnum: MDR1.FOF.snapnum'),
+            ('snapnum: MDR1.FOF.snapnum', ),
             ('MDR1.FOF',)
         )
 

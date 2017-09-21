@@ -44,10 +44,8 @@ queries = [
     ),
     (
         """
-        WITH t1 AS (
-            SELECT a FROM db.tab
-        )
-        SELECT t1.* FROM t1;
+        select dist from db.spatial where exists 
+        (select * from db.misc where dist=misc.mass);
         """,
         (),
         (),

@@ -912,16 +912,15 @@ queries = [
     ),
     (
         """
-        SELECT c.*
-        FROM db.companies AS c
-        JOIN db.users AS u USING(companyid)
-        JOIN db.jobs AS j USING(userid)
-        JOIN db.useraccounts AS us USING(userid)
-        WHERE j.jobid = 123;
+        SELECT a, 1, b, 2 FROM sv.tab;
         """,
         (),
         (),
         (),
         (),
+        """
+        select dist from db.spatial where exists 
+        (select * from db.misc where dist=misc.mass);
+        """
     ),
 ]

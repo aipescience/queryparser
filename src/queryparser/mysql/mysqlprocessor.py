@@ -172,12 +172,18 @@ class MySQLQueryProcessor(object):
         # Here we store all columns that might have references somewhere
         # higer up in the tree structure. We'll revisit them later.
         missing_columns = []
+        remove_column_idxs = []
 
         for i, col in enumerate(columns):
             c = col[0]
 
             cname = c[0][2]
             calias = c[1]
+
+            # this can happen for example in ... WHERE EXISTS ... clauses
+            if cname is None and calias is None:
+                remove_column_idxs.append(i)
+                continue
 
             tab = [[None, None], None]
             try:
@@ -286,6 +292,8 @@ class MySQLQueryProcessor(object):
             else:
                 columns[i] = [[tab[0][0], tab[0][1], cname], calias]
 
+        for i in remove_column_idxs[::-1]:
+            columns.pop(i)
         return missing_columns
 
     def process_query(self, replace_schema_name={}):
