@@ -418,7 +418,10 @@ class ADQLTestCase(TestCase):
 
     def test_query_error_004(self):
         q = """
-            WITH 
+            WITH t1 AS (
+                SELECT a FROM db.tab
+            )
+            SELECT t1.* FROM t1;
             """
         with self.assertRaises(QueryError):
             self._test_adql_mysql_translation_parsing(q)
