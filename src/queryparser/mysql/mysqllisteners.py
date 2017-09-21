@@ -252,22 +252,21 @@ class RemoveSubqueriesListener(MySQLParserListener):
     """
     def __init__(self, depth):
         self.depth = depth
-        #  self.subquery_aliases = []
 
     def enterSelect_expression(self, ctx):
         parent = ctx.parentCtx.parentCtx
 
         if isinstance(parent, MySQLParser.SubqueryContext) and ctx.depth() >\
                 self.depth:
-            try:
-                alias = parent.parentCtx.alias()
-            except AttributeError:
-                alias = None
-
-            # subquery alias
-            alias = parse_alias(alias)
-            #  self.subquery_aliases.append([alias, ctx.depth()])
-            ctx.parentCtx.removeLastChild()
+            # we need to remove all Select_expression instances, not
+            # just the last one so we loop over until we get all of them out
+            seinstances = [isinstance(i, MySQLParser.Select_expressionContext)
+                           for i in ctx.parentCtx.children]
+            while True in seinstances:
+                ctx.parentCtx.removeLastChild()
+                seinstances = [isinstance(i,
+                                          MySQLParser.Select_expressionContext)
+                               for i in ctx.parentCtx.children]
 
 
 class SchemaNameListener(MySQLParserListener):

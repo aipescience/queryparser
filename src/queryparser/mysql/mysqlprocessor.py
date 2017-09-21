@@ -334,11 +334,6 @@ class MySQLQueryProcessor(object):
 
         subquery_contents = {}
 
-        # Check if we have non-unique subquery aliases
-        if len(set(subquery_aliases.values())) !=\
-                len(subquery_aliases.values()):
-            raise QueryError('Query includes non-unique subquery aliases.')
-
         # Iterate through subqueries starting with the lowerst level
         for ccc, ctx in enumerate(query_listener.select_expressions[::-1]):
             remove_subquieries_listener = RemoveSubqueriesListener(ctx.depth())
@@ -352,11 +347,6 @@ class MySQLQueryProcessor(object):
 
             keywords.extend(column_keyword_function_listener.keywords)
             functions.extend(column_keyword_function_listener.functions)
-
-            # Let's make sure we have a select expression context
-            #  if not isinstance(column_keyword_function_listener.data[0][1],
-            #                    MySQLParser.Select_expressionContext):
-            #      continue
 
             # Does the subquery has an alias?
             try:
@@ -392,10 +382,6 @@ class MySQLQueryProcessor(object):
                     for b in budget:
                         if ref == b[1]:
                             ref_dict[ref] = b
-                            #  ref_found = True
-
-                #  if not ref_found:
-                    #  raise QueryError('Missing table reference %s.' % ref)
 
             if not len(select_list_table_references):
                 for table in select_list_tables:
@@ -434,12 +420,6 @@ class MySQLQueryProcessor(object):
                     if b[0] > current_depth:
                         bp.append(budget.pop(-1)[2])
 
-                # check if the join_column is in each sub select_list
-                #  for b in bp:
-                #  bcols = [i[0][2] for i in b]
-                #  if join_using[0][0][2] not in bcols and '*' not in bcols
-                #  raise QueryError('Missing join column `%s`.' %
-                #                         #  join_using[0][0][2])
                 budget.extend(join_columns)
 
             if subquery_alias is not None:

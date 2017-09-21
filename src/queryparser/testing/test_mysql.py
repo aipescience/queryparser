@@ -891,6 +891,23 @@ class MysqlTestCase(TestCase):
             ('db.tab', 'db.tab2', 'db.undef'),
         )
 
+    def test_query050(self):
+        self._test_mysql_parsing(
+            """
+            SELECT a, b
+            FROM (
+                SELECT * FROM db.tab1
+                UNION 
+                SELECT c, d FROM db.tab2
+            ) AS sub 
+            """,
+            ('db.tab1.*', 'db.tab2.c', 'db.tab2.d'),
+            ('union', '*'),
+            (),
+            ('a: db.tab1.a', 'b: db.tab1.b'),
+            ('db.tab1', 'db.tab2')
+        )
+
     def test_syntax_error_001(self):
         q = """SELECR a FROM db.tab;"""
         with self.assertRaises(QuerySyntaxError):
