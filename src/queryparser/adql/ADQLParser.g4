@@ -98,6 +98,7 @@ math_function:
         | POWER LPAREN numeric_value_expression COMMA numeric_value_expression RPAREN
         | RADIANS LPAREN numeric_value_expression RPAREN
         | RAND LPAREN ( unsigned_decimal )? RPAREN
+        | ROUND LPAREN numeric_value_expression ( COMMA signed_integer )? RPAREN
         | SQRT LPAREN numeric_value_expression RPAREN
         | TRUNCATE LPAREN numeric_value_expression ( COMMA signed_integer )? RPAREN ;
 named_columns_join:             USING LPAREN join_column_list RPAREN ;
