@@ -919,6 +919,20 @@ class MysqlTestCase(TestCase):
             ('db.tab',)
         )
 
+    def test_query052(self):
+        self._test_mysql_parsing(
+            """
+            SELECT a FROM db.tab WHERE EXISTS (
+                SELECT b from db.foo WHERE x > y
+            )
+            """,
+            ('db.tab.a', 'db.foo.b', 'db.foo.x', 'db.foo.y'),
+            ('where',),
+            (),
+            ('a: db.tab.a',),
+            ('db.tab', 'db.foo')
+        )
+
     def test_syntax_error_001(self):
         q = """SELECR a FROM db.tab;"""
         with self.assertRaises(QuerySyntaxError):
