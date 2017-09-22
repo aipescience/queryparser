@@ -354,8 +354,8 @@ class ADQLTestCase(TestCase):
                 '`gaia`.`phot_g_mean_flux`, 2)) <= 0.05 AND sqrt(power(2.5 / ',
                 'log(10) * `gaia`.`phot_g_mean_flux_error` / ',
                 '`gaia`.`phot_g_mean_flux`, 2) + power(`tmass`.`ks_msigcom`, ',
-                '2)) <= 0.05) AS `subquery` GROUP BY `g_min_ks_index`, ',
-                '`g_mag_abs_index` LIMIT 10;'
+                '2)) <= 0.05 LIMIT 10) AS `subquery` GROUP BY ',
+                '`g_min_ks_index`, `g_mag_abs_index`;'
             )).strip()
         )
 
@@ -385,6 +385,60 @@ class ADQLTestCase(TestCase):
                 'SELECT `a` FROM (SELECT `foo` AS a FROM (SELECT `ra` AS foo '
                 'FROM `db`.`tab` LIMIT 30) AS `subsub` LIMIT 20) AS `sub` ',
                 'LIMIT 10;'
+            )).strip()
+        )
+
+    def test_query031(self):
+        self._test_adql_mysql_translation(
+            """
+            SELECT a
+            FROM (
+                SELECT TOP 5 a
+                FROM db.tab, (
+                    SELECT TOP 10 *
+                    FROM db.foo
+                ) AS sub
+            ) AS qqq
+            """,
+            ''.join((
+                'SELECT `a` FROM (SELECT `a` FROM `db`.`tab`, (SELECT * FROM ',
+                '`db`.`foo` LIMIT 10) AS `sub` LIMIT 5) AS `qqq`;'
+            )).strip()
+        )
+
+    def test_query032(self):
+        self._test_adql_mysql_translation(
+            """
+            SELECT TOP 2 a
+            FROM (
+                SELECT a
+                FROM db.tab, (
+                    SELECT TOP 10 *
+                    FROM db.foo
+                ) AS sub
+            ) AS qqq
+            """,
+            ''.join((
+                'SELECT `a` FROM (SELECT `a` FROM `db`.`tab`, (SELECT * FROM ',
+                '`db`.`foo` LIMIT 10) AS `sub`) AS `qqq` LIMIT 2;'
+            )).strip()
+        )
+
+    def test_query033(self):
+        self._test_adql_mysql_translation(
+            """
+            SELECT TOP 2 a
+            FROM (
+                SELECT TOP 5 a
+                FROM db.tab, (
+                    SELECT *
+                    FROM db.foo
+                ) AS sub
+            ) AS qqq
+            """,
+            ''.join((
+                'SELECT `a` FROM (SELECT `a` FROM `db`.`tab`, (SELECT * FROM ',
+                '`db`.`foo`) AS `sub` LIMIT 5) AS `qqq` LIMIT 2;'
             )).strip()
         )
 
