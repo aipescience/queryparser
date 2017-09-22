@@ -25,6 +25,7 @@ box:
 catalog_name:                   ID ;
 centroid:                       CENTROID LPAREN geometry_value_expression RPAREN ;
 //character_representation:       nonquote_character ;// | SQ SQ ;
+char_function:                  LOWER LPAREN character_string_literal RPAREN ;
 character_string_literal:       SQ ( ID )* SQ ; //SQ ( character_representation )* SQ ;
 character_value_expression:
           character_value_expression concatenation_operator ( value_expression_primary | string_value_function )
@@ -166,7 +167,7 @@ sort_specification:             sort_key (ordering_specification )? ;
 sort_specification_list:        sort_specification ( COMMA sort_specification )* ;
 string_geometry_function:       extract_coordsys ;
 string_value_expression:        character_value_expression ;
-string_value_function:          string_geometry_function | user_defined_function ;
+string_value_function:          string_geometry_function | user_defined_function | char_function;
 subquery:                       LPAREN query_expression RPAREN ;
 table_expression:
           from_clause
