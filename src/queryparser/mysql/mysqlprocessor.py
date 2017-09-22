@@ -287,18 +287,18 @@ class MySQLQueryProcessor(object):
                         None and len(ref_dict.keys()) > 1 and not join:
                     raise QueryError("Column '%s' is ambiguous." % c[0][2])
 
-                elif c[0][2] is not None and c[0][2] == '*' and c[0][1] is \
-                        None and len(ref_dict.keys()) > 1 and not join:
+                #  elif c[0][2] is not None and c[0][2] == '*' and c[0][1] is \
+                        #  None and len(ref_dict.keys()) > 1 and not join:
 
-                    tv = list(ref_dict.values())
-                    try:
-                        columns[i] = [[tv[0][0][0][0], tv[0][0][1],
-                                       c[0][2]], c[1]]
-                        for t in tv[1:]:
-                            extra_columns.append([[t[0][0][0], t[0][0][1],
-                                                  c[0][2]], c[1]])
-                    except TypeError:
-                        pass
+                    #  tv = list(ref_dict.values())
+                    #  try:
+                        #  columns[i] = [[tv[0][0][0][0], tv[0][0][1],
+                                       #  c[0][2]], c[1]]
+                        #  for t in tv[1:]:
+                            #  extra_columns.append([[t[0][0][0], t[0][0][1],
+                                                  #  c[0][2]], c[1]])
+                    #  except TypeError:
+                        #  pass
 
                 elif len(budget) and tab[0][0] is None and tab[0][1] is None:
                     ref = budget[-1]

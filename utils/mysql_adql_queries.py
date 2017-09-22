@@ -48,8 +48,8 @@ queries = [
         FROM (
             SELECT *
             FROM db.a, db.b, (SELECT * FROM db.c, db.d) AS q
-        ) AS r
-        JOIN (SELECT * FROM db.x, db.y) AS p
+        ) AS p
+        JOIN (SELECT * FROM db.x, db.y) AS r
         """,
         (),
         (),

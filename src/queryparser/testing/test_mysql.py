@@ -933,6 +933,40 @@ class MysqlTestCase(TestCase):
             ('db.tab', 'db.foo')
         )
 
+    def test_query053(self):
+        self._test_mysql_parsing(
+            """
+            SELECT *
+            FROM (
+                SELECT *
+                FROM db.a, db.b, (SELECT * FROM db.c, db.d) AS q
+            ) AS p
+            JOIN (SELECT * FROM db.x, db.y) AS r
+            """,
+            ('db.a.*', 'db.b.*', 'db.c.*', 'db.d.*', 'db.x.*', 'db.y.*'),
+            ('*',),
+            (),
+            (),
+            ('db.a', 'db.b', 'db.c', 'db.d', 'db.x', 'db.y')
+        )
+
+    def test_query054(self):
+        self._test_mysql_parsing(
+            """
+            SELECT *
+            FROM (
+                SELECT a.*
+                FROM db.a, db.b, (SELECT * FROM db.c, db.d) AS q
+            ) AS p
+            JOIN (SELECT * FROM db.x, db.y) AS r
+            """,
+            ('db.a.*', 'db.c.*', 'db.d.*', 'db.x.*', 'db.y.*'),
+            ('*',),
+            (),
+            (),
+            ('db.a', 'db.b', 'db.c', 'db.d', 'db.x', 'db.y')
+        )
+
     def test_syntax_error_001(self):
         q = """SELECR a FROM db.tab;"""
         with self.assertRaises(QuerySyntaxError):
