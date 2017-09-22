@@ -912,7 +912,12 @@ queries = [
     ),
     (
         """
-        SELECT a, 1, b, 2 FROM sv.tab;
+        SELECT *
+        FROM (
+            SELECT a.*
+            FROM db.a, db.b, (SELECT * FROM db.c, db.d) AS q
+        ) AS r
+        JOIN (SELECT * FROM db.x, db.y) AS p
         """,
         (),
         (),

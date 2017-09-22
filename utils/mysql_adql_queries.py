@@ -44,14 +44,12 @@ queries = [
     ),
     (
         """
-        SELECT a
+        SELECT *
         FROM (
-            SELECT TOP 5 a
-            FROM db.tab, (
-                SELECT TOP 10 *
-                FROM db.foo
-            ) AS sub
-        ) AS qqq
+            SELECT *
+            FROM db.a, db.b, (SELECT * FROM db.c, db.d) AS q
+        ) AS r
+        JOIN (SELECT * FROM db.x, db.y) AS p
         """,
         (),
         (),

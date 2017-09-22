@@ -173,12 +173,21 @@ class MySQLQueryProcessor(object):
         # higer up in the tree structure. We'll revisit them later.
         missing_columns = []
         remove_column_idxs = []
+        extra_columns = []
 
         for i, col in enumerate(columns):
             c = col[0]
 
             cname = c[0][2]
             calias = c[1]
+
+            # if * is selected we don't care too much
+            if c[0][0] is None and c[0][1] is None and c[0][2] == '*':
+                for slt in select_list_tables:
+                    extra_columns.append([[slt[0][0][0], slt[0][0][1], cname],
+                                          calias])
+                remove_column_idxs.append(i)
+                continue
 
             # this can happen for example in ... WHERE EXISTS ... clauses
             if cname is None and calias is None:
@@ -262,16 +271,34 @@ class MySQLQueryProcessor(object):
                                                            c[0][2]], c[1]])
                                 continue
                     else:
-                        missing_columns.append(c)
-                        columns[i] = [[c[0][0], c[0][1], c[0][2]], c[1]]
-                        if touched_columns is not None:
-                            touched_columns.append([[c[0][0], c[0][1],
-                                                   c[0][2]], c[1]])
+                        if tab[0][1] == c[0][1]:
+                            columns[i] = [[tab[0][0], tab[0][1],
+                                          c[0][2]], c[1]]
+                        else:
+
+                            missing_columns.append(c)
+                            columns[i] = [[c[0][0], c[0][1], c[0][2]], c[1]]
+                            if touched_columns is not None:
+                                touched_columns.append([[c[0][0], c[0][1],
+                                                       c[0][2]], c[1]])
                         continue
 
                 elif c[0][2] is not None and c[0][2] != '*' and c[0][1] is \
                         None and len(ref_dict.keys()) > 1 and not join:
                     raise QueryError("Column '%s' is ambiguous." % c[0][2])
+
+                elif c[0][2] is not None and c[0][2] == '*' and c[0][1] is \
+                        None and len(ref_dict.keys()) > 1 and not join:
+
+                    tv = list(ref_dict.values())
+                    try:
+                        columns[i] = [[tv[0][0][0][0], tv[0][0][1],
+                                       c[0][2]], c[1]]
+                        for t in tv[1:]:
+                            extra_columns.append([[t[0][0][0], t[0][0][1],
+                                                  c[0][2]], c[1]])
+                    except TypeError:
+                        pass
 
                 elif len(budget) and tab[0][0] is None and tab[0][1] is None:
                     ref = budget[-1]
@@ -294,6 +321,8 @@ class MySQLQueryProcessor(object):
 
         for i in remove_column_idxs[::-1]:
             columns.pop(i)
+
+        columns.extend(extra_columns)
         return missing_columns
 
     def process_query(self, replace_schema_name={}):
