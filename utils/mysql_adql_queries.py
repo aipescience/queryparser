@@ -44,14 +44,23 @@ queries = [
     ),
     (
         """
-        select dist from db.spatial where exists 
-        (select * from db.misc where dist=misc.mass);
+        SELECT *
+        FROM (
+            SELECT TOP 5*
+            FROM qptest.tgas_foo, qptest.tgas_bar, (
+                SELECT TOP 10 *
+                FROM qptest.tgas
+            ) AS q
+        ) AS r
         """,
         (),
         (),
         (),
         (),
         """
+        JOIN (
+            SELECT * from db.x, db.y
+        ) AS p;
         """
         )
 ]

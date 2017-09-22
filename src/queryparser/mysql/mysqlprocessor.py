@@ -269,8 +269,8 @@ class MySQLQueryProcessor(object):
                                                    c[0][2]], c[1]])
                         continue
 
-                elif c[0][2] is not None and c[0][1] is None and\
-                        len(ref_dict.keys()) > 1 and not join:
+                elif c[0][2] is not None and c[0][2] != '*' and c[0][1] is \
+                        None and len(ref_dict.keys()) > 1 and not join:
                     raise QueryError("Column '%s' is ambiguous." % c[0][2])
 
                 elif len(budget) and tab[0][0] is None and tab[0][1] is None:

@@ -171,6 +171,7 @@ def test_translated_mysql_parsing(qs):
         s = time.time()
         adt.set_query(q[0])
         translated_query = adt.to_mysql()
+        print(translated_query)
         qp.set_query(translated_query)
         try:
             qp.process_query()
@@ -189,10 +190,10 @@ def test_translated_mysql_parsing(qs):
 
 
 if __name__ == '__main__':
-    test_mysql_parsing(test_queries.queries[-1:])
+    #  test_mysql_parsing(test_queries.queries[-1:])
     #  test_mysql_parsing(test_queries.queries[35:42])
     #  test_mysql_parsing(test_queries.queries[6:7])
     #  test_mysql_parsing(test_queries.queries[:])
     #  test_mysql_parsing(broken_queries.queries[-1:])
     #  test_adql_translation(adql_queries.queries[-1:])
-    #  test_translated_mysql_parsing(mysql_adql_queries.queries[-1:])
+    test_translated_mysql_parsing(mysql_adql_queries.queries[-1:])

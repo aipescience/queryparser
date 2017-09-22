@@ -239,47 +239,29 @@ class ADQLtoMySQLFunctionsTranslationVisitor(ADQLParserVisitor):
 class SelectQueryListener(ADQLParserListener):
     def __init__(self):
         self.limit_visitor = LimitVisitor()
-        self.limit_remover = LimitVisitor(remove=True)
-        self.limit_terminal_visitor = LimitTerminalVisitor()
-        self.select_query_count = 1
         self.limit_contexts = {}
 
     def enterSelect_query(self, ctx):
-        self.limit_visitor.reset_limit_ctx()
         self.limit_visitor.visit(ctx)
-        self.select_query_count = len(self.limit_visitor.limit_ctx)
-
-        if len(self.limit_visitor.limit_ctx) == 1:
-
-            self.limit_remover.visit(ctx)
-            self.limit_terminal_visitor.visit(ctx)
-            lstr = 'LIMIT %d' % self.limit_remover.limit
-            self.limit_contexts[self.limit_terminal_visitor.terminal] = lstr
+        self.limit_contexts.update(self.limit_visitor.limit_contexts)
 
 
 class LimitVisitor(ADQLParserVisitor):
     def __init__(self, remove=False):
-        self.reset_limit_ctx()
-        self.remove = remove
-        self.limit = None
-
-    def reset_limit_ctx(self):
-        self.limit_ctx = []
+        self.limit_terminal_visitor = LimitTerminalVisitor()
+        self.limit_contexts = {}
 
     def visitSet_limit(self, ctx):
-        if self.remove:
-            try:
-                self.limit = int(ctx.children[1].getText())
-                ctx.removeLastChild()
-                ctx.removeLastChild()
-            except IndexError:
-                pass
-        else:
-            try:
-                ctx.children[1]
-                self.limit_ctx.append(ctx)
-            except IndexError:
-                pass
+        try:
+            self.limit = int(ctx.children[1].getText())
+            ctx.removeLastChild()
+            ctx.removeLastChild()
+
+            self.limit_terminal_visitor.visit(ctx.parentCtx)
+            lstr = 'LIMIT %d' % self.limit
+            self.limit_contexts[self.limit_terminal_visitor.terminal] = lstr
+        except IndexError:
+            pass
 
 
 class LimitTerminalVisitor(ADQLParserVisitor):
@@ -424,8 +406,8 @@ class ADQLQueryTranslator(object):
         translator_visitor.visit(self.tree)
 
         select_query_listener = SelectQueryListener()
-        while select_query_listener.select_query_count > 0:
-            self.walker.walk(select_query_listener, self.tree)
+        #  while select_query_listener.select_query_count > 0:
+        #  self.walker.walk(select_query_listener, self.tree)
         self.walker.walk(select_query_listener, self.tree)
 
         format_listener = FormatListener(self.parser,
