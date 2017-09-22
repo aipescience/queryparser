@@ -44,14 +44,14 @@ queries = [
     ),
     (
         """
-        SELECT *
+        SELECT a
         FROM (
-            SELECT TOP 5*
-            FROM qptest.tgas_foo, qptest.tgas_bar, (
+            SELECT TOP 5 a
+            FROM db.tab, (
                 SELECT TOP 10 *
-                FROM qptest.tgas
-            ) AS q
-        ) AS r
+                FROM db.foo
+            ) AS sub
+        ) AS qqq
         """,
         (),
         (),
