@@ -4,7 +4,8 @@ queryparser
 **Tool for parsing and processing MySQL and ADQL queries**
 
 Designed to be used in conjunction with `django-daiquri <http://github.com/aipescience/django-daiquiri/>`_
-as a query processing backend but it can be easily used as a stand-alone tool or integrated into another project.
+as a query processing backend but it can be easily used as a stand-alone tool
+or integrated into another project.
 
 .. image:: https://travis-ci.org/aipescience/queryparser.svg?branch=master
    :alt: Build Status
@@ -20,6 +21,49 @@ as a query processing backend but it can be easily used as a stand-alone tool or
 
 .. image:: http://img.shields.io/badge/license-APACHE-blue.svg?style=flat
     :target: https://github.com/adrn/schwimmbad/blob/master/LICENSE
+
+
+Installation
+------------
+
+The easiest way to install the package is by using the pip tool:
+
+.. code-block:: shell
+
+    pip install queryparser-python3
+
+or if you are using an older version (2.7) of python
+
+.. code-block:: shell
+
+    pip install queryparser-python2
+
+Alternatively, you can clone the repository and install it from there.
+However, this step also requires generating the parser which is a slighly
+more elaborate process (see below).
+
+
+Generating the parser from the git repository
+---------------------------------------------
+
+To generate the parsers you need `python` (either 2 or 3), `java` above version 
+7, and `antlr4` (`antlr-4.*-complete.jar` has to be installed inside the 
+`/usr/local/lib/` or `/usr/local/bin/` directories).
+
+After cloning the project run
+
+.. code-block:: bash
+
+    make
+
+and a `lib` directory will be created with the complete source for python2
+and python3. After that run
+
+.. code-block:: bash
+
+    python setup.py install
+
+to install the generated parser in your virtual environment.
 
 
 Parsing MySQL
@@ -57,7 +101,8 @@ Alternatively, passing the query at initialization automatically processes it.
 Translating ADQL
 ----------------
 
-Translation of ADQL queries is done similarly by first creating an instance of the ``ADQLQueryTranslator`` class
+Translation of ADQL queries is done similarly by first creating an instance of
+the ``ADQLQueryTranslator`` class
 
 .. code-block:: python
 
@@ -75,28 +120,6 @@ and calling
 which returns a translated string representing a valid MySQL query if
 the ADQL query had no errors. The MySQL query can then be parsed with the
 ``MySQLQueryProcessor`` in the same way as shown above.
-
-
-Generating the parser from the git repository
----------------------------------------------
-
-To generate the parsers you need `python` (either 2 or 3), `java` above version 
-7, and `antlr4` (`antlr-4.*-complete.jar` has to be installed inside the 
-`/usr/local/lib/` or `/usr/local/bin/` directories).
-
-After cloning the project run
-
-.. code-block:: bash
-
-    make
-
-and a `lib` directory will be created with the complete source for python2 and python3. After that run
-
-.. code-block:: bash
-
-    python setup.py install
-
-to install the generated parser in your virtual environment.
 
 
 Testing
