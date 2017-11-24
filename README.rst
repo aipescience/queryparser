@@ -1,7 +1,7 @@
 queryparser
 ===========
 
-**Tool for parsing and processing MySQL and ADQL queries**
+**Tool for parsing and processing MySQL and ADQL SELECT queries**
 
 Designed to be used in conjunction with `django-daiquri <http://github.com/aipescience/django-daiquiri/>`_
 as a query processing backend but it can be easily used as a stand-alone tool
