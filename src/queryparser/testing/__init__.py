@@ -3,6 +3,7 @@
 import unittest
 
 from queryparser.mysql import MySQLQueryProcessor
+from queryparser.postgresql import PostgreSQLQueryProcessor
 from queryparser.adql import ADQLQueryTranslator
 
 
@@ -18,6 +19,37 @@ class TestCase(unittest.TestCase):
             qp = MySQLQueryProcessor()
             qp.set_query(query)
             qp.process_query(replace_schema_name=replace_schema_name)
+
+        qp_columns = ['.'.join([str(j) for j in i]) for i in qp.columns
+                      if i[0] is not None and i[1] is not None]
+        qp_display_columns = ['%s: %s' % (str(i[0]),
+                                          '.'.join([str(j) for j in i[1]]))
+                              for i in qp.display_columns]
+        qp_tables = ['.'.join([str(j) for j in i]) for i in qp.tables
+                      if i[0] is not None and i[1] is not None]
+
+        if columns:
+            self.assertSetEqual(set(columns), set(qp_columns))
+
+        if keywords:
+            self.assertSetEqual(set(keywords), set(qp.keywords))
+
+        if functions:
+            self.assertSetEqual(set(functions), set(qp.functions))
+
+        if display_columns:
+            self.assertSetEqual(set(display_columns), set(qp_display_columns))
+
+        if tables:
+            self.assertSetEqual(set(tables), set(qp_tables))
+
+    def _test_postgresql_parsing(self, query, columns=None, keywords=None,
+                            functions=None, display_columns=None, tables=None,
+                            replace_schema_name=None):
+        qp = PostgreSQLQueryProcessor(query)
+        qp.process_query()
+
+        print(qp.columns, qp.display_columns, qp.tables)
 
         qp_columns = ['.'.join([str(j) for j in i]) for i in qp.columns
                       if i[0] is not None and i[1] is not None]

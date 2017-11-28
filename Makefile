@@ -11,6 +11,7 @@ lib/python2/queryparser: \
 		lib/python2/queryparser/adql \
 		lib/python2/queryparser/exceptions \
 		lib/python2/queryparser/mysql \
+		lib/python2/queryparser/postgresql \
 		lib/python2/queryparser/testing
 
 lib/python2/queryparser/%.py: src/queryparser/%.py
@@ -49,10 +50,24 @@ lib/python2/queryparser/mysql/%.py: src/queryparser/mysql/%.py
 	mkdir -p `dirname $@`
 	cp $< $@
 
+lib/python2/queryparser/postgresql: \
+		lib/python2/queryparser/postgresql/PostgreSQLParser.py \
+		lib/python2/queryparser/postgresql/postgresqlprocessor.py \
+		lib/python2/queryparser/postgresql/postgresqllisteners.py \
+		lib/python2/queryparser/postgresql/__init__.py
+
+lib/python2/queryparser/postgresql/PostgreSQLParser.py: src/queryparser/postgresql/*.g4
+	python generate.py -l postgresql -p 2
+
+lib/python2/queryparser/postgresql/%.py: src/queryparser/postgresql/%.py
+	mkdir -p `dirname $@`
+	cp $< $@
+
 lib/python2/queryparser/testing: \
 	lib/python2/queryparser/testing/__init__.py \
 	lib/python2/queryparser/testing/test_adql.py \
-	lib/python2/queryparser/testing/test_mysql.py
+	lib/python2/queryparser/testing/test_mysql.py \
+	lib/python2/queryparser/testing/test_postgresql.py
 
 lib/python2/queryparser/testing/%.py: src/queryparser/testing/%.py
 	mkdir -p `dirname $@`
@@ -67,6 +82,7 @@ lib/python3/queryparser: \
 		lib/python3/queryparser/adql \
 		lib/python3/queryparser/exceptions \
 		lib/python3/queryparser/mysql \
+		lib/python3/queryparser/postgresql \
 		lib/python3/queryparser/testing
 
 lib/python3/queryparser/%.py: src/queryparser/%.py
@@ -105,10 +121,24 @@ lib/python3/queryparser/mysql/%.py: src/queryparser/mysql/%.py
 	mkdir -p `dirname $@`
 	cp $< $@
 
+lib/python3/queryparser/postgresql: \
+		lib/python3/queryparser/postgresql/PostgreSQLParser.py \
+		lib/python3/queryparser/postgresql/postgresqlprocessor.py \
+		lib/python3/queryparser/postgresql/postgresqllisteners.py \
+		lib/python3/queryparser/postgresql/__init__.py
+
+lib/python3/queryparser/postgresql/PostgreSQLParser.py: src/queryparser/postgresql/*.g4
+	python generate.py -l postgresql -p 3
+
+lib/python3/queryparser/postgresql/%.py: src/queryparser/postgresql/%.py
+	mkdir -p `dirname $@`
+	cp $< $@
+
 lib/python3/queryparser/testing: \
 	lib/python3/queryparser/testing/__init__.py \
 	lib/python3/queryparser/testing/test_adql.py \
-	lib/python3/queryparser/testing/test_mysql.py
+	lib/python3/queryparser/testing/test_mysql.py \
+	lib/python3/queryparser/testing/test_postgresql.py
 
 lib/python3/queryparser/testing/%.py: src/queryparser/testing/%.py
 	mkdir -p `dirname $@`

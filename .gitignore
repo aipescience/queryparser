@@ -20,6 +20,7 @@ lib
 build
 dist
 src/queryparser/mysql/gen/
+src/queryparser/postgresql/gen/
 src/queryparser/adql/gen/
 MANIFEST
 

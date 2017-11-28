@@ -11,17 +11,18 @@ ANTLR_DIRS = ('.', '/usr/local/lib/', '/usr/local/bin/')
 
 QUERYPARSER_SRC = 'src/queryparser/'
 MYSQL_SRC = 'src/queryparser/mysql'
+POSTGRESQL_SRC = 'src/queryparser/postgresql'
 ADQL_SRC = 'src/queryparser/adql'
 
 
 def main():
     parser = argparse.ArgumentParser(description='Generate the parsers.')
-    parser.add_argument('-l', help='language (ADQL or MySQL)')
+    parser.add_argument('-l', help='language (ADQL / MySQL / PostgreSQL)')
     parser.add_argument('-p', type=int, help='python version (2 or 3)')
 
     args = parser.parse_args()
 
-    languages = [args.l] if args.l else ['adql', 'mysql']
+    languages = [args.l] if args.l else ['adql', 'mysql', 'postgresql']
     python_versions = [args.p] if args.p else [2, 3]
 
     if get_java_version() < 7:
@@ -39,6 +40,9 @@ def main():
 
             if language == 'mysql':
                 build_mysql_parser(antlr_path, python_version)
+
+            if language == 'postgresql':
+                build_postgresql_parser(antlr_path, python_version)
 
 
 def get_java_version():
@@ -91,6 +95,36 @@ def build_mysql_parser(antlr_path, python_version):
 
     os.remove(os.path.join(MYSQL_SRC, 'MySQLLexer.tokens'))
     os.remove(os.path.join(MYSQL_SRC, 'MySQLParser.tokens'))
+
+
+def build_postgresql_parser(antlr_path, python_version):
+    args = ['java', '-jar', antlr_path, '-Dlanguage=Python%d' % python_version,
+            '-lib', POSTGRESQL_SRC]
+
+    print('building postgresql lexer for python%i' % python_version)
+    subprocess.check_call(args + [os.path.join(POSTGRESQL_SRC, 'PostgreSQLLexer.g4')])
+
+    print('building postgresql parser for python%i' % python_version)
+    subprocess.check_call(args + [os.path.join(POSTGRESQL_SRC, 'PostgreSQLParser.g4')])
+
+    directory = os.path.join('lib',
+                             'python2' if python_version < 3 else 'python3',
+                             'queryparser/postgresql')
+    try:
+        os.makedirs(directory)
+    except OSError:
+        pass
+
+    for filename in ['PostgreSQLLexer.py', 'PostgreSQLParser.py',
+                     'PostgreSQLParserListener.py']:
+        source = os.path.join(POSTGRESQL_SRC, filename)
+        target = os.path.join(directory, filename)
+
+        print('moving %s -> %s' % (source, target))
+        shutil.move(source, target)
+
+    os.remove(os.path.join(POSTGRESQL_SRC, 'PostgreSQLLexer.tokens'))
+    os.remove(os.path.join(POSTGRESQL_SRC, 'PostgreSQLParser.tokens'))
 
 
 def build_adql_translator(antlr_path, python_version):

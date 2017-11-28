@@ -38,6 +38,7 @@ setup(
         'queryparser',
         'queryparser.adql',
         'queryparser.mysql',
+        'queryparser.postgresql',
         'queryparser.exceptions'
     ],
     package_dir={
