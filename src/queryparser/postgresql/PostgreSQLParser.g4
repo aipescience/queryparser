@@ -7,7 +7,12 @@ options
 //////////////////////////////////////////////////////////////////////////////
 
 relational_op:
-	  EQ | LTH | GTH | NOT_EQ | LET | GET ;
+	  EQ | LTH | GTH | NOT_EQ | LET | GET;
+
+pg_sphere_op:
+      SCONTAINS | SCONTAINS2 | NEGATION | SLEFTCONTAINS2 | SNOTCONTAINS
+    | SNOTCONTAINS2 | SLEFTNOTCONTAINS | SLEFTNOTCONTAINS2 | AND_SYM
+    | SNOTOVERLAP ;
 
 cast_data_type:
     BINARY (LPAREN INTEGER_NUM RPAREN)?
@@ -85,8 +90,15 @@ time_functions:
     | TO_SECONDS | UNIX_TIMESTAMP | UTC_DATE | UTC_TIME | UTC_TIMESTAMP | WEEK
     | WEEKDAY | WEEKOFYEAR | YEAR | YEARWEEK ;
 
+//pg_sphere_data_type:
+//      SPOINT | SCIRCLE | SLINE | SELLIPSE | SPOLY | SPATH | SBOX ;
+
+//pg_sphere_functions:
+//      STRANS | RADIUS;
+
 functionList:
 	  number_functions | char_functions | time_functions | other_functions ;
+	//| pg_sphere_data_type | pg_sphere_functions;
 
 
 literal_value:
@@ -141,7 +153,7 @@ column_list:            LPAREN column_spec ( COMMA column_spec )* RPAREN ;
 column_name:            ID ;
 column_spec:            ( ( schema_name DOT )? table_name DOT )? column_name ;
 
-displayed_column :      ( table_spec DOT ASTERISK ) | ( bit_expr ( alias )? ) ;
+displayed_column :      ( table_spec DOT ASTERISK ) | ( ( bit_expr | sbit_expr ) ( alias )? ) ;
 
 exp_factor1:	        exp_factor2 ( XOR exp_factor2 )* ;
 exp_factor2:	        exp_factor3 ( AND_SYM exp_factor3 )* ;
@@ -149,13 +161,14 @@ exp_factor3:	        ( NOT_SYM )? exp_factor4 ;
 exp_factor4:	        bool_primary ( ( IS_SYM ( NOT_SYM )? (boolean_literal | NULL_SYM | ( DISTINCT FROM ) ) )?
                                      | ( ISNULL | NOTNULL )?
                                      );
-expression:	            exp_factor1 ( OR_SYM exp_factor1 )* ;
+expression:	            (exp_factor1 ( OR_SYM exp_factor1 )* ) | ( sbit_expr );
 expression_list:        LPAREN expression ( COMMA expression )* RPAREN ;
 
+//factor0:                (factor1 ( pg_sphere_op factor1 )? ) | (;
 factor1:                factor2 ( BITAND factor2 )? ;
 factor2:                factor3 ( ( SHIFT_LEFT | SHIFT_RIGHT ) factor3 )? ;
 factor3:                factor4 ( ( PLUS | MINUS ) factor4 )* ;
-factor4:                factor5 ( ( ASTERISK | DIVIDE | MOD_SYM | POWER_OP ) factor5 )* ;
+factor4:                factor5 ( ( ASTERISK | DIVIDE | MOD_SYM | POWER_OP) factor5 )* ;
 factor5:                ( PLUS | MINUS | NEGATION | BINARY )? simple_expr
                             ( ( PLUS | MINUS ) interval_expr )? ;
 function_call:
@@ -230,7 +243,7 @@ simple_expr:
 	| expression_list
 	| column_spec 
 	| function_call 
-	| USER_VAR
+	//| USER_VAR
 	| (ROW_SYM expression_list)
 	| subquery
 	| EXISTS subquery 
@@ -259,3 +272,27 @@ table_spec:             ( schema_name DOT )? table_name ;
 values_list:            VALUES ( expression_list ( COMMA expression_list )* );
 
 where_clause:           WHERE expression ;
+
+sbit_expr:
+      ( pg_sphere_object | spoint )
+    | ( spoint pg_sphere_op pg_sphere_object )
+    | ( pg_sphere_object EQ pg_sphere_object )
+    | ( pg_sphere_object pg_sphere_op pg_sphere_object )
+    | ( sline SCROSS sline )
+    | ( ( spoint | scircle ) SDISTANCE ( spoint | scircle ) )
+    | ( SLENGTH ( scircle | sbox | spoly ) )
+    | ( SCENTER ( scircle | sellipse ) )
+    | ( MINUS ( sline | spath ) )
+    | ( ( spoint | scircle | sline | sellipse | spoly | spath )? ( ( PLUS | MINUS ) strans )+ ) ;
+
+
+spoint:                 SPOINT LPAREN bit_expr COMMA bit_expr RPAREN ;
+scircle:                SCIRCLE LPAREN spoint COMMA bit_expr RPAREN ;
+sline:                  SLINE LPAREN spoint COMMA spoint RPAREN ;
+sellipse:               SELLIPSE LPAREN spoint COMMA bit_expr COMMA bit_expr COMMA bit_expr RPAREN ;
+sbox:                   SBOX LPAREN spoint COMMA spoint RPAREN ;
+spoly:                  SPOLY TEXT_STRING ; //SPOLY LPAREN spoint COMMA spoint COMMA spoint ( COMMA spoint )* RPAREN ;
+spath:                  SPATH TEXT_STRING ;
+strans:                 STRANS LPAREN bit_expr COMMA bit_expr COMMA bit_expr COMMA TRANS RPAREN ;
+
+pg_sphere_object:       scircle | sline | sellipse | sbox | spoly | spath;

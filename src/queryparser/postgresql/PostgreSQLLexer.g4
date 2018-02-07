@@ -355,6 +355,17 @@ YEARWEEK			: Y_ E_ A_ R_ W_ E_ E_ K_  ;
 YEAR_MONTH			: Y_ E_ A_ R_  '_' M_ O_ N_ T_ H_  ;
 
 
+SPOINT                                  : S_ P_ O_ I_ N_ T_ ;
+SCIRCLE                                 : S_ C_ I_ R_ C_ L_ E_ ;
+SLINE                                   : S_ L_ I_ N_ E_ ;
+SELLIPSE                                : S_ E_ L_ L_ I_ P_ S_ E_ ;
+SPOLY                                   : S_ P_ O_ L_ Y_ ;
+SPATH                                   : S_ P_ A_ T_ H_ ;
+SBOX                                    : S_ B_ O_ X_ ;
+STRANS                                  : S_ T_ R_ A_ N_ S_ ;
+RADIUS                                  : R_ A_ D_ I_ U_ S_ ;
+
+
 // basic token definition -----------------------------------------------------
 
 DIVIDE	    : (  D_ I_ V_ ) | '/' ;
@@ -390,6 +401,22 @@ BACKTICK    : '`' ;
 GTH	        : '>' ;
 LTH	        : '<' ;
 
+// pg_sphere operators
+
+SCONTAINS           : '@' ;
+SCONTAINS2          : '<@' ;
+//SLEFTCONTAINS       : '~' ;
+SLEFTCONTAINS2      : '@>' ;
+SNOTCONTAINS        : '!@' ;
+SNOTCONTAINS2       : '!<@' ;
+SLEFTNOTCONTAINS    : '!~' ;
+SLEFTNOTCONTAINS2   : '!@>' ;
+//SOVERLAP            : '&&' ;
+SNOTOVERLAP         : '!&&' ;
+SCROSS              : '#' ;
+SDISTANCE           : '<->' ;
+SLENGTH             : '@-@' ;
+SCENTER             : '@@' ;
 
 INTEGER_NUM		: ('0'..'9')+ ;
 
@@ -411,6 +438,10 @@ REAL_NUMBER:
 	(  ('E'|'e') ( PLUS | MINUS )? INTEGER_NUM  )?
 ;
 
+TRANS:
+    '\''( 'X' | 'Y' | 'Z' )( 'X' | 'Y' | 'Z' )( 'X' | 'Y' | 'Z' )'\''
+;
+
 TEXT_STRING:
 	( N_ | ('_' U_ T_ F_ '8') )?
 	(
@@ -424,12 +455,13 @@ ID:
 	('"' (('\u0020' .. '\u007f'))+ '"')
 ;
 
-COMMENT: '#' ~( '\r' | '\n' )* -> skip ;
+
+//COMMENT: '#' ~( '\r' | '\n' )* -> skip ;
 
 WS : ( ' ' | '\t' | '\n' | '\r' )+ -> channel(HIDDEN) ;
 
-fragment USER_VAR_SUBFIX2:	( '\'' (~'\'')+ '\'' ) ;
-fragment USER_VAR_SUBFIX3:	( '"' (~'"')+ '"' ) ;
-fragment USER_VAR_SUBFIX4:	( 'A'..'Z' | 'a'..'z' | '_' | '$' | '0'..'9' | DOT )+ ;
-USER_VAR:	'@' (USER_VAR_SUBFIX2 | USER_VAR_SUBFIX3 | USER_VAR_SUBFIX4) ;
+//fragment USER_VAR_SUBFIX2:	( '\'' (~'\'')+ '\'' ) ;
+//fragment USER_VAR_SUBFIX3:	( '"' (~'"')+ '"' ) ;
+//fragment USER_VAR_SUBFIX4:	( 'A'..'Z' | 'a'..'z' | '_' | '$' | '0'..'9' | DOT )+ ;
+//USER_VAR:	'@' (USER_VAR_SUBFIX2 | USER_VAR_SUBFIX3 | USER_VAR_SUBFIX4) ;
 
