@@ -27,9 +27,14 @@ def _remove_children(ctx):
         ctx.removeLastChild()
 
 
-def _process_regular_identifier(ctx_text):
+def _process_regular_identifier(ctx_text, sql_output):
         ri = ctx_text.rstrip("'").lstrip("'").rstrip('"').lstrip('"')
-        return '`' + ri + '`'
+        if sql_output == 'mysql':
+            return '`' + ri + '`'
+        elif sql_output == 'postgresql':
+            return '"' + ri + '"'
+        else:
+            return ri
 
 
 class SyntaxErrorListener(ErrorListener):
@@ -84,9 +89,16 @@ class ADQLGeometryTranslationVisitor(ADQLParserVisitor):
                 try:
                     val = float(eval(i))
                 except (AttributeError, ValueError, NameError):
-                    val = '.'.join('`{0}`'.format(v.rstrip("'").lstrip("'").
-                                                  rstrip('"').lstrip('"'))
-                                   for v in i.split('.'))
+                    if self.output_sql == 'mysql':
+                        val = '.'.join('`{0}`'.format(v.rstrip("'").
+                                                      lstrip("'").
+                                                      rstrip('"').lstrip('"'))
+                                       for v in i.split('.'))
+                    elif self.output_sql == 'postgresql':
+                        val = '.'.join('"{0}"'.format(v.rstrip("'").
+                                                      lstrip("'").
+                                                      rstrip('"').lstrip('"'))
+                                       for v in i.split('.'))
 
             vals.append(val)
 
@@ -96,19 +108,23 @@ class ADQLGeometryTranslationVisitor(ADQLParserVisitor):
         if isinstance(ctx.parentCtx,
                       ADQLParser.User_defined_function_nameContext):
             return
-        ri = _process_regular_identifier(ctx.getText())
+        ri = _process_regular_identifier(ctx.getText(), self.output_sql)
         self.contexts[ctx] = ri
 
     def visitSchema_name(self, ctx):
-        ri = _process_regular_identifier(ctx.getText())
+        ri = _process_regular_identifier(ctx.getText(), self.output_sql)
         self.contexts[ctx] = ri
 
     def visitAs_clause(self, ctx):
         # We need to visit the AS clause to avoid aliases being treated same
         # as regular identifiers and backticked.
-        ri = _process_regular_identifier(ctx.children[1].getText())
+        ri = _process_regular_identifier(ctx.children[1].getText(),
+                self.output_sql)
         if ctx.children[1].getText()[0] != '"':
-            ri = ri.replace('`', '')
+            if self.sql_output == 'mysql':
+                ri = ri.replace('`', '')
+            elif self.sql_output == 'postgresql':
+                ri = ri.replace('"', '')
         _remove_children(ctx)
         self.contexts[ctx] = 'AS ' + ri
 

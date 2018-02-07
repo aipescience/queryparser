@@ -581,7 +581,56 @@ class ADQLTestCase(TestCase):
                 SELECT POINT('icrs', 10, 10) AS "p" FROM "db".tab
             """,
             ''.join((
-                'SELECT spoint(RADIANS(10.0), RADIANS(10.0)) AS `p` ',
-                'FROM `db`.`tab`;'
+                'SELECT spoint(RADIANS(10.0), RADIANS(10.0)) AS "p" ',
+                'FROM "db"."tab";'
+            )).strip()
+        )
+
+    def test_query201(self):
+        self._test_adql_postgresql_translation(
+            """
+                SELECT TOP 10 AREA(CIRCLE('ICRS', "tab".RA, -2.23, 176.98))
+                FROM db.tab
+            """,
+            ''.join((
+                'SELECT area(scircle(spoint(RADIANS("tab"."RA"), ',
+                'RADIANS(-2.23)), RADIANS(176.98))) FROM "db"."tab" LIMIT 10;'
+            )).strip()
+        )
+
+    def test_query202(self):
+        self._test_adql_postgresql_translation(
+            """
+                SELECT BOX('ICRS', 25.4, -20.5, 1.1, 1.2) FROM db.tab
+            """,
+            ''.join((
+                'SELECT sbox(spoint(RADIANS(25.4),RADIANS(-20.5)),',
+                'spoint(RADIANS(1.1),RADIANS(1.2))) FROM "db"."tab";'
+            )).strip()
+        )
+
+    def test_query203(self):
+        self._test_adql_postgresql_translation(
+            """
+                SELECT TOP 10 CONTAINS(POINT('ICRS', 0, 0),
+                                       CIRCLE('ICRS', 0, 0, 1))
+                FROM db.tab
+            """,
+            ''.join((
+                'SELECT spoint(RADIANS(0.0), RADIANS(0.0)) @ ',
+                'scircle(spoint(RADIANS(0.0), RADIANS(0.0)), RADIANS(1.0)) ',
+                'FROM "db"."tab" LIMIT 10;'
+            )).strip()
+        )
+
+    def test_query204(self):
+        self._test_adql_postgresql_translation(
+            """
+                SELECT DISTANCE(POINT('ICRS', 0, 0), POINT('ICRS', 0, 1))
+                FROM db.tab
+            """,
+            ''.join((
+                'SELECT DEGREES(spoint(RADIANS(0.0), RADIANS(0.0)) <-> ',
+                'spoint(RADIANS(0.0), RADIANS(1.0))) FROM "db"."tab";'
             )).strip()
         )
