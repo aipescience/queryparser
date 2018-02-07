@@ -574,3 +574,14 @@ class ADQLTestCase(TestCase):
             (),
             ('a: db.tab.a',)
         )
+
+    def test_query200(self):
+        self._test_adql_postgresql_translation(
+            """
+                SELECT POINT('icrs', 10, 10) AS "p" FROM "db".tab
+            """,
+            ''.join((
+                'SELECT spoint(RADIANS(10.0), RADIANS(10.0)) AS `p` ',
+                'FROM `db`.`tab`;'
+            )).strip()
+        )

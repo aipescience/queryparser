@@ -80,6 +80,12 @@ class TestCase(unittest.TestCase):
         if adql_query:
             self.assertEqual(adql_query.strip(), adt.to_mysql())
 
+    def _test_adql_postgresql_translation(self, query, adql_query=None):
+        adt = ADQLQueryTranslator(query)
+
+        if adql_query:
+            self.assertEqual(adql_query.strip(), adt.to_postgresql())
+
     def _test_adql_mysql_translation_parsing(self, query, columns=None,
                                              keywords=None, functions=None,
                                              display_columns=None):

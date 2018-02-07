@@ -481,7 +481,7 @@ class ADQLQueryTranslator(object):
         self.parse()
 
         translator_visitor = ADQLGeometryTranslationVisitor(
-                output_sql='posrgresql')
+                output_sql='postgresql')
         translator_visitor.visit(self.tree)
         translator_visitor = \
             ADQLFunctionsTranslationVisitor(translator_visitor.contexts,
