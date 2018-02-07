@@ -41,7 +41,7 @@ class SyntaxErrorListener(ErrorListener):
         self.syntax_errors.append((line, column, offendingSymbol.text))
 
 
-class ADQLtoMySQLGeometryTranslationVisitor(ADQLParserVisitor):
+class ADQLGeometryTranslationVisitor(ADQLParserVisitor):
     """
     1) Find the rule we need to translate. Point, for example.
     2) After processing it, get rid of all off its children except the first
@@ -57,8 +57,9 @@ class ADQLtoMySQLGeometryTranslationVisitor(ADQLParserVisitor):
         necessary, just pass an empty string.
 
     """
-    def __init__(self, conunits="RADIANS"):
+    def __init__(self, output_sql, conunits="RADIANS"):
         self.contexts = {}
+        self.output_sql = output_sql
         self.conunits = conunits
 
     def _convert_values(self, ctx, cidx):
@@ -120,8 +121,11 @@ class ADQLtoMySQLGeometryTranslationVisitor(ADQLParserVisitor):
 
         #  ctx_text = "spoint( %s(%s),%s(%s) )" % (self.conunits, coords[0],
         #                                          self.conunits, coords[1])
-        ctx_text = "spoint( %s(%s), %s(%s) )" % (self.conunits, coords[0],
-                                                 self.conunits, coords[1])
+        if self.output_sql in ('mysql', 'postgresql'):
+            ctx_text = "spoint( %s(%s), %s(%s) )" % (self.conunits, coords[0],
+                                                     self.conunits, coords[1])
+        else:
+            ctx_text = ''
 
         _remove_children(ctx)
         self.contexts[ctx] = ctx_text
@@ -132,9 +136,12 @@ class ADQLtoMySQLGeometryTranslationVisitor(ADQLParserVisitor):
         for j in range(0, 5, 2):
             pars.extend(self._convert_values(ctx, s + j))
 
-        ctx_text = "sbox( spoint(%s(%s),%s(%s)),spoint(%s(%s),%s(%s)) )" %\
-            (self.conunits, pars[0], self.conunits, pars[1],
-             self.conunits, pars[2], self.conunits, pars[3])
+        if self.output_sql in ('mysql', 'postgresql'):
+            ctx_text = "sbox( spoint(%s(%s),%s(%s)),spoint(%s(%s),%s(%s)) )" %\
+                (self.conunits, pars[0], self.conunits, pars[1],
+                 self.conunits, pars[2], self.conunits, pars[3])
+        else:
+            ctx_text = ''
 
         _remove_children(ctx)
         self.contexts[ctx] = ctx_text
@@ -145,9 +152,12 @@ class ADQLtoMySQLGeometryTranslationVisitor(ADQLParserVisitor):
         for j in range(0, 3, 2):
             pars.extend(self._convert_values(ctx, s + j))
 
-        ctx_text = "scircle( spoint(%s(%s), %s(%s)), %s(%s) )" %\
-            (self.conunits, pars[0], self.conunits, pars[1],
-             self.conunits, pars[2])
+        if self.output_sql in ('mysql', 'postgresql'):
+            ctx_text = "scircle( spoint(%s(%s), %s(%s)), %s(%s) )" %\
+                (self.conunits, pars[0], self.conunits, pars[1],
+                 self.conunits, pars[2])
+        else:
+            ctx_text = ''
 
         _remove_children(ctx)
         self.contexts[ctx] = ctx_text
@@ -168,16 +178,19 @@ class ADQLtoMySQLGeometryTranslationVisitor(ADQLParserVisitor):
         if self.conunits == "RADIANS":
             ustr = 'd'
 
-        ctx_text = "spoly('{"
-        for p in pars:
-            ctx_text += '(%s%s,%s%s),' % (str(p[0]), ustr, str(p[1]), ustr)
+        if self.output_sql in ('mysql', 'postgresql'):
+            ctx_text = "spoly('{"
+            for p in pars:
+                ctx_text += '(%s%s,%s%s),' % (str(p[0]), ustr, str(p[1]), ustr)
+            ctx_text = ctx_text[:-1] + "}')"
+        else:
+            ctx_text = ''
 
-        ctx_text = ctx_text[:-1] + "}')"
         _remove_children(ctx)
         self.contexts[ctx] = ctx_text
 
 
-class ADQLtoMySQLFunctionsTranslationVisitor(ADQLParserVisitor):
+class ADQLFunctionsTranslationVisitor(ADQLParserVisitor):
     """
     Run this visitor after the geometry has already been processed.
 
@@ -186,14 +199,22 @@ class ADQLtoMySQLFunctionsTranslationVisitor(ADQLParserVisitor):
         the replaced geometry chunks.
 
     """
-    def __init__(self, contexts, conunits="DEGREES"):
+    def __init__(self, contexts, output_sql, conunits="DEGREES"):
         self.contexts = contexts
+        self.output_sql = output_sql
         self.conunits = conunits
 
     def visitArea(self, ctx):
         #  arg = self.contexts[ctx.children[2].children[0].children[0]]
         arg = self.contexts[ctx.children[2].children[0]]
-        ctx_text = 'sarea(%s)' % arg
+
+        if self.output_sql == 'mysql':
+            ctx_text = 'sarea(%s)' % arg
+        elif self.output_sql == 'postgresql':
+            ctx_text = 'area(%s)' % arg
+        else:
+            ctx_text = ''
+
         for i in range(ctx.getChildCount() - 1):
             ctx.removeLastChild()
         self.contexts[ctx] = ctx_text
@@ -205,7 +226,14 @@ class ADQLtoMySQLFunctionsTranslationVisitor(ADQLParserVisitor):
         """
         #  arg = self.contexts[ctx.children[2].children[0].children[0]]
         arg = self.contexts[ctx.children[2].children[0]]
-        ctx_text = 'scenter(%s)' % arg
+
+        if self.output_sql == 'mysql':
+            ctx_text = 'scenter(%s)' % arg
+        elif self.output_sql == 'postgresql':
+            ctx_text = 'center(%s)' % arg
+        else:
+            ctx_text = ''
+
         _remove_children(ctx)
         self.contexts[ctx] = ctx_text
 
@@ -214,14 +242,28 @@ class ADQLtoMySQLFunctionsTranslationVisitor(ADQLParserVisitor):
         #         self.contexts[ctx.children[4].children[0].children[0]])
         arg = (self.contexts[ctx.children[2].children[0]],
                self.contexts[ctx.children[4].children[0]])
-        ctx_text = 'srcontainsl(%s, %s)' % arg
+
+        if self.output_sql == 'mysql':
+            ctx_text = 'srcontainsl(%s, %s)' % arg
+        elif self.output_sql == 'postgresql':
+            ctx_text = '%s @ %s' % arg
+        else:
+            ctx_text = ''
+
         _remove_children(ctx)
         self.contexts[ctx] = ctx_text
 
     def visitDistance(self, ctx):
         arg = (self.contexts[ctx.children[2].children[0]],
                self.contexts[ctx.children[4].children[0]])
-        ctx_text = '%s(sdist(%s, %s))' % ((self.conunits, ) + arg)
+
+        if self.output_sql == 'mysql':
+            ctx_text = '%s(sdist(%s, %s))' % ((self.conunits, ) + arg)
+        elif self.output_sql == 'postgresql':
+            ctx_text = '%s(%s <-> %s)' % ((self.conunits, ) + arg)
+        else:
+            ctx_text = ''
+
         for i in range(ctx.getChildCount() - 1):
             ctx.removeLastChild()
         self.contexts[ctx] = ctx_text
@@ -231,7 +273,14 @@ class ADQLtoMySQLFunctionsTranslationVisitor(ADQLParserVisitor):
         #         self.contexts[ctx.children[4].children[0].children[0]])
         arg = (self.contexts[ctx.children[2].children[0]],
                self.contexts[ctx.children[4].children[0]])
-        ctx_text = 'soverlaps(%s, %s)' % arg
+
+        if self.output_sql == 'mysql':
+            ctx_text = 'soverlaps(%s, %s)' % arg
+        elif self.output_sql == 'postgresql':
+            ctx_text = '%s && %s' % arg
+        else:
+            ctx_text = ''
+
         _remove_children(ctx)
         self.contexts[ctx] = ctx_text
 
@@ -388,6 +437,18 @@ class ADQLQueryTranslator(object):
         self._query = query.lstrip('\n').rstrip().rstrip(';') + ';'
         self.parse()
 
+    def translate(self, translator_visitor):
+        translator_visitor.visit(self.tree)
+
+        select_query_listener = SelectQueryListener()
+        self.walker.walk(select_query_listener, self.tree)
+
+        format_listener = FormatListener(self.parser,
+                                         translator_visitor.contexts,
+                                         select_query_listener.limit_contexts)
+        self.walker.walk(format_listener, self.tree)
+        return format_listener.format_query()
+
     def to_mysql(self):
         """
         Translate ADQL query to a MySQL query using mysql_sphere plugin
@@ -399,19 +460,32 @@ class ADQLQueryTranslator(object):
 
         self.parse()
 
-        translator_visitor = ADQLtoMySQLGeometryTranslationVisitor()
+        translator_visitor = ADQLGeometryTranslationVisitor(output_sql='mysql')
         translator_visitor.visit(self.tree)
         translator_visitor = \
-            ADQLtoMySQLFunctionsTranslationVisitor(translator_visitor.contexts)
+            ADQLFunctionsTranslationVisitor(translator_visitor.contexts,
+                                            output_sql='mysql')
+
+        translated_query = self.translate(translator_visitor) 
+        return translated_query
+
+    def to_postgresql(self):
+        """
+        Translate ADQL query to a PostgreSQL query using pg_sphere plugin
+        for the spherical functions.
+
+        """
+        if self._query is None:
+            raise QueryError('No query given.')
+
+        self.parse()
+
+        translator_visitor = ADQLGeometryTranslationVisitor(
+                output_sql='posrgresql')
         translator_visitor.visit(self.tree)
+        translator_visitor = \
+            ADQLFunctionsTranslationVisitor(translator_visitor.contexts,
+                                            output_sql='postgresql')
 
-        select_query_listener = SelectQueryListener()
-        #  while select_query_listener.select_query_count > 0:
-        #  self.walker.walk(select_query_listener, self.tree)
-        self.walker.walk(select_query_listener, self.tree)
-
-        format_listener = FormatListener(self.parser,
-                                         translator_visitor.contexts,
-                                         select_query_listener.limit_contexts)
-        self.walker.walk(format_listener, self.tree)
-        return format_listener.format_query()
+        translated_query = self.translate(translator_visitor) 
+        return translated_query

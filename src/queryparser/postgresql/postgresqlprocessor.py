@@ -526,4 +526,5 @@ class PostgreSQLQueryProcessor(object):
         self.keywords = set()
         self.functions = set()
         self.display_columns = []
+        self.syntax_error_listener = SyntaxErrorListener()
         self._query = self._strip_query(query)

@@ -355,16 +355,16 @@ YEARWEEK			: Y_ E_ A_ R_ W_ E_ E_ K_  ;
 YEAR_MONTH			: Y_ E_ A_ R_  '_' M_ O_ N_ T_ H_  ;
 
 
-SPOINT                                  : S_ P_ O_ I_ N_ T_ ;
-SCIRCLE                                 : S_ C_ I_ R_ C_ L_ E_ ;
-SLINE                                   : S_ L_ I_ N_ E_ ;
-SELLIPSE                                : S_ E_ L_ L_ I_ P_ S_ E_ ;
-SPOLY                                   : S_ P_ O_ L_ Y_ ;
-SPATH                                   : S_ P_ A_ T_ H_ ;
-SBOX                                    : S_ B_ O_ X_ ;
-STRANS                                  : S_ T_ R_ A_ N_ S_ ;
-RADIUS                                  : R_ A_ D_ I_ U_ S_ ;
-
+SPOINT              : S_ P_ O_ I_ N_ T_ ;
+SCIRCLE             : S_ C_ I_ R_ C_ L_ E_ ;
+SLINE               : S_ L_ I_ N_ E_ ;
+SELLIPSE            : S_ E_ L_ L_ I_ P_ S_ E_ ;
+SPOLY               : S_ P_ O_ L_ Y_ ;
+SPATH               : S_ P_ A_ T_ H_ ;
+SBOX                : S_ B_ O_ X_ ;
+STRANS              : S_ T_ R_ A_ N_ S_ ;
+RADIUS              : R_ A_ D_ I_ U_ S_ ;
+AREA                : A_ R_ E_ A_ ;
 
 // basic token definition -----------------------------------------------------
 

@@ -9,11 +9,6 @@ options
 relational_op:
 	  EQ | LTH | GTH | NOT_EQ | LET | GET;
 
-pg_sphere_op:
-      SCONTAINS | SCONTAINS2 | NEGATION | SLEFTCONTAINS2 | SNOTCONTAINS
-    | SNOTCONTAINS2 | SLEFTNOTCONTAINS | SLEFTNOTCONTAINS2 | AND_SYM
-    | SNOTOVERLAP ;
-
 cast_data_type:
     BINARY (LPAREN INTEGER_NUM RPAREN)?
     | CHAR (LPAREN INTEGER_NUM RPAREN)?
@@ -93,12 +88,12 @@ time_functions:
 //pg_sphere_data_type:
 //      SPOINT | SCIRCLE | SLINE | SELLIPSE | SPOLY | SPATH | SBOX ;
 
-//pg_sphere_functions:
-//      STRANS | RADIUS;
+pg_sphere_functions:
+      AREA ;
 
 functionList:
-	  number_functions | char_functions | time_functions | other_functions ;
-	//| pg_sphere_data_type | pg_sphere_functions;
+	  number_functions | char_functions | time_functions | other_functions
+    | pg_sphere_functions ;
 
 
 literal_value:
@@ -273,26 +268,31 @@ values_list:            VALUES ( expression_list ( COMMA expression_list )* );
 
 where_clause:           WHERE expression ;
 
+pg_sphere_op:
+      SCONTAINS | SCONTAINS2 | NEGATION | SLEFTCONTAINS2 | SNOTCONTAINS
+    | SNOTCONTAINS2 | SLEFTNOTCONTAINS | SLEFTNOTCONTAINS2 | AND_SYM
+    | SNOTOVERLAP ;
+
 sbit_expr:
       ( pg_sphere_object | spoint )
-    | ( spoint pg_sphere_op pg_sphere_object )
+    | ( ( spoint | simple_expr ) pg_sphere_op pg_sphere_object)
     | ( pg_sphere_object EQ pg_sphere_object )
     | ( pg_sphere_object pg_sphere_op pg_sphere_object )
-    | ( sline SCROSS sline )
-    | ( ( spoint | scircle ) SDISTANCE ( spoint | scircle ) )
-    | ( SLENGTH ( scircle | sbox | spoly ) )
-    | ( SCENTER ( scircle | sellipse ) )
-    | ( MINUS ( sline | spath ) )
-    | ( ( spoint | scircle | sline | sellipse | spoly | spath )? ( ( PLUS | MINUS ) strans )+ ) ;
+    | ( sline | simple_expr SCROSS sline | simple_expr )
+    | ( ( spoint | scircle | simple_expr ) SDISTANCE ( spoint | scircle | simple_expr ) )
+    | ( SLENGTH ( scircle | sbox | spoly | simple_expr ) )
+    | ( SCENTER ( scircle | sellipse | simple_expr ) )
+    | ( MINUS ( sline | spath | simple_expr ) )
+    | ( ( spoint | scircle | sline | sellipse | spoly | spath | simple_expr )? ( ( PLUS | MINUS )? strans )+ ) ;
 
 
 spoint:                 SPOINT LPAREN bit_expr COMMA bit_expr RPAREN ;
 scircle:                SCIRCLE LPAREN spoint COMMA bit_expr RPAREN ;
-sline:                  SLINE LPAREN spoint COMMA spoint RPAREN ;
+sline:                  ( SLINE LPAREN spoint COMMA spoint RPAREN ) | ( SLINE LPAREN strans COMMA bit_expr RPAREN );
 sellipse:               SELLIPSE LPAREN spoint COMMA bit_expr COMMA bit_expr COMMA bit_expr RPAREN ;
 sbox:                   SBOX LPAREN spoint COMMA spoint RPAREN ;
-spoly:                  SPOLY TEXT_STRING ; //SPOLY LPAREN spoint COMMA spoint COMMA spoint ( COMMA spoint )* RPAREN ;
-spath:                  SPATH TEXT_STRING ;
+spoly:                  SPOLY TEXT_STRING | SPOLY LPAREN column_spec RPAREN ;
+spath:                  SPATH TEXT_STRING | SPATH LPAREN column_spec RPAREN ;
 strans:                 STRANS LPAREN bit_expr COMMA bit_expr COMMA bit_expr COMMA TRANS RPAREN ;
 
-pg_sphere_object:       scircle | sline | sellipse | sbox | spoly | spath;
+pg_sphere_object:       scircle | sline | sellipse | sbox | spoly | spath | simple_expr;
