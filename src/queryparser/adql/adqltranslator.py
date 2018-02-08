@@ -119,11 +119,11 @@ class ADQLGeometryTranslationVisitor(ADQLParserVisitor):
         # We need to visit the AS clause to avoid aliases being treated same
         # as regular identifiers and backticked.
         ri = _process_regular_identifier(ctx.children[1].getText(),
-                self.output_sql)
+                                         self.output_sql)
         if ctx.children[1].getText()[0] != '"':
-            if self.sql_output == 'mysql':
+            if self.output_sql == 'mysql':
                 ri = ri.replace('`', '')
-            elif self.sql_output == 'postgresql':
+            elif self.output_sql == 'postgresql':
                 ri = ri.replace('"', '')
         _remove_children(ctx)
         self.contexts[ctx] = 'AS ' + ri
@@ -137,9 +137,23 @@ class ADQLGeometryTranslationVisitor(ADQLParserVisitor):
 
         #  ctx_text = "spoint( %s(%s),%s(%s) )" % (self.conunits, coords[0],
         #                                          self.conunits, coords[1])
-        if self.output_sql in ('mysql', 'postgresql'):
+        if self.output_sql == 'mysql':
             ctx_text = "spoint( %s(%s), %s(%s) )" % (self.conunits, coords[0],
                                                      self.conunits, coords[1])
+        if self.output_sql == 'postgresql':
+            if type(coords[0]) == str and type(coords[1]) == str:
+                if coords[0].strip('"') == 'ra' and coords[1].strip('"') == 'dec':
+                    ctx_text = 'pg_sphere_point'
+                else:
+                    ctx_text = "spoint( %s(%s), %s(%s) )" % (self.conunits,
+                                                             coords[0],
+                                                             self.conunits,
+                                                             coords[1])
+            else:
+                ctx_text = "spoint( %s(%s), %s(%s) )" % (self.conunits,
+                                                         coords[0],
+                                                         self.conunits,
+                                                         coords[1])
         else:
             ctx_text = ''
 
@@ -206,6 +220,25 @@ class ADQLGeometryTranslationVisitor(ADQLParserVisitor):
         self.contexts[ctx] = ctx_text
 
 
+class ADQLContainsVisitor(ADQLParserVisitor):
+    def __init__(self):
+        self.contains = []
+
+    def visitContains(self, ctx):
+        if ctx.getText().lower()[:8] == 'contains':
+            self.contains.append(ctx)
+
+
+class ADQLComparisonPredicateVisitor(ADQLParserVisitor):
+    # Get rid of "1=" in 1=CONTAINS() statement
+    def visitComparison_predicate(self, ctx):
+        contains_visitor = ADQLContainsVisitor()
+        contains_visitor.visit(ctx)
+        if len(contains_visitor.contains):
+            ctx.children[0].removeLastChild()
+            ctx.children[1].removeLastChild()
+
+
 class ADQLFunctionsTranslationVisitor(ADQLParserVisitor):
     """
     Run this visitor after the geometry has already been processed.
@@ -215,9 +248,10 @@ class ADQLFunctionsTranslationVisitor(ADQLParserVisitor):
         the replaced geometry chunks.
 
     """
-    def __init__(self, contexts, output_sql, conunits="DEGREES"):
+    def __init__(self, contexts, output_sql, tree, conunits="DEGREES"):
         self.contexts = contexts
         self.output_sql = output_sql
+        self.tree = tree
         self.conunits = conunits
 
     def visitArea(self, ctx):
@@ -254,8 +288,6 @@ class ADQLFunctionsTranslationVisitor(ADQLParserVisitor):
         self.contexts[ctx] = ctx_text
 
     def visitContains(self, ctx):
-        #  arg = (self.contexts[ctx.children[2].children[0].children[0]],
-        #         self.contexts[ctx.children[4].children[0].children[0]])
         arg = (self.contexts[ctx.children[2].children[0]],
                self.contexts[ctx.children[4].children[0]])
 
@@ -454,7 +486,6 @@ class ADQLQueryTranslator(object):
         self.parse()
 
     def translate(self, translator_visitor):
-        translator_visitor.visit(self.tree)
 
         select_query_listener = SelectQueryListener()
         self.walker.walk(select_query_listener, self.tree)
@@ -462,6 +493,8 @@ class ADQLQueryTranslator(object):
         format_listener = FormatListener(self.parser,
                                          translator_visitor.contexts,
                                          select_query_listener.limit_contexts)
+        #  for k, v in translator_visitor.contexts.items():
+            #  print(k, v)
         self.walker.walk(format_listener, self.tree)
         return format_listener.format_query()
 
@@ -482,7 +515,7 @@ class ADQLQueryTranslator(object):
             ADQLFunctionsTranslationVisitor(translator_visitor.contexts,
                                             output_sql='mysql')
 
-        translated_query = self.translate(translator_visitor) 
+        translated_query = self.translate(translator_visitor)
         return translated_query
 
     def to_postgresql(self):
@@ -496,12 +529,17 @@ class ADQLQueryTranslator(object):
 
         self.parse()
 
+        comp_visitor = ADQLComparisonPredicateVisitor()
+        comp_visitor.visit(self.tree)
+
         translator_visitor = ADQLGeometryTranslationVisitor(
                 output_sql='postgresql')
         translator_visitor.visit(self.tree)
         translator_visitor = \
             ADQLFunctionsTranslationVisitor(translator_visitor.contexts,
-                                            output_sql='postgresql')
+                                            output_sql='postgresql',
+                                            tree=self.tree)
+        translator_visitor.visit(self.tree)
 
-        translated_query = self.translate(translator_visitor) 
+        translated_query = self.translate(translator_visitor)
         return translated_query
