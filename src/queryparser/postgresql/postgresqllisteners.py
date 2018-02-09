@@ -297,6 +297,15 @@ class SchemaNameListener(PostgreSQLParserListener):
             pass
 
 
+class PgSphereListener(PostgreSQLParserListener):
+
+    def __init__(self):
+        pass
+
+    def enterSpoint(self, ctx):
+        print(ctx.getText())
+
+
 class SyntaxErrorListener(ErrorListener):
     def __init__(self):
         super(SyntaxErrorListener, self).__init__()

@@ -19,7 +19,7 @@ from ..exceptions import QueryError, QuerySyntaxError
 
 from .postgresqllisteners import ColumnKeywordFunctionListener,\
         QueryListener, RemoveSubqueriesListener, SyntaxErrorListener,\
-        SchemaNameListener
+        SchemaNameListener, PgSphereListener
 
 from .postgresqllisteners import parse_alias
 
@@ -462,6 +462,7 @@ class PostgreSQLQueryProcessor(object):
 
             if subquery_alias is not None:
                 subquery_contents[subquery_alias] = current_columns
+
 
         if len(missing_columns):
             mc = self._extract_columns(missing_columns, select_list_tables,

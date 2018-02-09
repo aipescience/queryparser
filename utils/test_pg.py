@@ -51,5 +51,27 @@ CIRCLE('ICRS',266.41683,-29.00781, 0.08333333)
         ORDER BY phot_g_mean_mag ASC
 """
 
+query = """
+SELECT TOP 10 gaia.ra , distance(
+POINT('ICRS', hip.ra, hip.de),
+POINT('ICRS', gaia.ra, gaia.dec)
+) AS dist
+FROM gdr1.gaia_source AS gaia, gdr1.hipparcos AS hip
+WHERE 1=CONTAINS(
+        POINT('ICRS', hip.ra, hip.de),
+        CIRCLE('ICRS', gaia.ra, gaia.dec, 0.000277777777778)
+
+        )
+"""
+
 adt = ADQLQueryTranslator(query)
-print(adt.to_postgresql())
+#  iob = {'sphere': ((('gdr1', 'gaia_source', 'ra'),
+                   #  ('gdr1', 'hipparcos', 'dec')), 'pg_sphere_point')}
+#  adt.set_indexed_objects(iob)
+pgq = adt.to_postgresql()
+
+qp = PostgreSQLQueryProcessor()
+qp.set_query(pgq)
+qp.process_query()
+
+print(qp.columns)

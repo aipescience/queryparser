@@ -140,7 +140,7 @@ class ADQLGeometryTranslationVisitor(ADQLParserVisitor):
         if self.output_sql == 'mysql':
             ctx_text = "spoint( %s(%s), %s(%s) )" % (self.conunits, coords[0],
                                                      self.conunits, coords[1])
-        if self.output_sql == 'postgresql':
+        elif self.output_sql == 'postgresql':
             if type(coords[0]) == str and type(coords[1]) == str:
                 if coords[0].strip('"') == 'ra' and coords[1].strip('"') == 'dec':
                     ctx_text = 'pg_sphere_point'
@@ -248,10 +248,9 @@ class ADQLFunctionsTranslationVisitor(ADQLParserVisitor):
         the replaced geometry chunks.
 
     """
-    def __init__(self, contexts, output_sql, tree, conunits="DEGREES"):
+    def __init__(self, contexts, output_sql, conunits="DEGREES"):
         self.contexts = contexts
         self.output_sql = output_sql
-        self.tree = tree
         self.conunits = conunits
 
     def visitArea(self, ctx):
@@ -493,8 +492,6 @@ class ADQLQueryTranslator(object):
         format_listener = FormatListener(self.parser,
                                          translator_visitor.contexts,
                                          select_query_listener.limit_contexts)
-        #  for k, v in translator_visitor.contexts.items():
-            #  print(k, v)
         self.walker.walk(format_listener, self.tree)
         return format_listener.format_query()
 
@@ -514,6 +511,7 @@ class ADQLQueryTranslator(object):
         translator_visitor = \
             ADQLFunctionsTranslationVisitor(translator_visitor.contexts,
                                             output_sql='mysql')
+        translator_visitor.visit(self.tree)
 
         translated_query = self.translate(translator_visitor)
         return translated_query
@@ -537,8 +535,7 @@ class ADQLQueryTranslator(object):
         translator_visitor.visit(self.tree)
         translator_visitor = \
             ADQLFunctionsTranslationVisitor(translator_visitor.contexts,
-                                            output_sql='postgresql',
-                                            tree=self.tree)
+                                            output_sql='postgresql')
         translator_visitor.visit(self.tree)
 
         translated_query = self.translate(translator_visitor)
