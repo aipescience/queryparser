@@ -26,15 +26,15 @@ from .postgresqllisteners import parse_alias
 
 class PostgreSQLQueryProcessor(object):
     """
-    Object used for processing PostgreSQL queries. Its objective is query validation
-    (syntax error detection )and extraction of used columns, keywords and
-    functions.
+    Object used for processing PostgreSQL queries. Its objective is query
+    validation (syntax error detection )and extraction of used columns,
+    keywords and functions.
 
     :param query:
         PostgreSQL query string.
 
     """
-    def __init__(self, query=None):
+    def __init__(self, query=None, indexed_objects=None):
         self.walker = antlr4.ParseTreeWalker()
 
         self.columns = set()
@@ -42,9 +42,11 @@ class PostgreSQLQueryProcessor(object):
         self.functions = set()
         self.display_columns = []
         self.syntax_error_listener = SyntaxErrorListener()
+        self._indexed_objects = indexed_objects
         if query is not None:
             self._query = self._strip_query(query)
             self.process_query()
+
 
     def _extract_instances(self, column_keyword_function_listener):
         select_list_columns = []
@@ -287,19 +289,6 @@ class PostgreSQLQueryProcessor(object):
                         None and len(ref_dict.keys()) > 1 and not join:
                     raise QueryError("Column '%s' is ambiguous." % c[0][2])
 
-                #  elif c[0][2] is not None and c[0][2] == '*' and c[0][1] is \
-                        #  None and len(ref_dict.keys()) > 1 and not join:
-
-                    #  tv = list(ref_dict.values())
-                    #  try:
-                        #  columns[i] = [[tv[0][0][0][0], tv[0][0][1],
-                                       #  c[0][2]], c[1]]
-                        #  for t in tv[1:]:
-                            #  extra_columns.append([[t[0][0][0], t[0][0][1],
-                                                  #  c[0][2]], c[1]])
-                    #  except TypeError:
-                        #  pass
-
                 elif len(budget) and tab[0][0] is None and tab[0][1] is None:
                     ref = budget[-1]
                     column_found = False
@@ -463,7 +452,6 @@ class PostgreSQLQueryProcessor(object):
             if subquery_alias is not None:
                 subquery_contents[subquery_alias] = current_columns
 
-
         if len(missing_columns):
             mc = self._extract_columns(missing_columns, select_list_tables,
                                        ref_dict, join, budget,
@@ -506,6 +494,16 @@ class PostgreSQLQueryProcessor(object):
         self.functions = list(set(functions))
         self.display_columns = [(i[0], i[1]) for i in display_columns]
         self.tables = tables
+
+        # If there are any pg_sphere object that are indexed we need
+        # to replace the ADQL translated query parts with the column
+        # names
+        if self._indexed_objects is not None:
+            pg_sphere_listener = PgSphereListener(ref_dict,
+                                                  self._indexed_objects)
+            self.walker.walk(pg_sphere_listener, tree)
+            for k, v in pg_sphere_listener.replace_dict.items():
+                self._query = self._query.replace(k, v)
 
     @property
     def query(self):

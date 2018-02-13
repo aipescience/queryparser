@@ -65,13 +65,13 @@ WHERE 1=CONTAINS(
 """
 
 adt = ADQLQueryTranslator(query)
-#  iob = {'sphere': ((('gdr1', 'gaia_source', 'ra'),
-                   #  ('gdr1', 'hipparcos', 'dec')), 'pg_sphere_point')}
 #  adt.set_indexed_objects(iob)
 pgq = adt.to_postgresql()
 
-qp = PostgreSQLQueryProcessor()
+iob = {'spoint': ((('gdr1', 'gaia_source', 'ra'),
+                   ('gdr1', 'gaia_source', 'dec'), 'pg_sphere_point'),)}
+qp = PostgreSQLQueryProcessor(indexed_objects = iob)
 qp.set_query(pgq)
 qp.process_query()
 
-print(qp.columns)
+print(qp.query)

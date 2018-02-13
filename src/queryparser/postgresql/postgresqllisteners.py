@@ -264,16 +264,17 @@ class RemoveSubqueriesListener(PostgreSQLParserListener):
     def enterSelect_expression(self, ctx):
         parent = ctx.parentCtx.parentCtx
 
-        if isinstance(parent, PostgreSQLParser.SubqueryContext) and ctx.depth() >\
-                self.depth:
+        if isinstance(parent, PostgreSQLParser.SubqueryContext) and \
+           ctx.depth() > self.depth:
             # we need to remove all Select_expression instances, not
             # just the last one so we loop over until we get all of them out
-            seinstances = [isinstance(i, PostgreSQLParser.Select_expressionContext)
+            seinstances = [isinstance(i,
+                           PostgreSQLParser.Select_expressionContext)
                            for i in ctx.parentCtx.children]
             while True in seinstances:
                 ctx.parentCtx.removeLastChild()
                 seinstances = [isinstance(i,
-                                          PostgreSQLParser.Select_expressionContext)
+                               PostgreSQLParser.Select_expressionContext)
                                for i in ctx.parentCtx.children]
 
 
@@ -299,11 +300,42 @@ class SchemaNameListener(PostgreSQLParserListener):
 
 class PgSphereListener(PostgreSQLParserListener):
 
-    def __init__(self):
-        pass
+    def __init__(self, ref_dict, indexed_objects=None):
+        self.column_name_listener = ColumnNameListener()
+        self.walker = antlr4.ParseTreeWalker()
+
+        self.ref_dict = ref_dict
+        self.indexed_objects = indexed_objects
+        self.replace_dict = {}
+        #  print(self.indexed_objects, self.ref_dict)
 
     def enterSpoint(self, ctx):
-        print(ctx.getText())
+        try:
+            spoint = self.indexed_objects['spoint']
+        except KeyError:
+            return
+
+        cn = process_column_name(self.column_name_listener, self.walker, ctx)
+
+        cols = []
+        for c in cn:
+            if c[0] is None:
+                try:
+                    tr = self.ref_dict[c[1]]
+                    col = (tr[0][0][0].replace('"', ''),
+                           tr[0][0][1].replace('"', ''), c[2].replace('"', ''))
+                except KeyError:
+                    pass
+            else:
+                col = (c[0].reaplce('"', ''), c[1].reaplce('"', ''),
+                       c[2].reaplce('"', ''))
+            cols.append(col)
+
+        for sp in spoint:
+            if sp[0] == cols[0] and sp[1] == cols[1]:
+                rt = ctx.start.getInputStream().getText(ctx.start.start,
+                                                        ctx.stop.stop)
+                self.replace_dict[rt] = sp[2]
 
 
 class SyntaxErrorListener(ErrorListener):
