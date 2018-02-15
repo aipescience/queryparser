@@ -503,7 +503,6 @@ class PostgreSQLQueryProcessor(object):
                                  i[1][1].lstrip('"').rstrip('"'),
                                  i[1][2].lstrip('"').rstrip('"')])
                                 for i in display_columns]
-        print(self.display_columns)
         self.tables = tables
         #  print(self.columns)
 
