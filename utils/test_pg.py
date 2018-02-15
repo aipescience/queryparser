@@ -1,5 +1,6 @@
 from queryparser.postgresql import PostgreSQLQueryProcessor
 from queryparser.adql import ADQLQueryTranslator
+import numpy as np
 
 
 def test01():
@@ -22,56 +23,73 @@ def test01():
 
         print(qp.columns)
 
-query = """
-    SELECT DISTANCE(
-            POINT('ICRS', ra, dec),
-            POINT('ICRS', 266.41683, -29.00781)
-            ) AS dist
-    FROM gaiadr1.gaia_source
+
+def f1():
+    query = """
+        SELECT DISTANCE(
+                POINT('ICRS', ra, dec),
+                POINT('ICRS', 266.41683, -29.00781)
+                ) AS dist
+        FROM gaiadr1.gaia_source
+        WHERE 1=CONTAINS(
+                POINT('ICRS', ra, dec),
+                CIRCLE('ICRS', 266.41683, -29.00781, 0.08333333)
+                )
+        AND x < 1
+        OR 1=CONTAINS(
+                POINT('ICRS', ra, dec),
+                CIRCLE('ICRS', 66.41683, -29.00781, 0.08333333)
+                )
+        ORDER BY dist ASC
+        """
+
+    query = """
+    SELECT *
+    FROM gdr1.gaia_source
     WHERE 1=CONTAINS(
-            POINT('ICRS', ra, dec),
-            CIRCLE('ICRS', 266.41683, -29.00781, 0.08333333)
+    POINT('ICRS',ra,dec),
+    CIRCLE('ICRS',266.41683,-29.00781, 0.08333333)
             )
-    AND x < 1
-    OR 1=CONTAINS(
-            POINT('ICRS', ra, dec),
-            CIRCLE('ICRS', 66.41683, -29.00781, 0.08333333)
-            )
-    ORDER BY dist ASC
+            AND phot_g_mean_mag>=10 AND phot_g_mean_mag<15
+            ORDER BY phot_g_mean_mag ASC
     """
 
-query = """
-SELECT *
-FROM gdr1.gaia_source
-WHERE 1=CONTAINS(
-POINT('ICRS',ra,dec),
-CIRCLE('ICRS',266.41683,-29.00781, 0.08333333)
-        )
-        AND phot_g_mean_mag>=10 AND phot_g_mean_mag<15
-        ORDER BY phot_g_mean_mag ASC
-"""
+def f2():
+    query = """
+        SELECT TOP 100 "Ra", dec
+        FROM "gdr1".gaia_source AS gaia
+        WHERE 1=CONTAINS( POINT('ICRS', gaia.rra, gaia.dec),
+        POLYGON('ICRS', 21.480, -47.354, 21.697,-47.229, 21.914,-47.354,
+        21.914,-47.604, 21.697,-47.729, 21.480, -47.604) )
+    """
 
-query = """
-SELECT TOP 10 gaia.ra , distance(
-POINT('ICRS', hip.ra, hip.de),
-POINT('ICRS', gaia.ra, gaia.dec)
-) AS dist
-FROM gdr1.gaia_source AS gaia, gdr1.hipparcos AS hip
-WHERE 1=CONTAINS(
-        POINT('ICRS', hip.ra, hip.de),
-        CIRCLE('ICRS', gaia.ra, gaia.dec, 0.000277777777778)
+    adt = ADQLQueryTranslator(query)
+    #  adt.set_indexed_objects(iob)
+    pgq = adt.to_postgresql()
+    print(pgq)
 
-        )
-"""
+    iob = {'spoint': ((('gdr1', 'gaia_source', 'ra'),
+                       ('gdr1', 'gaia_source', 'dec'), 'pg_sphere_point'),)}
+    qp = PostgreSQLQueryProcessor(indexed_objects = iob)
+    qp.set_query(pgq)
+    qp.process_query()
 
-adt = ADQLQueryTranslator(query)
-#  adt.set_indexed_objects(iob)
-pgq = adt.to_postgresql()
+    print(qp.query)
 
-iob = {'spoint': ((('gdr1', 'gaia_source', 'ra'),
-                   ('gdr1', 'gaia_source', 'dec'), 'pg_sphere_point'),)}
-qp = PostgreSQLQueryProcessor(indexed_objects = iob)
-qp.set_query(pgq)
-qp.process_query()
+f2()
+exit()
 
-print(qp.query)
+alpha = (13 + 26 / 60 + 47.28 / 3600) * 15 - 180
+delta = -(47 + 28 / 60 + 46.1 / 3600)
+D = 0.5
+a = D / 4
+b = np.sqrt(3) * a
+coords = ((alpha - b, delta + a),
+          (alpha, delta + 2 * a),
+          (alpha + b, delta + a),
+          (alpha + b, delta - a),
+          (alpha, delta - 2 * a),
+          (alpha - b, delta - a))
+
+print(', '.join(['(%.3fd,%.3fd)' % i for i in coords]))
+

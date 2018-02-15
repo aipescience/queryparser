@@ -291,7 +291,7 @@ scircle:                SCIRCLE LPAREN spoint COMMA bit_expr RPAREN ;
 sline:                  ( SLINE LPAREN spoint COMMA spoint RPAREN ) | ( SLINE LPAREN strans COMMA bit_expr RPAREN );
 sellipse:               SELLIPSE LPAREN spoint COMMA bit_expr COMMA bit_expr COMMA bit_expr RPAREN ;
 sbox:                   SBOX LPAREN spoint COMMA spoint RPAREN ;
-spoly:                  SPOLY TEXT_STRING | SPOLY LPAREN column_spec RPAREN ;
+spoly:                  SPOLY TEXT_STRING| SPOLY LPAREN column_spec RPAREN | SPOLY LPAREN TEXT_STRING RPAREN;
 spath:                  SPATH TEXT_STRING | SPATH LPAREN column_spec RPAREN ;
 strans:                 STRANS LPAREN bit_expr COMMA bit_expr COMMA bit_expr COMMA TRANS RPAREN ;
 

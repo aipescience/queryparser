@@ -35,7 +35,7 @@ def process_column_name(column_name_listener, walker, ctx):
     walker.walk(column_name_listener, ctx)
     if column_name_listener.column_name:
         for i in column_name_listener.column_name:
-            cni = [None, None, None]
+            cni = [None, None, None, i]
             if i.schema_name():
                 cni[0] = i.schema_name().getText().replace('`', '')
             if i.table_name():
@@ -47,13 +47,13 @@ def process_column_name(column_name_listener, walker, ctx):
         try:
             ctx.ASTERISK()
             ts = ctx.table_spec()
-            cn = [[None, None, '*']]
+            cn = [[None, None, '*', None]]
             if ts.schema_name():
                 cn[0][0] = ts.schema_name().getText().replace('`', '')
             if ts.table_name():
                 cn[0][1] = ts.table_name().getText().replace('`', '')
         except AttributeError:
-            cn = [[None, None, None]]
+            cn = [[None, None, None, None]]
 
     return cn
 

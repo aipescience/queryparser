@@ -113,7 +113,7 @@ class PostgreSQLQueryProcessor(object):
                             if ju[0][1] is None:
                                 other_columns.append([[[ctx[2][0][0],
                                                         ctx[2][0][1],
-                                                        ju[0][2]], None]])
+                                                        ju[0][2], ctx], None]])
                 elif i[1].ON():
                     if len(i[2]) > 1:
                         for j in i[2]:
@@ -186,8 +186,8 @@ class PostgreSQLQueryProcessor(object):
             # if * is selected we don't care too much
             if c[0][0] is None and c[0][1] is None and c[0][2] == '*':
                 for slt in select_list_tables:
-                    extra_columns.append([[slt[0][0][0], slt[0][0][1], cname],
-                                          calias])
+                    extra_columns.append([[slt[0][0][0], slt[0][0][1], cname,
+                                           c[0][3]], calias])
                 remove_column_idxs.append(i)
                 continue
 
@@ -267,22 +267,23 @@ class PostgreSQLQueryProcessor(object):
                             if not column_found:
                                 missing_columns.append(c)
                                 columns[i] = [[c[0][0], c[0][1],
-                                               c[0][2]], c[1]]
+                                               c[0][2], c[0][3]], c[1]]
                                 if touched_columns is not None:
                                     touched_columns.append([[c[0][0], c[0][1],
-                                                           c[0][2]], c[1]])
+                                                           c[0][2], c[0][3]],
+                                                           c[1]])
                                 continue
                     else:
                         if tab[0][1] == c[0][1]:
                             columns[i] = [[tab[0][0], tab[0][1],
-                                          c[0][2]], c[1]]
+                                          c[0][2], c[0][3]], c[1]]
                         else:
 
                             missing_columns.append(c)
-                            columns[i] = [[c[0][0], c[0][1], c[0][2]], c[1]]
+                            columns[i] = [[c[0][0], c[0][1], c[0][2], c[0][3]], c[1]]
                             if touched_columns is not None:
                                 touched_columns.append([[c[0][0], c[0][1],
-                                                       c[0][2]], c[1]])
+                                                       c[0][2], c[0][3]], c[1]])
                         continue
 
                 elif c[0][2] is not None and c[0][2] != '*' and c[0][1] is \
@@ -306,7 +307,7 @@ class PostgreSQLQueryProcessor(object):
             if touched_columns is not None:
                 touched_columns.append([[tab[0][0], tab[0][1], cname], calias])
             else:
-                columns[i] = [[tab[0][0], tab[0][1], cname], calias]
+                columns[i] = [[tab[0][0], tab[0][1], cname, c[0][3]], calias]
 
         for i in remove_column_idxs[::-1]:
             columns.pop(i)
@@ -458,6 +459,7 @@ class PostgreSQLQueryProcessor(object):
                                        column_aliases_from_previous,
                                        touched_columns, subquery_contents)
             if len(mc):
+                #  print(mc)
                 unref_cols = "', '".join(['.'.join([j for j in i[0] if j])
                                          for i in mc])
                 raise QueryError("Unreferenced column(s): '%s'." % unref_cols)
@@ -494,6 +496,7 @@ class PostgreSQLQueryProcessor(object):
         self.functions = list(set(functions))
         self.display_columns = [(i[0], i[1]) for i in display_columns]
         self.tables = tables
+        #  print(self.columns)
 
         # If there are any pg_sphere object that are indexed we need
         # to replace the ADQL translated query parts with the column

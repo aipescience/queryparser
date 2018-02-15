@@ -51,7 +51,7 @@ class TestCase(unittest.TestCase):
 
         print(qp.columns, qp.display_columns, qp.tables)
 
-        qp_columns = ['.'.join([str(j) for j in i]) for i in qp.columns
+        qp_columns = ['.'.join([str(j) for j in i[:3]]) for i in qp.columns
                       if i[0] is not None and i[1] is not None]
         qp_display_columns = ['%s: %s' % (str(i[0]),
                                           '.'.join([str(j) for j in i[1]]))

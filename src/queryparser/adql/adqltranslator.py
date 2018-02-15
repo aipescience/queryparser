@@ -28,11 +28,12 @@ def _remove_children(ctx):
 
 
 def _process_regular_identifier(ctx_text, sql_output):
-        ri = ctx_text.rstrip("'").lstrip("'").rstrip('"').lstrip('"')
         if sql_output == 'mysql':
+            ri = ctx_text.rstrip("'").lstrip("'").rstrip('"').lstrip('"')
             return '`' + ri + '`'
         elif sql_output == 'postgresql':
-            return '"' + ri + '"'
+            return ctx_text
+            #  return '' + ri + ''
         else:
             return ri
 
@@ -95,9 +96,7 @@ class ADQLGeometryTranslationVisitor(ADQLParserVisitor):
                                                       rstrip('"').lstrip('"'))
                                        for v in i.split('.'))
                     elif self.output_sql == 'postgresql':
-                        val = '.'.join('"{0}"'.format(v.rstrip("'").
-                                                      lstrip("'").
-                                                      rstrip('"').lstrip('"'))
+                        val = '.'.join('{0}'.format(v)
                                        for v in i.split('.'))
 
             vals.append(val)
@@ -123,8 +122,6 @@ class ADQLGeometryTranslationVisitor(ADQLParserVisitor):
         if ctx.children[1].getText()[0] != '"':
             if self.output_sql == 'mysql':
                 ri = ri.replace('`', '')
-            elif self.output_sql == 'postgresql':
-                ri = ri.replace('"', '')
         _remove_children(ctx)
         self.contexts[ctx] = 'AS ' + ri
 
@@ -141,19 +138,8 @@ class ADQLGeometryTranslationVisitor(ADQLParserVisitor):
             ctx_text = "spoint( %s(%s), %s(%s) )" % (self.conunits, coords[0],
                                                      self.conunits, coords[1])
         elif self.output_sql == 'postgresql':
-            if type(coords[0]) == str and type(coords[1]) == str:
-                if coords[0].strip('"') == 'ra' and coords[1].strip('"') == 'dec':
-                    ctx_text = 'pg_sphere_point'
-                else:
-                    ctx_text = "spoint( %s(%s), %s(%s) )" % (self.conunits,
-                                                             coords[0],
-                                                             self.conunits,
-                                                             coords[1])
-            else:
-                ctx_text = "spoint( %s(%s), %s(%s) )" % (self.conunits,
-                                                         coords[0],
-                                                         self.conunits,
-                                                         coords[1])
+            ctx_text = "spoint( %s(%s), %s(%s) )" % (self.conunits, coords[0],
+                                                     self.conunits, coords[1])
         else:
             ctx_text = ''
 
