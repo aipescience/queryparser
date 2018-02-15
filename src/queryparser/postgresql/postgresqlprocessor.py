@@ -491,10 +491,19 @@ class PostgreSQLQueryProcessor(object):
                         acol[2] != col[2]:
                     del_columns.append(col)
 
-        self.columns = list(set(touched_columns).difference(del_columns))
+        self.columns = [(i[0].lstrip('"').rstrip('"'),
+                         i[1].lstrip('"').rstrip('"'),
+                         i[2].lstrip('"').rstrip('"'))
+                        for i in
+                        list(set(touched_columns).difference(del_columns))]
         self.keywords = list(set(keywords))
         self.functions = list(set(functions))
-        self.display_columns = [(i[0], i[1]) for i in display_columns]
+        self.display_columns = [(i[0].lstrip('"').rstrip('"'),
+                                [i[1][0].lstrip('"').rstrip('"'),
+                                 i[1][1].lstrip('"').rstrip('"'),
+                                 i[1][2].lstrip('"').rstrip('"')])
+                                for i in display_columns]
+        print(self.display_columns)
         self.tables = tables
         #  print(self.columns)
 
