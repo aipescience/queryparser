@@ -582,7 +582,7 @@ class ADQLTestCase(TestCase):
             """,
             ''.join((
                 'SELECT spoint(RADIANS(10.0), RADIANS(10.0)) AS "p" ',
-                'FROM "db"."tab";'
+                'FROM "db".tab;'
             )).strip()
         )
 
@@ -593,8 +593,8 @@ class ADQLTestCase(TestCase):
                 FROM db.tab
             """,
             ''.join((
-                'SELECT area(scircle(spoint(RADIANS("tab"."RA"), ',
-                'RADIANS(-2.23)), RADIANS(176.98))) FROM "db"."tab" LIMIT 10;'
+                'SELECT area(scircle(spoint(RADIANS("tab".RA), ',
+                'RADIANS(-2.23)), RADIANS(176.98))) FROM db.tab LIMIT 10;'
             )).strip()
         )
 
@@ -605,7 +605,7 @@ class ADQLTestCase(TestCase):
             """,
             ''.join((
                 'SELECT sbox(spoint(RADIANS(25.4),RADIANS(-20.5)),',
-                'spoint(RADIANS(1.1),RADIANS(1.2))) FROM "db"."tab";'
+                'spoint(RADIANS(1.1),RADIANS(1.2))) FROM db.tab;'
             )).strip()
         )
 
@@ -619,7 +619,7 @@ class ADQLTestCase(TestCase):
             ''.join((
                 'SELECT spoint(RADIANS(0.0), RADIANS(0.0)) @ ',
                 'scircle(spoint(RADIANS(0.0), RADIANS(0.0)), RADIANS(1.0)) ',
-                'FROM "db"."tab" LIMIT 10;'
+                'FROM db.tab LIMIT 10;'
             )).strip()
         )
 
@@ -631,6 +631,6 @@ class ADQLTestCase(TestCase):
             """,
             ''.join((
                 'SELECT DEGREES(spoint(RADIANS(0.0), RADIANS(0.0)) <-> ',
-                'spoint(RADIANS(0.0), RADIANS(1.0))) FROM "db"."tab";'
+                'spoint(RADIANS(0.0), RADIANS(1.0))) FROM db.tab;'
             )).strip()
         )
