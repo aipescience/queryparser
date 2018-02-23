@@ -23,7 +23,7 @@ def parse_alias(alias):
 
     """
     if alias:
-        alias = alias.ID().getText().strip('`')
+        alias = alias.ID().getText().strip('"')
     else:
         alias = None
     return alias
@@ -37,11 +37,11 @@ def process_column_name(column_name_listener, walker, ctx):
         for i in column_name_listener.column_name:
             cni = [None, None, None, i]
             if i.schema_name():
-                cni[0] = i.schema_name().getText().replace('`', '')
+                cni[0] = i.schema_name().getText().replace('"', '')
             if i.table_name():
-                cni[1] = i.table_name().getText().replace('`', '')
+                cni[1] = i.table_name().getText().replace('"', '')
             if i.column_name():
-                cni[2] = i.column_name().getText().replace('`', '')
+                cni[2] = i.column_name().getText().replace('"', '')
             cn.append(cni)
     else:
         try:
@@ -49,9 +49,9 @@ def process_column_name(column_name_listener, walker, ctx):
             ts = ctx.table_spec()
             cn = [[None, None, '*', None]]
             if ts.schema_name():
-                cn[0][0] = ts.schema_name().getText().replace('`', '')
+                cn[0][0] = ts.schema_name().getText().replace('"', '')
             if ts.table_name():
-                cn[0][1] = ts.table_name().getText().replace('`', '')
+                cn[0][1] = ts.table_name().getText().replace('"', '')
         except AttributeError:
             cn = [[None, None, None, None]]
 
@@ -137,9 +137,9 @@ class ColumnKeywordFunctionListener(PostgreSQLParserListener):
         if ts:
             tn = [None, None]
             if ts.schema_name():
-                tn[0] = ts.schema_name().getText().replace('`', '')
+                tn[0] = ts.schema_name().getText().replace('"', '')
             if ts.table_name():
-                tn[1] = ts.table_name().getText().replace('`', '')
+                tn[1] = ts.table_name().getText().replace('"', '')
             self.tables.append((alias, tn, ctx.depth()))
 
             logging.info((ctx.depth(), ctx.__class__.__name__, [tn, alias]))
@@ -310,12 +310,12 @@ class SchemaNameListener(PostgreSQLParserListener):
         ttype = ctx.start.type
         sn = ctx.getTokens(ttype)[0].getSymbol().text
         try:
-            nsn = self.replace_schema_name[sn.replace('`', '')]
+            nsn = self.replace_schema_name[sn.replace('"', '')]
             try:
                 nsn = unicode(nsn, 'utf-8')
             except NameError:
                 pass
-            nsn = re.sub('(|`)(?!`)[\S]*[^`](|`)', r'\1%s\2' % nsn, sn)
+            nsn = re.sub('(|")(?!")[\S]*[^"](|")', r'\1%s\2' % nsn, sn)
             ctx.getTokens(ttype)[0].getSymbol().text = nsn
         except KeyError:
             pass

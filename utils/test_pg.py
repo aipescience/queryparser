@@ -53,7 +53,7 @@ def f1():
             AND phot_g_mean_mag>=10 AND phot_g_mean_mag<15
             ORDER BY phot_g_mean_mag ASC
     """
-    query = 'SELECT * FROM a.b WHERE c > 1'
+    query = 'SELECT a.b, c.d FROM db.tab AS a'
 
     #  adt = ADQLQueryTranslator(query)
     #  pgq = adt.to_postgresql()

@@ -113,7 +113,8 @@ class PostgreSQLQueryProcessor(object):
                             if ju[0][1] is None:
                                 other_columns.append([[[ctx[2][0][0],
                                                         ctx[2][0][1],
-                                                        ju[0][2], ctx], None]])
+                                                        ju[0][2],
+                                                        ctx[1]], None]])
                 elif i[1].ON():
                     if len(i[2]) > 1:
                         for j in i[2]:
@@ -464,12 +465,10 @@ class PostgreSQLQueryProcessor(object):
                                        column_aliases_from_previous,
                                        touched_columns, subquery_contents)
             if len(mc):
-                unref_cols = "', '".join(['.'.join([j for j in i[0] if j])
+                unref_cols = "', '".join(['.'.join([j for j in i[0][:3] if j])
                                          for i in mc])
                 raise QueryError("Unreferenced column(s): '%s'." % unref_cols)
 
-        #  for xx in [tuple(i[0]) for i in touched_columns]:
-            #  print(xx)
         touched_columns = set([tuple(i[0]) for i in touched_columns])
 
         # extract display_columns
