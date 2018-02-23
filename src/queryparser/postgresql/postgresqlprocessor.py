@@ -85,7 +85,8 @@ class PostgreSQLQueryProcessor(object):
 
             if isinstance(i[1], PostgreSQLParser.Select_listContext):
                 if len(i) == 3:
-                    select_list_columns.append(i[2])
+                    select_list_columns.append([[i[2][0][0] + [i[1]],
+                                                i[2][0][1]]])
                     ctx_stack.append(i)
 
             if isinstance(i[1], PostgreSQLParser.Where_clauseContext) or\
@@ -467,6 +468,8 @@ class PostgreSQLQueryProcessor(object):
                                          for i in mc])
                 raise QueryError("Unreferenced column(s): '%s'." % unref_cols)
 
+        #  for xx in [tuple(i[0]) for i in touched_columns]:
+            #  print(xx)
         touched_columns = set([tuple(i[0]) for i in touched_columns])
 
         # extract display_columns
@@ -509,14 +512,11 @@ class PostgreSQLQueryProcessor(object):
         self.tables = [[i[0].lstrip('"').rstrip('"'),
                         i[1].lstrip('"').rstrip('"')] for i in tables]
 
-        # If there are any pg_sphere object that are indexed we need
-        # to replace the ADQL translated query parts with the column
+        # If there are any pg_sphere objects that are indexed we need
+        # to replace the ADQL translated query parts with the indexed column
         # names
         if self._indexed_objects is not None:
-            cctx_dict = {}
-            for c in columns:
-                cctx_dict[c[3]] = c[:3]
-            pg_sphere_listener = PgSphereListener(cctx_dict,
+            pg_sphere_listener = PgSphereListener(columns,
                                                   self._indexed_objects)
             self.walker.walk(pg_sphere_listener, tree)
             for k, v in pg_sphere_listener.replace_dict.items():

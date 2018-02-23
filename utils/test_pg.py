@@ -53,7 +53,7 @@ def f1():
             AND phot_g_mean_mag>=10 AND phot_g_mean_mag<15
             ORDER BY phot_g_mean_mag ASC
     """
-    query = 'SELECT count(*) FROM gdr1.gaia_source WHERE pg_sphere_point @ sbox(spoint(0.0174533, 0.0174533), spoint(2.0*0.0174533, 2.0*0.0174533));'
+    query = 'SELECT * FROM a.b WHERE c > 1'
 
     #  adt = ADQLQueryTranslator(query)
     #  pgq = adt.to_postgresql()
@@ -92,7 +92,7 @@ def f2():
 
     print(qp.query)
 
-f2()
+f1()
 exit()
 
 alpha = (13 + 26 / 60 + 47.28 / 3600) * 15 - 180

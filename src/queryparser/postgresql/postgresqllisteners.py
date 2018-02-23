@@ -323,11 +323,14 @@ class SchemaNameListener(PostgreSQLParserListener):
 
 class PgSphereListener(PostgreSQLParserListener):
 
-    def __init__(self, cctx_dict, indexed_objects=None):
+    def __init__(self, columns, indexed_objects=None):
         self.column_name_listener = ColumnNameListener()
         self.walker = antlr4.ParseTreeWalker()
 
-        self.cctx_dict = cctx_dict
+        self.cctx_dict = {}
+        for c in columns:
+            self.cctx_dict[c[3]] = c[:3]
+
         self.indexed_objects = indexed_objects
         self.replace_dict = {}
 
