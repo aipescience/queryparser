@@ -53,18 +53,22 @@ def f1():
             AND phot_g_mean_mag>=10 AND phot_g_mean_mag<15
             ORDER BY phot_g_mean_mag ASC
     """
-    query = 'SELECT TOP 10 *, a FROM a.n '
+    query = 'SELECT count(*) FROM gdr1.gaia_source WHERE pg_sphere_point @ sbox(spoint(0.0174533, 0.0174533), spoint(2.0*0.0174533, 2.0*0.0174533));'
 
-    adt = ADQLQueryTranslator(query)
-    pgq = adt.to_postgresql()
-    print(pgq)
+    #  adt = ADQLQueryTranslator(query)
+    #  pgq = adt.to_postgresql()
+    #  print(pgq)
+    qp = PostgreSQLQueryProcessor()
+    qp.set_query(query)
+    qp.process_query()
+    print(qp.functions)
 
 
 def f2():
     query = """
-        SELECT TOP 100 "Ra", dec
-        FROM "gdr1".gaia_source AS gaia
-        WHERE 1=CONTAINS( POINT('ICRS', gaia.rra, gaia.dec),
+        SELECT TOP 100 ra, dec
+        FROM "gdr1".tgas_source AS tgas
+        WHERE 1=CONTAINS( POINT('ICRS', tgas.ra, tgas.dec),
         POLYGON('ICRS', 21.480, -47.354, 21.697,-47.229, 21.914,-47.354,
         21.914,-47.604, 21.697,-47.729, 21.480, -47.604) )
     """
@@ -74,8 +78,8 @@ def f2():
     pgq = adt.to_postgresql()
     print(pgq)
 
-    iob = {'spoint': ((('gdr1', 'gaia_source', 'ra'),
-                       ('gdr1', 'gaia_source', 'dec'), 'pg_sphere_point'),)}
+    iob = {'spoint': ((('gdr1', 'tgas_source', 'ra'),
+                       ('gdr1', 'tgas_source', 'dec'), 'point'),)}
     qp = PostgreSQLQueryProcessor(indexed_objects = iob)
     qp.set_query(pgq)
     qp.process_query()

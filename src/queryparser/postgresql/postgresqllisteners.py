@@ -219,6 +219,31 @@ class ColumnKeywordFunctionListener(PostgreSQLParserListener):
         self.data.append([ctx.depth(), ctx,
                           self._extract_column(ctx, append=False)[1]])
 
+    def enterSpoint(self, ctx):
+        self.functions.append('spoint')
+
+    def enterScircle(self, ctx):
+        self.functions.append('scircle')
+
+    def enterSline(self, ctx):
+        self.functions.append('sline')
+
+    def enterSellipse(self, ctx):
+        self.functions.append('sellipse')
+
+    def enterSbox(self, ctx):
+        self.functions.append('sbox')
+
+    def enterSpoly(self, ctx):
+        self.functions.append('spoly')
+
+    def enterSpath(self, ctx):
+        self.functions.append('spath')
+
+    def enterStrans(self, ctx):
+        self.functions.append('strans')
+
+
 
 class QueryListener(PostgreSQLParserListener):
     """
