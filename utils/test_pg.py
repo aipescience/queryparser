@@ -53,6 +53,12 @@ def f1():
             AND phot_g_mean_mag>=10 AND phot_g_mean_mag<15
             ORDER BY phot_g_mean_mag ASC
     """
+    query = 'SELECT TOP 10 *, a FROM a.n '
+
+    adt = ADQLQueryTranslator(query)
+    pgq = adt.to_postgresql()
+    print(pgq)
+
 
 def f2():
     query = """
@@ -76,7 +82,7 @@ def f2():
 
     print(qp.query)
 
-f2()
+f1()
 exit()
 
 alpha = (13 + 26 / 60 + 47.28 / 3600) * 15 - 180

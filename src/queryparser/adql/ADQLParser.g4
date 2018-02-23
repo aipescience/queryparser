@@ -153,7 +153,7 @@ region:                         REGION LPAREN string_value_expression RPAREN ;
 regular_identifier:             ID ;
 schema_name:                    ID ; //( catalog_name DOT )? unqualified_schema_name ;
 search_condition:               boolean_term | search_condition OR boolean_term ;
-select_list:                    ASTERISK | select_sublist ( COMMA select_sublist )* ;
+select_list:                    ( select_sublist ( COMMA select_sublist )* ) | ( ASTERISK ( COMMA select_sublist ( COMMA select_sublist )* )? ) ;
 select_query:                   SELECT ( set_quantifier )? ( set_limit )? select_list table_expression ;
 select_sublist:                 derived_column | qualifier DOT ASTERISK ;
 set_function_specification:     COUNT LPAREN ASTERISK RPAREN | general_set_function ;
