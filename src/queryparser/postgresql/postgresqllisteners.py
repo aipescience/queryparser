@@ -355,7 +355,7 @@ class PgSphereListener(PostgreSQLParserListener):
             try:
                 cols.append(col)
             except UnboundLocalError:
-                pass
+                return
 
         for sp in spoint:
             if sp[0] == cols[0] and sp[1] == cols[1]:
