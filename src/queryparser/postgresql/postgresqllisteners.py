@@ -355,13 +355,14 @@ class PgSphereListener(PostgreSQLParserListener):
             try:
                 cols.append(col)
             except UnboundLocalError:
-                return
+                pass
 
-        for sp in spoint:
-            if sp[0] == cols[0] and sp[1] == cols[1]:
-                rt = ctx.start.getInputStream().getText(ctx.start.start,
-                                                        ctx.stop.stop)
-                self.replace_dict[rt] = sp[2]
+        if len(cols):
+            for sp in spoint:
+                if sp[0] == cols[0] and sp[1] == cols[1]:
+                    rt = ctx.start.getInputStream().getText(ctx.start.start,
+                                                            ctx.stop.stop)
+                    self.replace_dict[rt] = sp[2]
 
 
 class SyntaxErrorListener(ErrorListener):
