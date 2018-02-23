@@ -219,7 +219,6 @@ class ColumnKeywordFunctionListener(PostgreSQLParserListener):
         self.data.append([ctx.depth(), ctx,
                           self._extract_column(ctx, append=False)[1]])
 
-    def enterSpoint(self, ctx):
         self.functions.append('spoint')
 
     def enterScircle(self, ctx):
@@ -242,7 +241,6 @@ class ColumnKeywordFunctionListener(PostgreSQLParserListener):
 
     def enterStrans(self, ctx):
         self.functions.append('strans')
-
 
 
 class QueryListener(PostgreSQLParserListener):
@@ -354,7 +352,10 @@ class PgSphereListener(PostgreSQLParserListener):
             else:
                 col = (c[0].reaplce('"', ''), c[1].reaplce('"', ''),
                        c[2].reaplce('"', ''))
-            cols.append(col)
+            try:
+                cols.append(col)
+            except UnboundLocalError:
+                pass
 
         for sp in spoint:
             if sp[0] == cols[0] and sp[1] == cols[1]:
