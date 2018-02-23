@@ -72,21 +72,27 @@ def f2():
         POLYGON('ICRS', 21.480, -47.354, 21.697,-47.229, 21.914,-47.354,
         21.914,-47.604, 21.697,-47.729, 21.480, -47.604) )
     """
+    query = """
+    SELECT ra, dec, DISTANCE( POINT('ICRS', gaia.ra, dec),
+                              POINT('ICRS', 200, 45)  ) AS dist
+    FROM gdr1.gaia_source AS gaia
+    WHERE 1 = CONTAINS( POINT('ICRS', ra, dec), CIRCLE('ICRS', 200, 45, 60)  ) 
+    """
 
     adt = ADQLQueryTranslator(query)
     #  adt.set_indexed_objects(iob)
     pgq = adt.to_postgresql()
     print(pgq)
 
-    iob = {'spoint': ((('gdr1', 'tgas_source', 'ra'),
-                       ('gdr1', 'tgas_source', 'dec'), 'point'),)}
+    iob = {'spoint': ((('gdr1', 'gaia_source', 'ra'),
+                       ('gdr1', 'gaia_source', 'dec'), 'point'),)}
     qp = PostgreSQLQueryProcessor(indexed_objects = iob)
     qp.set_query(pgq)
     qp.process_query()
 
     print(qp.query)
 
-f1()
+f2()
 exit()
 
 alpha = (13 + 26 / 60 + 47.28 / 3600) * 15 - 180

@@ -47,7 +47,6 @@ class PostgreSQLQueryProcessor(object):
             self._query = self._strip_query(query)
             self.process_query()
 
-
     def _extract_instances(self, column_keyword_function_listener):
         select_list_columns = []
         other_columns = []
@@ -143,6 +142,7 @@ class PostgreSQLQueryProcessor(object):
 
     def _get_budget_column(self, c, tab, ref):
         cname = c[0][2]
+        cctx = c[0][3]
         calias = c[1]
         t = tab
 
@@ -165,7 +165,7 @@ class PostgreSQLQueryProcessor(object):
                 column_found = True
                 break
 
-        return cname, calias, column_found, t
+        return cname, cctx, calias, column_found, t
 
     def _extract_columns(self, columns, select_list_tables, ref_dict, join,
                          budget, column_aliases, touched_columns=None,
@@ -181,6 +181,7 @@ class PostgreSQLQueryProcessor(object):
             c = col[0]
 
             cname = c[0][2]
+            cctx = c[0][3]
             calias = c[1]
 
             # if * is selected we don't care too much
@@ -207,7 +208,7 @@ class PostgreSQLQueryProcessor(object):
                 if join and c[0][2] != '*' and\
                         (tab[1] != c[0][1] or
                          (tab[1] is None and c[0][1] is None)):
-                    cname, calias, column_found, tab =\
+                    cname, cctx, calias, column_found, tab =\
                             self._get_budget_column(c, tab, budget[-1][2])
                     # raise an ambigous column
                     if column_found and c[0][1] is None:
@@ -224,7 +225,7 @@ class PostgreSQLQueryProcessor(object):
 
                 if isinstance(ref[0], int):
                     # ref is a budget column
-                    cname, calias, column_found, tab =\
+                    cname, cctx, calias, column_found, tab =\
                             self._get_budget_column(c, tab, ref[2])
 
                     ref_cols = [j[0][2] for j in ref[2]]
@@ -240,6 +241,7 @@ class PostgreSQLQueryProcessor(object):
             except KeyError:
                 if None not in c[0]:
                     cname = c[0][2]
+                    cctx = c[0][3]
                     calias = c[1]
                     tab = [[c[0][0], c[0][1]]]
                     column_found = True
@@ -249,7 +251,7 @@ class PostgreSQLQueryProcessor(object):
                     if subquery_contents is not None:
                         try:
                             contents = subquery_contents[c[0][1]]
-                            cname, calias, column_found, tab =\
+                            cname, cctx, calias, column_found, tab =\
                                 self._get_budget_column(c, tab, contents)
 
                         except KeyError:
@@ -260,6 +262,7 @@ class PostgreSQLQueryProcessor(object):
                             for t in tabs:
                                 if t[1] == c[0][1]:
                                     cname = c[0][2]
+                                    cctx = c[0][3]
                                     calias = c[1]
                                     tab = [t]
                                     column_found = True
@@ -280,10 +283,12 @@ class PostgreSQLQueryProcessor(object):
                         else:
 
                             missing_columns.append(c)
-                            columns[i] = [[c[0][0], c[0][1], c[0][2], c[0][3]], c[1]]
+                            columns[i] = [[c[0][0], c[0][1],
+                                           c[0][2], c[0][3]], c[1]]
                             if touched_columns is not None:
                                 touched_columns.append([[c[0][0], c[0][1],
-                                                       c[0][2], c[0][3]], c[1]])
+                                                       c[0][2], c[0][3]],
+                                                       c[1]])
                         continue
 
                 elif c[0][2] is not None and c[0][2] != '*' and c[0][1] is \
@@ -295,7 +300,7 @@ class PostgreSQLQueryProcessor(object):
                     column_found = False
 
                     if isinstance(ref[0], int):
-                        cname, calias, column_found, tab =\
+                        cname, cctx, calias, column_found, tab =\
                                 self._get_budget_column(c, tab, ref[2])
 
                         # We allow None.None colunms because they are produced
@@ -305,14 +310,14 @@ class PostgreSQLQueryProcessor(object):
                             raise QueryError("Unknown column '%s'." % c[0][2])
 
             if touched_columns is not None:
-                touched_columns.append([[tab[0][0], tab[0][1], cname], calias])
+                touched_columns.append([[tab[0][0], tab[0][1], cname, cctx],
+                                        calias])
             else:
                 columns[i] = [[tab[0][0], tab[0][1], cname, c[0][3]], calias]
 
         for i in remove_column_idxs[::-1]:
             columns.pop(i)
 
-        columns.extend(extra_columns)
         return missing_columns
 
     def process_query(self, replace_schema_name={}):
@@ -433,7 +438,6 @@ class PostgreSQLQueryProcessor(object):
                                        ref_dict, join, budget,
                                        column_aliases_from_previous,
                                        touched_columns)
-
             missing_columns.extend([[i] for i in mc])
 
             if join:
@@ -459,7 +463,6 @@ class PostgreSQLQueryProcessor(object):
                                        column_aliases_from_previous,
                                        touched_columns, subquery_contents)
             if len(mc):
-                #  print(mc)
                 unref_cols = "', '".join(['.'.join([j for j in i[0] if j])
                                          for i in mc])
                 raise QueryError("Unreferenced column(s): '%s'." % unref_cols)
@@ -491,11 +494,11 @@ class PostgreSQLQueryProcessor(object):
                         acol[2] != col[2]:
                     del_columns.append(col)
 
-        self.columns = [(i[0].lstrip('"').rstrip('"'),
-                         i[1].lstrip('"').rstrip('"'),
-                         i[2].lstrip('"').rstrip('"'))
-                        for i in
-                        list(set(touched_columns).difference(del_columns))]
+        columns = list(set(touched_columns).difference(del_columns))
+        self.columns = list(set([(i[0].lstrip('"').rstrip('"'),
+                                 i[1].lstrip('"').rstrip('"'),
+                                 i[2].lstrip('"').rstrip('"'))
+                                 for i in columns]))
         self.keywords = list(set(keywords))
         self.functions = list(set(functions))
         self.display_columns = [(i[0].lstrip('"').rstrip('"'),
@@ -505,13 +508,15 @@ class PostgreSQLQueryProcessor(object):
                                 for i in display_columns]
         self.tables = [[i[0].lstrip('"').rstrip('"'),
                         i[1].lstrip('"').rstrip('"')] for i in tables]
-        #  print(self.columns)
 
         # If there are any pg_sphere object that are indexed we need
         # to replace the ADQL translated query parts with the column
         # names
         if self._indexed_objects is not None:
-            pg_sphere_listener = PgSphereListener(ref_dict,
+            cctx_dict = {}
+            for c in columns:
+                cctx_dict[c[3]] = c[:3]
+            pg_sphere_listener = PgSphereListener(cctx_dict,
                                                   self._indexed_objects)
             self.walker.walk(pg_sphere_listener, tree)
             for k, v in pg_sphere_listener.replace_dict.items():

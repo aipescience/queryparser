@@ -323,14 +323,13 @@ class SchemaNameListener(PostgreSQLParserListener):
 
 class PgSphereListener(PostgreSQLParserListener):
 
-    def __init__(self, ref_dict, indexed_objects=None):
+    def __init__(self, cctx_dict, indexed_objects=None):
         self.column_name_listener = ColumnNameListener()
         self.walker = antlr4.ParseTreeWalker()
 
-        self.ref_dict = ref_dict
+        self.cctx_dict = cctx_dict
         self.indexed_objects = indexed_objects
         self.replace_dict = {}
-        #  print(self.indexed_objects, self.ref_dict)
 
     def enterSpoint(self, ctx):
         try:
@@ -339,22 +338,12 @@ class PgSphereListener(PostgreSQLParserListener):
             return
 
         cn = process_column_name(self.column_name_listener, self.walker, ctx)
-
         cols = []
+
         for c in cn:
-            if c[0] is None:
-                try:
-                    tr = self.ref_dict[c[1]]
-                    col = (tr[0][0][0].replace('"', ''),
-                           tr[0][0][1].replace('"', ''), c[2].replace('"', ''))
-                except KeyError:
-                    pass
-            else:
-                col = (c[0].reaplce('"', ''), c[1].reaplce('"', ''),
-                       c[2].reaplce('"', ''))
             try:
-                cols.append(col)
-            except UnboundLocalError:
+                cols.append(self.cctx_dict[c[3]])
+            except KeyError:
                 pass
 
         if len(cols):
