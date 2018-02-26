@@ -211,8 +211,8 @@ class ADQLContainsVisitor(ADQLParserVisitor):
         self.contains = []
 
     def visitContains(self, ctx):
+        print(ctx.getText())
         if ctx.getText().lower()[:8] == 'contains':
-            print('contains')
             self.contains.append(ctx)
 
 
