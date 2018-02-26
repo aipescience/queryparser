@@ -211,7 +211,6 @@ class ADQLContainsVisitor(ADQLParserVisitor):
         self.contains = []
 
     def visitContains(self, ctx):
-        print(ctx.getText())
         if ctx.getText().lower()[:8] == 'contains':
             self.contains.append(ctx)
 
@@ -221,9 +220,13 @@ class ADQLComparisonPredicateVisitor(ADQLParserVisitor):
     def visitComparison_predicate(self, ctx):
         contains_visitor = ADQLContainsVisitor()
         contains_visitor.visit(ctx)
-        if len(contains_visitor.contains):
-            ctx.children[0].removeLastChild()
-            ctx.children[1].removeLastChild()
+        if len(contains_visitor.contains): 
+            if ctx.children[0].getText().lower()[:8] == 'contains':
+                ctx.children[1].removeLastChild()
+                ctx.children[2].removeLastChild()
+            elif ctx.children[2].getText().lower()[:8] == 'contains':
+                ctx.children[0].removeLastChild()
+                ctx.children[1].removeLastChild()
 
 
 class ADQLFunctionsTranslationVisitor(ADQLParserVisitor):

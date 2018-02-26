@@ -88,7 +88,7 @@ def f2():
     select gaia.source_id,
     gaia.parallax
     from gdr1.tgas_source as gaia
-    where contains(point('ICRS',gaia.ra,gaia.dec),circle('ICRS',56.75,24.12,5))=1
+    where 1=contains(point('ICRS',gaia.ra,gaia.dec),circle('ICRS',56.75,24.12,5))
     and sqrt(power(gaia.pmra-20.5,2)+power(gaia.pmdec+45.5,2)) < 6.0
     """
 
