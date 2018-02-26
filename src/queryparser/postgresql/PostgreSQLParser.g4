@@ -156,22 +156,21 @@ exp_factor3:	        ( NOT_SYM )? exp_factor4 ;
 exp_factor4:	        bool_primary ( ( IS_SYM ( NOT_SYM )? (boolean_literal | NULL_SYM | ( DISTINCT FROM ) ) )?
                                      | ( ISNULL | NOTNULL )?
                                      );
-expression:	            (exp_factor1 ( OR_SYM exp_factor1 )* ) | ( sbit_expr );
+expression:	            ( exp_factor1 ( OR_SYM exp_factor1 )* ) ;
 expression_list:        LPAREN expression ( COMMA expression )* RPAREN ;
 
-//factor0:                (factor1 ( pg_sphere_op factor1 )? ) | (;
 factor1:                factor2 ( BITAND factor2 )? ;
 factor2:                factor3 ( ( SHIFT_LEFT | SHIFT_RIGHT ) factor3 )? ;
 factor3:                factor4 ( ( PLUS | MINUS ) factor4 )* ;
 factor4:                factor5 ( ( ASTERISK | DIVIDE | MOD_SYM | POWER_OP) factor5 )* ;
-factor5:                ( PLUS | MINUS | NEGATION | BINARY )? simple_expr
-                            ( ( PLUS | MINUS ) interval_expr )? ;
+factor5:                ( PLUS | MINUS | NEGATION | BINARY )? simple_expr ( ( PLUS | MINUS ) interval_expr )? ;
+
 function_call:
 	  ( functionList ( LPAREN ( expression ( COMMA expression )* )? RPAREN ) ? )
 	| ( CONVERT_SYM LPAREN expression COMMA cast_data_type RPAREN )
 	| ( CONVERT_SYM LPAREN expression USING_SYM transcoding_name RPAREN )
 	| ( CAST_SYM LPAREN expression AS_SYM cast_data_type RPAREN ) 
-	| ( group_functions LPAREN ( ASTERISK | ALL | DISTINCT )? ( bit_expr )? RPAREN ) ;
+	| ( group_functions LPAREN ( ASTERISK | ALL | DISTINCT )? ( ( bit_expr | sbit_expr ) )? RPAREN ) ;
 
 groupby_clause:         GROUP_SYM BY_SYM groupby_item ( COMMA groupby_item )* ( WITH ROLLUP_SYM )? ;
 groupby_item:	        (column_spec | INTEGER_NUM | bit_expr ) ( ASC | DESC )?;
@@ -210,21 +209,13 @@ bit_fac1:
       ( NOT_SYM )? (
           (IN_SYM ( subquery | expression_list ))
         | (LIKE_SYM simple_expr ( ESCAPE_SYM simple_expr )?)
-        | (REGEXP bit_expr)
-        | (BETWEEN ( SYMMETRIC )? bit_expr AND_SYM predicate)
+        | (REGEXP ( bit_expr | sbit_expr ))
+        | (BETWEEN ( SYMMETRIC )? ( bit_expr | sbit_expr ) AND_SYM predicate)
       ) ;
 
-bit_fac2:               SOUNDS_SYM LIKE_SYM bit_expr;
+bit_fac2:               SOUNDS_SYM LIKE_SYM ( bit_expr | sbit_expr );
 predicate:
-	  bit_expr (( bit_fac1 | bit_fac2)?) ;
-      /*
-	| ( bit_expr ( NOT_SYM )? IN_SYM ( subquery | expression_list ) ); //done
-	| ( bit_expr ( NOT_SYM )? BETWEEN bit_expr AND_SYM predicate ) //done
-	| ( bit_expr SOUNDS_SYM LIKE_SYM bit_expr ) //done
-	| ( bit_expr ( NOT_SYM )? LIKE_SYM simple_expr ( ESCAPE_SYM simple_expr )? ) //done
-	| ( bit_expr ( NOT_SYM )? REGEXP bit_expr ) //done
-	| ( bit_expr ) ; //done
-    */
+	  ( bit_expr | sbit_expr ) (( bit_fac1 | bit_fac2)?) ;
 
 query:                  select_statement SEMI;
 
