@@ -91,6 +91,12 @@ def f2():
     where 1=contains(point('ICRS',gaia.ra,gaia.dec),circle('ICRS',56.75,24.12,5))
     and sqrt(power(gaia.pmra-20.5,2)+power(gaia.pmdec+45.5,2)) < 6.0
     """
+    query = """
+                SELECT gaia.source_id
+                FROM gdr1.tgas_source AS gaia
+                WHERE gaia.parallax / gaia.parallax_error >= 5 
+                AND ph_qual = 'AAA' 
+            """
 
     adt = ADQLQueryTranslator(query)
     pgq = adt.to_postgresql()
@@ -98,7 +104,7 @@ def f2():
 
     iob = {'spoint': ((('gdr1', 'tgas_source', 'ra'),
                        ('gdr1', 'tgas_source', 'dec'), 'point'),)}
-    qp = PostgreSQLQueryProcessor(indexed_objects = iob)
+    qp = PostgreSQLQueryProcessor(indexed_objects = {})
     qp.set_query(pgq)
     qp.process_query()
 

@@ -220,7 +220,7 @@ class ADQLComparisonPredicateVisitor(ADQLParserVisitor):
     def visitComparison_predicate(self, ctx):
         contains_visitor = ADQLContainsVisitor()
         contains_visitor.visit(ctx)
-        if len(contains_visitor.contains): 
+        if len(contains_visitor.contains):
             if ctx.children[0].getText().lower()[:8] == 'contains':
                 ctx.children[1].removeLastChild()
                 ctx.children[2].removeLastChild()
@@ -395,14 +395,21 @@ class FormatListener(ADQLParserListener):
             nd = self.contexts[node.parentCtx]
         except KeyError:
             nd = node.getText()
+            if isinstance(node.parentCtx,
+                          ADQLParser.Character_string_literalContext):
+                if nd == "'":
+                    nd = None
+                else:
+                    nd = "'" + nd + "'"
 
-        if isinstance(node.parentCtx, ADQLParser.Set_function_typeContext)\
-            or isinstance(node.parentCtx.parentCtx,
-                          ADQLParser.User_defined_function_nameContext)\
-                or nd.upper() in adql_function_names:
-            nd += '_'
+        if nd is not None:
+            if isinstance(node.parentCtx, ADQLParser.Set_function_typeContext)\
+                or isinstance(node.parentCtx.parentCtx,
+                              ADQLParser.User_defined_function_nameContext)\
+                    or nd.upper() in adql_function_names:
+                nd += '_'
 
-        self.nodes.append(nd)
+            self.nodes.append(nd)
 
         try:
             nd = self.limit_contexts[node]

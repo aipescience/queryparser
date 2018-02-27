@@ -634,3 +634,165 @@ class ADQLTestCase(TestCase):
                 'spoint(RADIANS(0.0), RADIANS(1.0))) FROM db.tab;'
             )).strip()
         )
+
+    def test_query204(self):
+        self._test_adql_postgresql_translation(
+            """
+                SELECT DISTANCE(POINT('ICRS', 0, 0), POINT('ICRS', 0, 1))
+                FROM db.tab
+            """,
+            ''.join((
+                'SELECT DEGREES(spoint(RADIANS(0.0), RADIANS(0.0)) <-> ',
+                'spoint(RADIANS(0.0), RADIANS(1.0))) FROM db.tab;'
+            )).strip()
+        )
+
+    def test_query205(self):
+        self._test_adql_postgresql_translation_parsing(
+            """
+                SELECT TOP 1 source_id, ra, dec, DISTANCE(POINT('ICRS',ra,dec),
+                     POINT('ICRS',266.41683,-29.00781)) AS dist
+                FROM GDR1.gaia_source
+                WHERE 1=CONTAINS(POINT('ICRS',ra,dec),
+                                CIRCLE('ICRS',266.41683,-29.00781, 0.08333333))
+            """,
+            ('GDR1.gaia_source.source_id',
+             'GDR1.gaia_source.ra',
+             'GDR1.gaia_source.dec'),
+            (),
+            (),
+            ('source_id: GDR1.gaia_source.source_id',
+             'ra: GDR1.gaia_source.ra',
+             'dec: GDR1.gaia_source.dec')
+        )
+
+    def test_query206(self):
+        self._test_adql_postgresql_translation_parsing(
+            """
+                SELECT gaia.source_id, gaia.parallax
+                FROM gdr1.tgas_source AS gaia
+                WHERE CONTAINS(POINT('ICRS', gaia.ra, gaia.dec),
+                               CIRCLE('ICRS', 56.75, 24.12, 5)) = 1
+                AND SQRT(POWER(gaia.pmra - 20.5, 2) +
+                         POWER(gaia.pmdec + 45.5, 2)) < 6.0
+            """,
+            ('gdr1.tgas_source.source_id',
+             'gdr1.tgas_source.ra',
+             'gdr1.tgas_source.dec',
+             'gdr1.tgas_source.pmra',
+             'gdr1.tgas_source.pmdec',
+             'gdr1.tgas_source.parallax'),
+            (),
+            (),
+            ('source_id: gdr1.tgas_source.source_id',
+             'parallax: gdr1.tgas_source.parallax')
+        )
+
+    def test_query207(self):
+        self._test_adql_postgresql_translation_parsing(
+            """
+                SELECT gaia.source_id,
+                       gaia.phot_g_mean_mag + 5 * log10(gaia.parallax) -
+                       10 AS g_mag_abs,
+                       gaia.phot_g_mean_mag - tmass.ks_m AS g_min_ks
+                FROM gdr1.tgas_source as gaia
+                INNER JOIN gdr1.tmass_best_neighbour AS xmatch
+                ON gaia.source_id = xmatch.source_id
+                INNER JOIN gdr1.tmass_original_valid AS tmass
+                ON tmass.tmass_oid = xmatch.tmass_oid
+                WHERE gaia.parallax / gaia.parallax_error >= 5 
+                AND tmass.ph_qual = 'AAA' 
+                AND SQRT(POWER(2.5 / log(10) *
+                    gaia.phot_g_mean_flux_error / gaia.phot_g_mean_flux, 2))
+                    <= 0.05 
+                AND SQRT(POWER(2.5 / log(10) *
+                    gaia.phot_g_mean_flux_error / gaia.phot_g_mean_flux, 2) +
+                    power(tmass.ks_msigcom, 2)) <= 0.05
+            """,
+            ('gdr1.tgas_source.source_id',
+             'gdr1.tgas_source.parallax',
+             'gdr1.tgas_source.parallax_error',
+             'gdr1.tgas_source.phot_g_mean_mag',
+             'gdr1.tgas_source.phot_g_mean_flux_error',
+             'gdr1.tgas_source.phot_g_mean_flux',
+             'gdr1.tmass_best_neighbour.source_id',
+             'gdr1.tmass_best_neighbour.tmass_oid',
+             'gdr1.tmass_original_valid.ks_m',
+             'gdr1.tmass_original_valid.ph_qual',
+             'gdr1.tmass_original_valid.tmass_oid',
+             'gdr1.tmass_original_valid.ks_msigcom'),
+            (),
+            (),
+            ('source_id: gdr1.tgas_source.source_id',
+             )
+        )
+
+    def test_query208(self):
+        self._test_adql_postgresql_translation_parsing(
+            """
+                SELECT gaia.source_id, gaia.hip,
+                       gaia.phot_g_mean_mag + 5 * log10(gaia.parallax) - 10
+                       AS g_mag_abs_gaia,
+                       gaia.phot_g_mean_mag + 5 * log10(hip.plx) - 10
+                       AS g_mag_abs_hip
+                FROM gdr1.tgas_source AS gaia
+                INNER JOIN public.hipparcos AS hip
+                ON gaia.hip = hip.hip
+                WHERE gaia.parallax / gaia.parallax_error >= 5
+                AND hip.plx / hip.e_plx >= 5
+                AND hip.e_b_v > 0.0 AND hip.e_b_v <= 0.05
+                AND hip.b_v >= 1.0 AND hip.b_v <= 1.1
+                AND 2.5 / log(10) * gaia.phot_g_mean_flux_error /
+                    gaia.phot_g_mean_flux <= 0.05
+            """,
+            ('gdr1.tgas_source.source_id',
+             'gdr1.tgas_source.hip',
+             'gdr1.tgas_source.parallax',
+             'gdr1.tgas_source.parallax_error',
+             'gdr1.tgas_source.phot_g_mean_mag',
+             'gdr1.tgas_source.phot_g_mean_flux_error',
+             'gdr1.tgas_source.phot_g_mean_flux',
+             'public.hipparcos.hip',
+             'public.hipparcos.plx',
+             'public.hipparcos.e_plx',
+             'public.hipparcos.b_v',
+             'public.hipparcos.e_b_v'),
+            (),
+            (),
+            ('source_id: gdr1.tgas_source.source_id',
+             'hip: gdr1.tgas_source.hip',
+             )
+        )
+
+    def test_query209(self):
+        self._test_adql_postgresql_translation_parsing(
+            """
+                SELECT gaia.source_id, gaia.hip,
+                       gaia.phot_g_mean_mag + 5 * log10(gaia.parallax) - 10
+                       AS g_mag_abs,
+                       hip.b_v
+                FROM gdr1.tgas_source AS gaia
+                INNER JOIN public.hipparcos AS hip
+                ON gaia.hip = hip.hip
+                WHERE gaia.parallax / gaia.parallax_error >= 5
+                AND hip.e_b_v > 0.0 AND hip.e_b_v <= 0.05
+                AND 2.5 / log(10) * gaia.phot_g_mean_flux_error /
+                    gaia.phot_g_mean_flux <= 0.05
+            """,
+            ('gdr1.tgas_source.source_id',
+             'gdr1.tgas_source.hip',
+             'gdr1.tgas_source.parallax',
+             'gdr1.tgas_source.parallax_error',
+             'gdr1.tgas_source.phot_g_mean_mag',
+             'gdr1.tgas_source.phot_g_mean_flux_error',
+             'gdr1.tgas_source.phot_g_mean_flux',
+             'public.hipparcos.hip',
+             'public.hipparcos.b_v',
+             'public.hipparcos.e_b_v'),
+            (),
+            (),
+            ('source_id: gdr1.tgas_source.source_id',
+             'hip: gdr1.tgas_source.hip',
+             'b_v: public.hipparcos.b_v',
+             )
+        )

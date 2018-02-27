@@ -239,7 +239,7 @@ PRIMARY             :P_ R_ I_ M_ A_ R_ Y_ ;
 PRIOR               :P_ R_ I_ O_ R_ ;
 PRIVILEGES          :P_ R_ I_ V_ I_ L_ E_ G_ E_ S_ ;
 PROCEDURE           :P_ R_ O_ C_ E_ D_ U_ R_ E_ ;
-PUBLIC              :P_ U_ B_ L_ I_ C_ ;
+//PUBLIC              :P_ U_ B_ L_ I_ C_ ;
 READ                :R_ E_ A_ D_ ;
 REAL_SYM            :R_ E_ A_ L_ ;
 REFERENCES          :R_ E_ F_ E_ R_ E_ N_ C_ E_ S_ ;
