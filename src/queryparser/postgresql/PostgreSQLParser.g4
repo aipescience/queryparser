@@ -237,7 +237,7 @@ simple_expr:
 	| match_against_statement 
 	| case_when_statement ;
 
-slice_spec:             LBRACK INTEGER_NUM ( COLON INTEGER_NUM )? RBRACK ;
+slice_spec:             ( LBRACK INTEGER_NUM ( COLON INTEGER_NUM )? RBRACK )*;
 
 subquery:               LPAREN select_statement RPAREN ;
 
