@@ -145,8 +145,8 @@ case_when_statement:    CASE_SYM ( case_when_statement1 | case_when_statement2 )
 case_when_statement1:   ( WHEN_SYM expression THEN_SYM bit_expr )+ ;
 case_when_statement2:   bit_expr ( WHEN_SYM bit_expr THEN_SYM bit_expr )+ ;
 column_list:            LPAREN column_spec ( COMMA column_spec )* RPAREN ;
-column_name:            ID ;
-column_spec:            ( ( schema_name DOT )? table_name DOT )? column_name ;
+column_name:            ID;
+column_spec:            ( ( schema_name DOT )? table_name DOT )? column_name ( slice_spec )?;
 
 displayed_column :      ( table_spec DOT ASTERISK ) | ( ( bit_expr | sbit_expr ) ( alias )? ) ;
 
@@ -236,6 +236,8 @@ simple_expr:
 	| interval_expr
 	| match_against_statement 
 	| case_when_statement ;
+
+slice_spec:             LBRACK INTEGER_NUM ( COLON INTEGER_NUM )? RBRACK ;
 
 subquery:               LPAREN select_statement RPAREN ;
 

@@ -110,7 +110,23 @@ def f2():
 
     print(qp.query)
 
-f2()
+
+def f3():
+    query = """
+    SELECT arr[1:3] FROM gdr1.gaia_source LIMIT 10
+    """
+    qp = PostgreSQLQueryProcessor()
+    qp.set_query(query)
+    qp.process_query()
+
+    print(qp.query)
+    print(qp.columns)
+    print(qp.display_columns)
+    print(qp.tables)
+    print(qp.keywords)
+    print(qp.functions)
+
+f3()
 exit()
 
 alpha = (13 + 26 / 60 + 47.28 / 3600) * 15 - 180
