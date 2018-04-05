@@ -456,7 +456,7 @@ ID:
 ;
 
 
-//COMMENT: '#' ~( '\r' | '\n' )* -> skip ;
+COMMENT: '--' ~( '\r' | '\n' )* -> skip ;
 
 WS : ( ' ' | '\t' | '\n' | '\r' )+ -> channel(HIDDEN) ;
 

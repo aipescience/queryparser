@@ -99,6 +99,7 @@ class PostgresqlTestCase(TestCase):
     def test_query038(self):
         self._test_postgresql_parsing(
             """
+            -- multidimensional matrices can be parsed too
             SELECT arr[1:3][1][2][3][4] FROM db.phot;
             """,
             ('db.phot.arr',),
