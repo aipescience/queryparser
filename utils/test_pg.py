@@ -113,7 +113,7 @@ def f2():
 
 def f3():
     query = """
-    SELECT arr[1:3] FROM gdr1.gaia_source LIMIT 10
+    SELECT a, arr[1:3], b FROM gdr1.gaia_source LIMIT 10
     """
     qp = PostgreSQLQueryProcessor()
     qp.set_query(query)

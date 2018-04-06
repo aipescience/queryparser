@@ -108,3 +108,41 @@ class PostgresqlTestCase(TestCase):
             ('arr: db.phot.arr',),
             ('db.phot',)
         )
+
+    def test_query044(self):
+        self._test_postgresql_parsing(
+            """
+            SELECT COUNT(*) AS n, id, mra, mlem AS qqq, blem
+            FROM (
+                SELECT inner1.id, mra, mlem,
+                       inner2.col3 + inner2.parallax AS blem
+                FROM (
+                    SELECT qwerty.id, MAX(ra) AS mra, inner1.parallax,
+                           qwerty.mlem mlem
+                    FROM db.tab dbt
+                    JOIN (
+                        SELECT rekt AS parallax, id, mlem
+                        FROM db.bar
+                    ) AS qwerty USING (id)
+                ) AS inner1
+                JOIN (
+                    SELECT qqq, col2 AS ra2, parallax, subsub.col3
+                    FROM (
+                        SELECT ra AS qqq, col2, col3, parallax
+                        FROM db.gaia AS gaia
+                        WHERE col5 > 5
+                    ) AS subsub
+                ) AS inner2
+                ON inner1.parallax = inner2.parallax
+            ) AS subq
+            GROUP BY id;
+            """,
+            ('db.bar.id', 'db.bar.rekt', 'db.bar.mlem', 'db.tab.id',
+             'db.tab.ra', 'db.gaia.ra', 'db.gaia.col2',
+             'db.gaia.col3', 'db.gaia.parallax', 'db.gaia.col5'),
+            ('join', 'where', 'group by'),
+            ('MAX', 'COUNT'),
+            ('n: None.None.None', 'id: db.bar.id', 'mra: db.tab.ra',
+             'qqq: db.bar.mlem', 'blem: None.None.blem'),
+            ('db.tab', 'db.bar', 'db.gaia')
+        )

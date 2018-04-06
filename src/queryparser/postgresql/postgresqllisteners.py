@@ -30,6 +30,13 @@ def parse_alias(alias):
 
 
 def process_column_name(column_name_listener, walker, ctx):
+    '''
+    cn[0] - schema
+    cn[1] - table
+    cn[2] - column
+    cn[3] - ctx
+    cn[4] - column was selected, not yet implemented
+    '''
     cn = []
     column_name_listener.column_name = []
     walker.walk(column_name_listener, ctx)
@@ -65,8 +72,13 @@ class ColumnNameListener(PostgreSQLParserListener):
     """
     def __init__(self):
         self.column_name = []
+        self.column_as_array = []
 
     def enterColumn_spec(self, ctx):
+        if ctx.children[1].getText():
+            self.column_as_array.append(ctx)
+        else:
+            self.column_as_array.append(None)
         self.column_name.append(ctx)
 
 
@@ -219,6 +231,7 @@ class ColumnKeywordFunctionListener(PostgreSQLParserListener):
         self.data.append([ctx.depth(), ctx,
                           self._extract_column(ctx, append=False)[1]])
 
+    def enterSpoint(self, ctx):
         self.functions.append('spoint')
 
     def enterScircle(self, ctx):

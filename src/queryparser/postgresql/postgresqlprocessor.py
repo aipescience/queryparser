@@ -497,16 +497,11 @@ class PostgreSQLQueryProcessor(object):
                     del_columns.append(col)
 
         columns = list(set(touched_columns).difference(del_columns))
-        self.columns = list(set([(i[0].lstrip('"').rstrip('"'),
-                                 i[1].lstrip('"').rstrip('"'),
-                                 i[2].lstrip('"').rstrip('"'))
-                                 for i in columns]))
+        self.columns = list(set([self._strip_column(i) for i in columns]))
         self.keywords = list(set(keywords))
         self.functions = list(set(functions))
         self.display_columns = [(i[0].lstrip('"').rstrip('"'),
-                                [i[1][0].lstrip('"').rstrip('"'),
-                                 i[1][1].lstrip('"').rstrip('"'),
-                                 i[1][2].lstrip('"').rstrip('"')])
+                                list(self._strip_column(i[1])))
                                 for i in display_columns]
         self.tables = [[i[0].lstrip('"').rstrip('"'),
                         i[1].lstrip('"').rstrip('"')] for i in tables]
@@ -531,6 +526,13 @@ class PostgreSQLQueryProcessor(object):
 
     def _strip_query(self, query):
         return query.lstrip('\n').rstrip().rstrip(';') + ';'
+
+    def _strip_column(self, col):
+        scol = [None, None, None]
+        for i in range(3):
+            if col[i] is not None:
+                scol[i] = col[i].lstrip('"').rstrip('"')
+        return tuple(scol)
 
     def set_query(self, query):
         """
