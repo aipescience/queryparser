@@ -32,6 +32,7 @@ class PostgresqlTestCase(TestCase):
             ('db.tab',)
         )
 
+
     def test_query029(self):
         self._test_postgresql_parsing(
             """
@@ -109,6 +110,34 @@ class PostgresqlTestCase(TestCase):
             ('db.phot',)
         )
 
+    def test_query039(self):
+        self._test_postgresql_parsing(
+            """
+            SELECT ra, dec FROM gdr1.gaia_source
+            WHERE pos @ scircle(spoint(1.44, 0.23), 0.01)
+            """,
+            ('gdr1.gaia_source.ra', 'gdr1.gaia_source.dec',
+             'gdr1.gaia_source.pos'),
+            ('where',),
+            ('scircle', 'spoint'),
+            ('ra: gdr1.gaia_source.ra', 'dec: gdr1.gaia_source.dec'),
+            ('gdr1.gaia_source',)
+        )
+
+    def test_query040(self):
+        self._test_postgresql_parsing(
+            """
+            SELECT ra, dec FROM gdr1.gaia_source
+            WHERE pos @ scircle(spoint(1.44, 0.23), 0.01)
+            """,
+            ('gdr1.gaia_source.ra', 'gdr1.gaia_source.dec',
+             'gdr1.gaia_source.pos'),
+            ('where',),
+            ('scircle', 'spoint'),
+            ('ra: gdr1.gaia_source.ra', 'dec: gdr1.gaia_source.dec'),
+            ('gdr1.gaia_source',)
+        )
+
     def test_query044(self):
         self._test_postgresql_parsing(
             """
@@ -145,4 +174,38 @@ class PostgresqlTestCase(TestCase):
             ('n: None.None.None', 'id: db.bar.id', 'mra: db.tab.ra',
              'qqq: db.bar.mlem', 'blem: None.None.blem'),
             ('db.tab', 'db.bar', 'db.gaia')
+        )
+
+    def test_query050(self):
+        self._test_postgresql_parsing(
+            """
+            SELECT curves.observation_time,
+                  mod(curves.observation_time - rrlyrae.epoch_g, rrlyrae.p1),
+                  rrlyrae.p1 AS phase,
+                  curves.g_magnitude,
+                  2.5 / log(10) * curves.g_flux_error / curves.g_flux
+                  AS g_magnitude_error
+            FROM gdr1.phot_variable_time_series_gfov AS curves
+            INNER JOIN gdr1.rrlyrae AS rrlyrae
+            ON rrlyrae.source_id = curves.source_id
+            WHERE rrlyrae.source_id = 5284240582308398080 
+            AND pos @ sbox(spoint(1.44, 0.23), spoint(1.5, 0.3))
+            """,
+            (
+                'gdr1.phot_variable_time_series_gfov.g_flux',
+                'gdr1.phot_variable_time_series_gfov.g_flux_error',
+                'gdr1.phot_variable_time_series_gfov.g_magnitude',
+                'gdr1.phot_variable_time_series_gfov.observation_time',
+                'gdr1.phot_variable_time_series_gfov.pos',
+                'gdr1.phot_variable_time_series_gfov.source_id',
+                'gdr1.rrlyrae.epoch_g',
+                'gdr1.rrlyrae.p1',
+                'gdr1.rrlyrae.source_id'
+                ),
+            ('where', 'join'),
+            ('sbox', 'spoint', 'mod', 'log'),
+            ('g_magnitude: gdr1.phot_variable_time_series_gfov.g_magnitude',
+             'observation_time: gdr1.phot_variable_time_series_gfov.observation_time',
+             'phase: gdr1.rrlyrae.p1'),
+            ('gdr1.phot_variable_time_series_gfov', 'gdr1.rrlyrae')
         )

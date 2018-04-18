@@ -61,8 +61,8 @@ group_functions:
     | VAR_POP | VAR_SAMP | VARIANCE ;
 
 number_functions:
-	  ABS | ACOS | ASIN | ATAN2 | ATAN | CEIL | CEILING | CONV | COS | COT
-    | CRC32 | DEGREES | EXP | FLOOR | LN | LOG10 | LOG2 | LOG | MOD | PI | POW
+	  ABS | ACOS | ASIN | ATAN2 | ATAN | CBRT | CEIL | CEILING | CONV | COS | COT
+    | CRC32 | DEGREES | DIV | EXP | FLOOR | LN | LOG | MOD | PI | POW
     | POWER | RADIANS | RAND | ROUND | SIGN | SIN | SQRT | TAN | TRUNCATE ;
 
 other_functions:

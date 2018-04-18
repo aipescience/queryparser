@@ -117,7 +117,7 @@ class TestCase(unittest.TestCase):
 
     def _test_adql_postgresql_translation_parsing(self, query, columns=None,
                                              keywords=None, functions=None,
-                                             display_columns=None):
+                                             tables=None, display_columns=None):
         adt = ADQLQueryTranslator()
         qp = PostgreSQLQueryProcessor()
 
