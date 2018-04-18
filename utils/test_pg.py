@@ -54,11 +54,7 @@ def f1():
             ORDER BY phot_g_mean_mag ASC
     """
     query = """
-    select gaia.source_id,
-    gaia.parallax
-    from gdr1.tgas_source as gaia
-    where 1=contains(point('ICRS',gaia.ra,gaia.dec),circle('ICRS',56.75,24.12,5))
-    and sqrt(power(gaia.pmra-20.5,2)+power(gaia.pmdec+45.5,2)) < 6.0
+    SELECT LOG10(a) FROM db.tab;
     """
 
     adt = ADQLQueryTranslator(query)
@@ -126,7 +122,7 @@ def f3():
     print(qp.keywords)
     print(qp.functions)
 
-f3()
+f1()
 exit()
 
 alpha = (13 + 26 / 60 + 47.28 / 3600) * 15 - 180

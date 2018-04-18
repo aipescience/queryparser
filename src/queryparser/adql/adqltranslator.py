@@ -321,6 +321,13 @@ class ADQLFunctionsTranslationVisitor(ADQLParserVisitor):
         _remove_children(ctx)
         self.contexts[ctx] = ctx_text
 
+    def visitMath_function(self, ctx):
+        ctx_text = ctx.getText()
+        if self.output_sql == 'postgresql' and ctx_text[:5] == 'LOG10':
+            _remove_children(ctx)
+            self.contexts[ctx] = 'LOG' + ctx_text[5:]
+            
+
 
 class SelectQueryListener(ADQLParserListener):
     def __init__(self):
