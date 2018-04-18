@@ -692,7 +692,7 @@ class ADQLTestCase(TestCase):
         self._test_adql_postgresql_translation_parsing(
             """
                 SELECT gaia.source_id,
-                       gaia.phot_g_mean_mag + 5 * log10(gaia.parallax) -
+                       gaia.phot_g_mean_mag + 5 * LOG10(gaia.parallax) -
                        10 AS g_mag_abs,
                        gaia.phot_g_mean_mag - tmass.ks_m AS g_min_ks
                 FROM gdr1.tgas_source as gaia

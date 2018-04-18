@@ -323,7 +323,7 @@ class ADQLFunctionsTranslationVisitor(ADQLParserVisitor):
 
     def visitMath_function(self, ctx):
         ctx_text = ctx.getText()
-        if self.output_sql == 'postgresql' and ctx_text[:5] == 'LOG10':
+        if self.output_sql == 'postgresql' and ctx_text[:5].lower() == 'log10':
             _remove_children(ctx)
             self.contexts[ctx] = 'LOG' + ctx_text[5:]
             
