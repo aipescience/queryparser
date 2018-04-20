@@ -54,7 +54,13 @@ def f1():
             ORDER BY phot_g_mean_mag ASC
     """
     query = """
-    SELECT LOG10(a) FROM db.tab;
+    SELECT gmag * 0.1 AS gmag_bin, COUNT(gmag) AS number
+    FROM
+    (
+        SELECT FLOOR(phot_g_mean_mag * 10) AS gmag
+        FROM gdr1.gaia_source
+    ) AS gmag_tab
+    GROUP BY gmag;
     """
 
     adt = ADQLQueryTranslator(query)
@@ -63,6 +69,9 @@ def f1():
     qp = PostgreSQLQueryProcessor()
     qp.set_query(pgq)
     qp.process_query()
+    print(qp.columns)
+    print(qp.display_columns)
+    print(qp.tables)
     print(qp.functions)
 
 
@@ -88,10 +97,6 @@ def f2():
     and sqrt(power(gaia.pmra-20.5,2)+power(gaia.pmdec+45.5,2)) < 6.0
     """
     query = """
-                SELECT gaia.source_id
-                FROM gdr1.tgas_source AS gaia
-                WHERE gaia.parallax / gaia.parallax_error >= 5 
-                AND ph_qual = 'AAA' 
             """
 
     adt = ADQLQueryTranslator(query)
