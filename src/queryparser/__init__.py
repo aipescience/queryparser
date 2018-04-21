@@ -1,5 +1,5 @@
 __title__ = 'queryparser'
-__version__ = '0.2.8'
+__version__ = '0.2.9'
 __author__ = 'Gal Matijevic'
 __email__ = 'gmatijevic@aip.de'
 __license__ = 'Apache-2.0'
