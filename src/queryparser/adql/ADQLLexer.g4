@@ -358,3 +358,5 @@ DQ_SYM      : DQ DQ ;
 WS
    : ( ' ' | '\t' | '\n' | '\r' )+ -> channel(HIDDEN)
 ;
+
+COMMENT: '--' ~( '\r' | '\n' )* -> skip ;
