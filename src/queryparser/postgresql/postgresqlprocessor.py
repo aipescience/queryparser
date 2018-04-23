@@ -503,8 +503,11 @@ class PostgreSQLQueryProcessor(object):
         self.display_columns = [(i[0].lstrip('"').rstrip('"'),
                                 list(self._strip_column(i[1])))
                                 for i in display_columns]
-        self.tables = [[i[0].lstrip('"').rstrip('"'),
-                        i[1].lstrip('"').rstrip('"')] for i in tables]
+
+        self.tables = [[i[0].lstrip('"').rstrip('"')
+                        if i[0] is not None else i[0],
+                        i[1].lstrip('"').rstrip('"')
+                        if i[1] is not None else i[1]] for i in tables]
 
         # If there are any pg_sphere objects that are indexed we need
         # to replace the ADQL translated query parts with the indexed column
