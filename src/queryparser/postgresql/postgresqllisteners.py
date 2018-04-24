@@ -75,9 +75,12 @@ class ColumnNameListener(PostgreSQLParserListener):
         self.column_as_array = []
 
     def enterColumn_spec(self, ctx):
-        if ctx.children[1].getText():
-            self.column_as_array.append(ctx)
-        else:
+        try:
+            if ctx.children[1].getText():
+                self.column_as_array.append(ctx)
+            else:
+                self.column_as_array.append(None)
+        except IndexError:
             self.column_as_array.append(None)
         self.column_name.append(ctx)
 

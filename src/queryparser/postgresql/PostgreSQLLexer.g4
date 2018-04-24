@@ -62,6 +62,7 @@ BY_SYM				: B_ Y_ ;
 CACHE_SYM			: C_ A_ C_ H_ E_  ;
 CASE_SYM			: C_ A_ S_ E_  ;
 CAST_SYM			: C_ A_ S_ T_  ;
+CBRT                : C_ B_ R_ T_ ;
 CEIL				: C_ E_ I_ L_  ;
 CEILING				: C_ E_ I_ L_ I_ N_ G_  ;
 CHAR				: C_ H_ A_ R_  ;
@@ -117,6 +118,7 @@ DEGREES				: D_ E_ G_ R_ E_ E_ S_  ;
 DESC				: D_ E_ S_ C_  ;
 DES_DECRYPT			: D_ E_ S_ '_' D_ E_ C_ R_ Y_ P_ T_  ;
 DES_ENCRYPT			: D_ E_ S_ '_' E_ N_ C_ R_ Y_ P_ T_  ;
+DIV                 : D_ I_ V_ ;
 DISTINCT			: D_ I_ S_ T_ I_ N_ C_ T_ ;
 DISTINCTROW			: D_ I_ S_ T_ I_ N_ C_ T_ R_ O_ W_ ;
 ELSE_SYM			: E_ L_ S_ E_  ;
@@ -365,6 +367,8 @@ SBOX                : S_ B_ O_ X_ ;
 STRANS              : S_ T_ R_ A_ N_ S_ ;
 RADIUS              : R_ A_ D_ I_ U_ S_ ;
 AREA                : A_ R_ E_ A_ ;
+
+ARRAY_LENGTH        : A_ R_ R_ A_ Y_ '_' L_ E_ N_ G_ T_ H_ ;
 
 // basic token definition -----------------------------------------------------
 

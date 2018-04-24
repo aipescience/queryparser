@@ -85,6 +85,9 @@ time_functions:
     | TO_SECONDS | UNIX_TIMESTAMP | UTC_DATE | UTC_TIME | UTC_TIMESTAMP | WEEK
     | WEEKDAY | WEEKOFYEAR | YEAR | YEARWEEK ;
 
+array_functions:
+    ARRAY_LENGTH ;
+
 //pg_sphere_data_type:
 //      SPOINT | SCIRCLE | SLINE | SELLIPSE | SPOLY | SPATH | SBOX ;
 
@@ -93,7 +96,7 @@ pg_sphere_functions:
 
 functionList:
 	  number_functions | char_functions | time_functions | other_functions
-    | pg_sphere_functions ;
+    | pg_sphere_functions | array_functions ;
 
 
 literal_value:
@@ -237,7 +240,7 @@ simple_expr:
 	| match_against_statement 
 	| case_when_statement ;
 
-slice_spec:             ( LBRACK INTEGER_NUM ( COLON INTEGER_NUM )? RBRACK )*;
+slice_spec:             ( LBRACK INTEGER_NUM ( COLON INTEGER_NUM )? RBRACK )+;
 
 subquery:               LPAREN select_statement RPAREN ;
 
