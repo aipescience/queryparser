@@ -17,7 +17,9 @@ cast_data_type:
     | DECIMAL_SYM (LPAREN INTEGER_NUM (COMMA INTEGER_NUM)? RPAREN)?
     | SIGNED_SYM (INTEGER_SYM)?
     | TIME_SYM
-    | UNSIGNED_SYM (INTEGER_SYM)? ;
+    | UNSIGNED_SYM (INTEGER_SYM)?
+    | FLOAT
+    | DOUBLE_PRECISION_SYM;
 
 search_modifier:
 	  (IN_SYM NATURAL LANGUAGE MODE_SYM ( WITH QUERY_SYM EXPANSION_SYM )?)
@@ -63,7 +65,7 @@ group_functions:
 number_functions:
 	  ABS | ACOS | ASIN | ATAN2 | ATAN | CBRT | CEIL | CEILING | CONV | COS | COT
     | CRC32 | DEGREES | DIV | EXP | FLOOR | LN | LOG | MOD | PI | POW
-    | POWER | RADIANS | RAND | ROUND | SIGN | SIN | SQRT | TAN | TRUNCATE ;
+    | POWER | RADIANS | RAND | ROUND | SIGN | SIN | SQRT | TAN | TRUNCATE | GREATEST;
 
 other_functions:
 	  MAKE_SET | LOAD_FILE | IF | IFNULL | AES_ENCRYPT | AES_DECRYPT | DECODE
@@ -172,7 +174,7 @@ function_call:
 	  ( functionList ( LPAREN ( expression ( COMMA expression )* )? RPAREN ) ? )
 	| ( CONVERT_SYM LPAREN expression COMMA cast_data_type RPAREN )
 	| ( CONVERT_SYM LPAREN expression USING_SYM transcoding_name RPAREN )
-	| ( CAST_SYM LPAREN expression AS_SYM cast_data_type RPAREN ) 
+	| ( CAST_SYM LPAREN expression AS_SYM cast_data_type RPAREN )
 	| ( group_functions LPAREN ( ASTERISK | ALL | DISTINCT )? ( ( bit_expr | sbit_expr ) )? RPAREN ) ;
 
 groupby_clause:         GROUP_SYM BY_SYM groupby_item ( COMMA groupby_item )* ( WITH ROLLUP_SYM )? ;
@@ -230,8 +232,8 @@ select_statement:       select_expression ( (UNION_SYM ( ALL )? ) select_express
 simple_expr:
 	  literal_value
 	| expression_list
-	| column_spec 
-	| function_call 
+	| column_spec
+	| function_call
 	//| USER_VAR
 	| (ROW_SYM expression_list)
 	| subquery

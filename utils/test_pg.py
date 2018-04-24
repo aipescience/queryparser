@@ -62,7 +62,8 @@ def f1():
     ) AS gmag_tab
     GROUP BY gmag;
     """
-    query = """SELECT * FROM db"""
+    query = """
+    """
 
     adt = ADQLQueryTranslator(query)
     pgq = adt.to_postgresql()
