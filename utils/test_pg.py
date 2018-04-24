@@ -116,7 +116,15 @@ def f2():
 
 def f3():
     query = """
-    SELECT a, arr[1:3], b FROM gdr1.gaia_source LIMIT 10
+    SELECT q2.c / q1.c FROM (
+        SELECT CAST(COUNT(*) AS FLOAT) AS c
+        FROM gdr1.tgas_source
+    ) AS q1 
+    CROSS JOIN (
+        SELECT COUNT(*) AS c
+        FROM gdr1.tgas_source
+        WHERE parallax / parallax_error > 10
+    ) AS q2
     """
     qp = PostgreSQLQueryProcessor()
     qp.set_query(query)
@@ -129,7 +137,7 @@ def f3():
     print(qp.keywords)
     print(qp.functions)
 
-f1()
+f3()
 exit()
 
 alpha = (13 + 26 / 60 + 47.28 / 3600) * 15 - 180

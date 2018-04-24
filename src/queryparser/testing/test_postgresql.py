@@ -209,3 +209,24 @@ class PostgresqlTestCase(TestCase):
              'phase: gdr1.rrlyrae.p1'),
             ('gdr1.phot_variable_time_series_gfov', 'gdr1.rrlyrae')
         )
+
+    def test_query051(self):
+        self._test_postgresql_parsing(
+            """
+            SELECT q2.c / q1.c FROM (
+                SELECT CAST(COUNT(*) AS FLOAT) AS c
+                FROM gdr1.tgas_source
+            ) AS q1 
+            CROSS JOIN (
+                SELECT COUNT(*) AS c
+                FROM gdr1.tgas_source
+                WHERE parallax / parallax_error > 10
+            ) AS q2
+            """,
+            ('gdr1.tgas_source.parallax', 'gdr1.tgas_source.parallax_error',
+             'gdr1.tgas_source.None'),
+            ('where', ),
+            ('COUNT',),
+            (),
+            ('gdr1.tgas_source',)
+        )
