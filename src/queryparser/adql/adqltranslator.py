@@ -152,10 +152,16 @@ class ADQLGeometryTranslationVisitor(ADQLParserVisitor):
         for j in range(0, 5, 2):
             pars.extend(self._convert_values(ctx, s + j))
 
+        try:
+            topright_x = float(pars[0]) + float(pars[2])
+            topright_y = float(pars[1]) + float(pars[3])
+        except ValueError:
+            raise QueryError('sbox values incorrect')
+
         if self.output_sql in ('mysql', 'postgresql'):
             ctx_text = "sbox( spoint(%s(%s),%s(%s)),spoint(%s(%s),%s(%s)) )" %\
                 (self.conunits, pars[0], self.conunits, pars[1],
-                 self.conunits, pars[2], self.conunits, pars[3])
+                 self.conunits, '%.12f' % topright_x, self.conunits, '%.12f' % topright_y)
         else:
             ctx_text = ''
 

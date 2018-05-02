@@ -99,7 +99,18 @@ def f2():
     and sqrt(power(gaia.pmra-20.5,2)+power(gaia.pmdec+45.5,2)) < 6.0
     """
     query = """
+    select t1.source_id,t1.ra, t1.dec, t1."phot_rp_mean_mag", t1.bp_rp, t1.bp_g ,
+        t1."radial_velocity" ,t1."teff_val",
+            t2."mean_obs_time_g_fov",t2."mean_mag_g_fov",t2."mean_mag_bp",
+                t2."time_duration_rp",t2."num_selected_rp"
+                FROM "gdr2"."gaia_source" as t1, "gdr2"."vari_time_series_statistics" as t2
+                WHERE t1."source_id" = t2."source_id"
+                ORDER BY t1.source_id;
             """
+    query = """
+    SELECT ra, dec FROM gdr2.gaia_source AS g
+    WHERE CONTAINS(POINT('ICRS', g.ra, g.dec), BOX('ICRS',35, -74, 1, 1))=1
+    """
 
     adt = ADQLQueryTranslator(query)
     pgq = adt.to_postgresql()
@@ -137,7 +148,7 @@ def f3():
     print(qp.keywords)
     print(qp.functions)
 
-f3()
+f2()
 exit()
 
 alpha = (13 + 26 / 60 + 47.28 / 3600) * 15 - 180
