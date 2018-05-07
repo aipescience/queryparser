@@ -117,9 +117,16 @@ class ADQLGeometryTranslationVisitor(ADQLParserVisitor):
     def visitAs_clause(self, ctx):
         # We need to visit the AS clause to avoid aliases being treated same
         # as regular identifiers and backticked.
-        ri = _process_regular_identifier(ctx.children[1].getText(),
-                                         self.output_sql)
-        if ctx.children[1].getText()[0] != '"':
+        try:
+            ri = _process_regular_identifier(ctx.children[1].getText(),
+                                             self.output_sql)
+            alidx = 1
+        except IndexError:
+            ri = _process_regular_identifier(ctx.children[0].getText(),
+                                             self.output_sql)
+            alidx = 0
+
+        if ctx.children[alidx].getText()[0] != '"':
             if self.output_sql == 'mysql':
                 ri = ri.replace('`', '')
         _remove_children(ctx)

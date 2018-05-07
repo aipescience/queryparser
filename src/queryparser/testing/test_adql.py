@@ -37,7 +37,7 @@ class ADQLTestCase(TestCase):
             """,
             ''.join((
                 'SELECT sbox(spoint(RADIANS(25.4),RADIANS(-20.5)),',
-                'spoint(RADIANS(1.1),RADIANS(1.2))) FROM `db`.`tab`;'
+                'spoint(RADIANS(26.500000000000),RADIANS(-19.300000000000))) FROM `db`.`tab`;'
             )).strip()
         )
 
@@ -77,7 +77,7 @@ class ADQLTestCase(TestCase):
             ''.join((
                 'SELECT soverlaps(scircle(spoint(RADIANS(0.0), RADIANS(0.0))',
                 ', RADIANS(10.0)), sbox(spoint(RADIANS(2.0),RADIANS(0.0)),',
-                'spoint(RADIANS(10.0),RADIANS(10.0)))) FROM `db`.`tab`;'
+                'spoint(RADIANS(12.000000000000),RADIANS(10.000000000000)))) FROM `db`.`tab`;'
             )).strip()
         )
 
@@ -605,7 +605,7 @@ class ADQLTestCase(TestCase):
             """,
             ''.join((
                 'SELECT sbox(spoint(RADIANS(25.4),RADIANS(-20.5)),',
-                'spoint(RADIANS(1.1),RADIANS(1.2))) FROM db.tab;'
+                'spoint(RADIANS(26.500000000000),RADIANS(-19.300000000000))) FROM db.tab;'
             )).strip()
         )
 
