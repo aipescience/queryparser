@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from queryparser.postgresql import PostgreSQLQueryProcessor
 from queryparser.adql import ADQLQueryTranslator
 import numpy as np
@@ -63,7 +65,15 @@ def f1():
     GROUP BY gmag;
     """
     query = """
-    SELECT a a, b AS bb FROM gdr2.gaia_source AS q;
+    select TOP 50000
+    magellan.vmc_source_x_gdr2_gaia_source.nid,
+    magellan.vmc_source_x_gdr2_gaia_source.source_id,
+    magellan.vmc_source_x_gdr2_gaia_source.dist
+    from magellan.vmc_source_x_gdr2_gaia_source,magellan.vmc_source,gdr2.gaia_source
+    where gdr2.gaia_source.random_index between 0 and 50000
+    AND magellan.vmc_source_x_gdr2_gaia_source.source_id=gdr2.gaia_source.source_id
+    AND magellan.vmc_source_x_gdr2_gaia_source.nid=magellan.vmc_source.nid
+    AND 1=CONTAINS(POINT('ICRS',gaiadr2.gaia_source.ra,gaiadr2.gaia_source.dec), BOX(‘ICRS GEOCENTER’,35, -73, 10, 10) ) 
     """
 
     adt = ADQLQueryTranslator(query)
@@ -128,7 +138,7 @@ def f2():
 
 def f3():
     query = """
-    SELECT a AS a FROM gdr2.gaia_source AS q;
+    SELECT Böning AS a FROM gdr2.gaia_source AS q;
     """
     qp = PostgreSQLQueryProcessor()
     qp.set_query(query)
@@ -141,7 +151,7 @@ def f3():
     print(qp.keywords)
     print(qp.functions)
 
-f1()
+f3()
 exit()
 
 alpha = (13 + 26 / 60 + 47.28 / 3600) * 15 - 180

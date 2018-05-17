@@ -11,6 +11,7 @@ from __future__ import (absolute_import, print_function)
 __all__ = ["PostgreSQLQueryProcessor"]
 
 import antlr4
+import sys
 
 from .PostgreSQLLexer import PostgreSQLLexer
 from .PostgreSQLParser import PostgreSQLParser
@@ -528,6 +529,8 @@ class PostgreSQLQueryProcessor(object):
         return self._query
 
     def _strip_query(self, query):
+        if sys.version_info[0] < 3:
+            query = unicode(query, 'utf-8')
         return query.lstrip('\n').rstrip().rstrip(';') + ';'
 
     def _strip_column(self, col):
