@@ -533,6 +533,7 @@ class PostgreSQLQueryProcessor(object):
             try:
                 query = unicode(query, 'utf-8')
             except TypeError:
+                # already unicode so we don't do anything
                 pass
         return query.lstrip('\n').rstrip().rstrip(';') + ';'
 
