@@ -796,3 +796,19 @@ class ADQLTestCase(TestCase):
              'b_v: public.hipparcos.b_v',
              )
         )
+
+    def test_query210(self):
+        self._test_adql_postgresql_translation_parsing(
+            """
+                SELECT *
+                FROM "gdr2"."gaia_source"
+                WHERE CONTAINS(POINT('ICRS',"gdr2"."gaia_source"."ra",
+                                            "gdr2"."gaia_source"."dec"),
+                               CIRCLE('ICRS',290.667,44.5,15))=1;
+            """,
+            ('gdr2.gaia_source.dec', 'gdr2.gaia_source.ra'),
+            ('where', '*'),
+            ('spoint', 'scircle', 'RADIANS'),
+            ()
+        )
+
