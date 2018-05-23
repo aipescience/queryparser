@@ -87,9 +87,10 @@ class ADQLGeometryTranslationVisitor(ADQLParserVisitor):
             try:
                 val = float(i)
             except ValueError:
+                print(i)
                 try:
                     val = float(eval(i))
-                except (AttributeError, ValueError, NameError):
+                except (AttributeError, ValueError, NameError, SyntaxError):
                     if self.output_sql == 'mysql':
                         val = '.'.join('`{0}`'.format(v.rstrip("'").
                                                       lstrip("'").
