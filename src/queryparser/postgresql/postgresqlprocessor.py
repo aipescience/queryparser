@@ -530,7 +530,10 @@ class PostgreSQLQueryProcessor(object):
 
     def _strip_query(self, query):
         if sys.version_info[0] < 3:
-            query = unicode(query, 'utf-8')
+            try:
+                query = unicode(query, 'utf-8')
+            except TypeError:
+                pass
         return query.lstrip('\n').rstrip().rstrip(';') + ';'
 
     def _strip_column(self, col):

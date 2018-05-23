@@ -113,17 +113,18 @@ def f2():
                 ORDER BY t1.source_id;
             """
     query = """
-    SELECT ra, dec FROM gdr2.gaia_source AS g
-    WHERE CONTAINS(POINT('ICRS', g.ra, g.dec), BOX('ICRS',35, -74, 1, 1))=1
+    SELECT * FROM "gdr2"."gaia_source"
+     WHERE CONTAINS(POINT('ICRS',"gdr2"."gaia_source"."ra","gdr2"."gaia_source"."dec"),CIRCLE('ICRS',290.667,44.5,15
+     ))=1;
     """
 
     adt = ADQLQueryTranslator(query)
     pgq = adt.to_postgresql()
     print(pgq)
 
-    iob = {'spoint': ((('gdr1', 'tgas_source', 'ra'),
-                       ('gdr1', 'tgas_source', 'dec'), 'point'),)}
-    qp = PostgreSQLQueryProcessor(indexed_objects = {})
+    iob = {'spoint': ((('gdr2', 'gaia_source', 'ra'),
+                       ('gdr2', 'gaia_source', 'dec'), 'pos'),)}
+    qp = PostgreSQLQueryProcessor(indexed_objects = iob)
     qp.set_query(pgq)
     qp.process_query()
 
@@ -145,7 +146,7 @@ def f3():
     print(qp.keywords)
     print(qp.functions)
 
-f1()
+f2()
 exit()
 
 alpha = (13 + 26 / 60 + 47.28 / 3600) * 15 - 180
