@@ -61,7 +61,6 @@ def process_column_name(column_name_listener, walker, ctx):
                 cn[0][1] = ts.table_name().getText().replace('"', '')
         except AttributeError:
             cn = [[None, None, None, None]]
-
     return cn
 
 
@@ -345,7 +344,11 @@ class PgSphereListener(PostgreSQLParserListener):
 
         self.cctx_dict = {}
         for c in columns:
-            self.cctx_dict[c[3]] = c[:3]
+            try:
+                # PgSphere sphere stuff can't be in the USING statement
+                self.cctx_dict[c[3]] = c[:3]
+            except IndexError:  # TODO: check if this is the best way
+                pass
 
         self.indexed_objects = indexed_objects
         self.replace_dict = {}

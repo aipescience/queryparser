@@ -113,9 +113,9 @@ def f2():
                 ORDER BY t1.source_id;
             """
     query = """
-    SELECT * FROM "gdr2"."gaia_source"
-     WHERE CONTAINS(POINT('ICRS',"gdr2"."gaia_source"."ra","gdr2"."gaia_source"."dec"),CIRCLE('ICRS',290.667,44.5,15
-     ))=1;
+        SELECT source_id 
+        FROM gaiadr2.aux_allwise_agn_gdr2_cross_id
+        JOIN gaiadr2.gaia_source USING (source_id);
     """
 
     adt = ADQLQueryTranslator(query)

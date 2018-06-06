@@ -812,3 +812,16 @@ class ADQLTestCase(TestCase):
             ()
         )
 
+    def test_query211(self):
+        self._test_adql_postgresql_translation_parsing(
+            """
+                SELECT id 
+                FROM db.tab1
+                JOIN db.tab2 USING (id);
+            """,
+            ('db.tab1.id', 'db.tab2.id'),
+            ('join', ),
+            (),
+            ()
+        )
+
