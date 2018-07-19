@@ -400,7 +400,8 @@ class PostgreSQLQueryProcessor(object):
                 join_using, column_aliases =\
                 self._extract_instances(column_keyword_function_listener)
 
-            tables.extend([i[0][0] for i in select_list_tables])
+            #tables.extend([i[0][0] for i in select_list_tables])
+            tables.extend([i[0] for i in select_list_tables])
 
             # Then we need to connect the column names s with tables and
             # databases
@@ -505,15 +506,23 @@ class PostgreSQLQueryProcessor(object):
                                 list(self._strip_column(i[1])))
                                 for i in display_columns]
 
-        self.tables = list(set([tuple([i[0].lstrip('"').rstrip('"')
-                        if i[0] is not None else i[0],
-                        i[1].lstrip('"').rstrip('"')
-                        if i[1] is not None else i[1]]) for i in tables]))
+        self.tables = list(set([tuple([i[0][0].lstrip('"').rstrip('"')
+                        if i[0][0] is not None else i[0][0],
+                        i[0][1].lstrip('"').rstrip('"')
+                        if i[0][1] is not None else i[0][1]]) for i in tables]))
 
         # If there are any pg_sphere objects that are indexed we need
         # to replace the ADQL translated query parts with the indexed column
         # names
         if self._indexed_objects is not None:
+            # we need to correctly alias 'pos' columns
+            for k, v in self._indexed_objects.items():
+                self._indexed_objects[k] = list([list(i) for i in v])
+                for i, vals in enumerate(v):
+                    for t in tables:
+                        if vals[0][0] == t[0][0] and vals[0][1] == t[0][1] and \
+                                t[1] is not None:
+                            self._indexed_objects[k][i][2] = t[1] + '.' + self._indexed_objects[k][i][2]
             pg_sphere_listener = PgSphereListener(columns,
                                                   self._indexed_objects)
             self.walker.walk(pg_sphere_listener, tree)

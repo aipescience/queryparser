@@ -64,11 +64,6 @@ def f1():
     ) AS gmag_tab
     GROUP BY gmag;
     """
-    query = """
-    SELECT * FROM "gdr2"."gaia_source"
-     WHERE CONTAINS(POINT('ICRS',"gdr2"."gaia_source"."ra","gdr2"."gaia_source"."dec"),CIRCLE('ICRS',290.667,44.5,15
-     ))=1;
-    """
 
     adt = ADQLQueryTranslator(query)
     pgq = adt.to_postgresql()
@@ -116,6 +111,17 @@ def f2():
         SELECT source_id 
         FROM gaiadr2.aux_allwise_agn_gdr2_cross_id
         JOIN gaiadr2.gaia_source USING (source_id);
+    """
+    query = """
+    SELECT gaia2.source_id
+    FROM gdr2.gaia_source AS gaia2,  gdr2.sdssdr9_best_neighbour AS grd2_rv5 
+    WHERE gaia2.source_id = grd2_rv5.source_id 
+    AND 1 = CONTAINS(POINT('ICRS', gaia2.ra, gaia2.dec), CIRCLE('ICRS' ,080.8942, -69.7561,  0.5))
+    """
+    query = """
+    SELECT source_id
+    FROM gdr2.gaia_source
+    WHERE 1 = CONTAINS(POINT('ICRS', ra, dec), CIRCLE('ICRS' ,080.8942, -69.7561,  0.5))
     """
 
     adt = ADQLQueryTranslator(query)
