@@ -119,10 +119,14 @@ def f2():
     AND 1 = CONTAINS(POINT('ICRS', gaia2.ra, gaia2.dec), CIRCLE('ICRS' ,080.8942, -69.7561,  0.5))
     """
     query = """
-    SELECT source_id
-    FROM gdr2.gaia_source
-    WHERE 1 = CONTAINS(POINT('ICRS', ra, dec), CIRCLE('ICRS' ,080.8942, -69.7561,  0.5))
+    SELECT gaia.source_id, gaia.ra, gaia.dec, gd.r_est
+    FROM gdr2.gaia_source gaia, gdr2_contrib.geometric_distance gd
+    WHERE 1 = CONTAINS(POINT('ICRS', gaia.ra, gaia.dec), 
+                               CIRCLE('ICRS',245.8962, -26.5222, 0.5))
+    AND gaia.phot_g_mean_mag < 15
+    AND gaia.source_id = gd.source_id
     """
+
 
     adt = ADQLQueryTranslator(query)
     pgq = adt.to_postgresql()
@@ -141,6 +145,21 @@ def f3():
     query = """
     SELECT Böning AS a FROM gdr2.gaia_source AS q;
     """
+    query = '''
+    SELECT gaia.source_id, gaia.ra, gaia.dec, gaia.phot_g_mean_mag,
+    gaia.phot_bp_mean_mag, gaia.phot_rp_mean_mag
+    FROM gdr2.gaia_source as gaia
+    WHERE gaia.dec <= - 68 AND gaia.dec >= - 78
+    AND gaia.ra >= -8 AND gaia.ra <= 35
+    AND (gaia.parallax/gaia.parallax_error)<=7
+    AND gaia.phot_g_mean_mag IS NOT NULL
+    AND gaia.phot_bp_mean_mag IS NOT NULL
+    AND gaia.phot_rp_mean_mag IS NOT NULL
+    AND gaia.duplicated_source=False
+    AND (gaia.phot_variable_flag=”CONSTANT”)
+    AND gaia.phot_g_mean_mag >= 12.5
+    AND gaia.phot_g_mean_mag <= 13 
+    '''
     qp = PostgreSQLQueryProcessor()
     qp.set_query(query)
     qp.process_query()
@@ -152,7 +171,7 @@ def f3():
     print(qp.keywords)
     print(qp.functions)
 
-f2()
+f3()
 exit()
 
 alpha = (13 + 26 / 60 + 47.28 / 3600) * 15 - 180

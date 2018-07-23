@@ -332,8 +332,10 @@ class PostgreSQLQueryProcessor(object):
         # Antlr objects
         inpt = antlr4.InputStream(self.query)
         lexer = PostgreSQLLexer(inpt)
+        #  lexer.removeErrorListeners()
         stream = antlr4.CommonTokenStream(lexer)
         parser = PostgreSQLParser(stream)
+        lexer._listeners = [self.syntax_error_listener]
         parser._listeners = [self.syntax_error_listener]
 
         # Parse the query
