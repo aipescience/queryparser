@@ -139,6 +139,7 @@ def f2():
     qp.process_query()
 
     print(qp.query)
+    print(qp.columns)
 
 
 def f3():
@@ -171,7 +172,7 @@ def f3():
     print(qp.keywords)
     print(qp.functions)
 
-f3()
+f2()
 exit()
 
 alpha = (13 + 26 / 60 + 47.28 / 3600) * 15 - 180

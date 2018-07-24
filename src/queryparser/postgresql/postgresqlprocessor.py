@@ -473,6 +473,14 @@ class PostgreSQLQueryProcessor(object):
                                          for i in mc])
                 raise QueryError("Unreferenced column(s): '%s'." % unref_cols)
 
+        # If we have indexed_objects, we are also accessing those. We
+        # need to add them into the columns stack:
+        if self._indexed_objects is not None:
+            for k, v in self._indexed_objects.items():
+                for vals in v:
+                    touched_columns.append([[vals[0][0], vals[0][1], vals[2],
+                                             None], None])
+                
         touched_columns = set([tuple(i[0]) for i in touched_columns])
 
         # extract display_columns

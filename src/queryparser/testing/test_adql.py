@@ -442,7 +442,7 @@ class ADQLTestCase(TestCase):
             )).strip()
         )
 
-    def test_syntax_error(self):
+    def test_syntax_error_001(self):
         q = """SELECR a FROM db.tab;"""
         with self.assertRaises(QuerySyntaxError):
             self._test_adql_mysql_translation(q)
@@ -661,6 +661,7 @@ class ADQLTestCase(TestCase):
              'GDR1.gaia_source.dec'),
             (),
             (),
+            (('GDR1', 'gaia_source'),),
             ('source_id: GDR1.gaia_source.source_id',
              'ra: GDR1.gaia_source.ra',
              'dec: GDR1.gaia_source.dec')
@@ -682,8 +683,9 @@ class ADQLTestCase(TestCase):
              'gdr1.tgas_source.pmra',
              'gdr1.tgas_source.pmdec',
              'gdr1.tgas_source.parallax'),
-            (),
-            (),
+            ('where',),
+            ('spoint', 'scircle', 'POWER', 'SQRT', 'RADIANS'),
+            (('gdr1', 'tgas_source'),),
             ('source_id: gdr1.tgas_source.source_id',
              'parallax: gdr1.tgas_source.parallax')
         )
@@ -721,8 +723,11 @@ class ADQLTestCase(TestCase):
              'gdr1.tmass_original_valid.ph_qual',
              'gdr1.tmass_original_valid.tmass_oid',
              'gdr1.tmass_original_valid.ks_msigcom'),
-            (),
-            (),
+            ('where', 'join'),
+            ('LOG', 'log', 'SQRT', 'power', 'POWER'),
+            (('gdr1', 'tgas_source'),
+             ('gdr1', 'tmass_original_valid'),
+             ('gdr1', 'tmass_best_neighbour')),
             ('source_id: gdr1.tgas_source.source_id',
              )
         )
@@ -757,8 +762,10 @@ class ADQLTestCase(TestCase):
              'public.hipparcos.e_plx',
              'public.hipparcos.b_v',
              'public.hipparcos.e_b_v'),
-            (),
-            (),
+            ('where', 'join'),
+            ('LOG', 'log'),
+            (('public', 'hipparcos'),
+             ('gdr1', 'tgas_source')),
             ('source_id: gdr1.tgas_source.source_id',
              'hip: gdr1.tgas_source.hip',
              )
@@ -789,8 +796,9 @@ class ADQLTestCase(TestCase):
              'public.hipparcos.hip',
              'public.hipparcos.b_v',
              'public.hipparcos.e_b_v'),
-            (),
-            (),
+            ('where', 'join'),
+            ('LOG', 'log'),
+            (('public', 'hipparcos'), ('gdr1', 'tgas_source')),
             ('source_id: gdr1.tgas_source.source_id',
              'hip: gdr1.tgas_source.hip',
              'b_v: public.hipparcos.b_v',
@@ -809,6 +817,7 @@ class ADQLTestCase(TestCase):
             ('gdr2.gaia_source.dec', 'gdr2.gaia_source.ra'),
             ('where', '*'),
             ('spoint', 'scircle', 'RADIANS'),
+            (('gdr2', 'gaia_source'),),
             ()
         )
 
@@ -822,6 +831,32 @@ class ADQLTestCase(TestCase):
             ('db.tab1.id', 'db.tab2.id'),
             ('join', ),
             (),
-            ()
+            (('db', 'tab1'), ('db', 'tab2')),
+            ('id: db.tab1.id',)
         )
 
+    def test_query212(self):
+        self._test_adql_postgresql_translation_parsing(
+            """
+            SELECT gaia.source_id, gaia.ra, gaia.dec, gd.r_est
+            FROM gdr2.gaia_source gaia, gdr2_contrib.geometric_distance gd
+            WHERE 1 = CONTAINS(POINT('ICRS', gaia.ra, gaia.dec), 
+                                       CIRCLE('ICRS',245.8962, -26.5222, 0.5))
+            AND gaia.phot_g_mean_mag < 15
+            AND gaia.source_id = gd.source_id
+            """,
+            ('gdr2.gaia_source.ra', 'gdr2.gaia_source.dec',
+             'gdr2.gaia_source.source_id', 'gdr2.gaia_source.phot_g_mean_mag',
+             'gdr2.gaia_source.pos',
+             'gdr2_contrib.geometric_distance.source_id',
+             'gdr2_contrib.geometric_distance.r_est'),
+            ('where',),
+            ('spoint', 'scircle', 'RADIANS'),
+            (('gdr2', 'gaia_source'), ('gdr2_contrib', 'geometric_distance')),
+            ('ra: gdr2.gaia_source.ra', 'dec: gdr2.gaia_source.dec',
+             'source_id: gdr2.gaia_source.source_id', 
+             'r_est: gdr2_contrib.geometric_distance.r_est'),
+            {'spoint': ((('gdr2', 'gaia_source', 'ra'),
+                         ('gdr2', 'gaia_source', 'dec'),
+                         'pos'),)}
+        )

@@ -117,9 +117,10 @@ class TestCase(unittest.TestCase):
 
     def _test_adql_postgresql_translation_parsing(self, query, columns=None,
                                              keywords=None, functions=None,
-                                             tables=None, display_columns=None):
+                                             tables=None, display_columns=None,
+                                             indexed_objects=None):
         adt = ADQLQueryTranslator()
-        qp = PostgreSQLQueryProcessor()
+        qp = PostgreSQLQueryProcessor(indexed_objects=indexed_objects)
 
         adt.set_query(query)
 
@@ -140,6 +141,9 @@ class TestCase(unittest.TestCase):
 
         if functions:
             self.assertSetEqual(set(functions), set(qp.functions))
+
+        if tables:
+            self.assertSetEqual(set(tables), set(qp.tables))
 
         if display_columns:
             self.assertSetEqual(set(display_columns), set(qp_display_columns))

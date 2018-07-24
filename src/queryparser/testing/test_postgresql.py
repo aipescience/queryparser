@@ -230,3 +230,11 @@ class PostgresqlTestCase(TestCase):
             (),
             ('gdr1.tgas_source',)
         )
+
+    def test_syntax_error_001(self):
+        q = """
+            SELECT a FROM db.tab
+            WHERE par = ”AAA”
+            """
+        with self.assertRaises(QuerySyntaxError):
+            self._test_postgresql_parsing(q)

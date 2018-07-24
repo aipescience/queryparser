@@ -336,6 +336,7 @@ class MySQLQueryProcessor(object):
         lexer = MySQLLexer(inpt)
         stream = antlr4.CommonTokenStream(lexer)
         parser = MySQLParser(stream)
+        lexer._listeners = [self.syntax_error_listener]
         parser._listeners = [self.syntax_error_listener]
 
         # Parse the query

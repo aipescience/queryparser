@@ -302,8 +302,11 @@ class SyntaxErrorListener(ErrorListener):
         super(SyntaxErrorListener, self).__init__()
         self.syntax_errors = []
 
-    def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
-        self.syntax_errors.append((line, column, offendingSymbol.text))
+    def syntaxError(self, recognizer, offending_symbol, line, column, msg, e):
+        if offending_symbol is not None:
+            self.syntax_errors.append((line, column, offending_symbol.text))
+        else:
+            self.syntax_errors.append((line, column, msg))
 
 
 class TableNameListener(MySQLParserListener):
