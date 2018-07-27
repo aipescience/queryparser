@@ -253,7 +253,7 @@ table_atom:
 	| ( OJ_SYM table_reference LEFT OUTER JOIN_SYM table_reference ON expression ) ;
 table_name:             ID ;
 
-table_factor1:          table_factor2 ( (INNER_SYM | CROSS)? JOIN_SYM table_atom ( join_condition )? )* ;
+table_factor1:          table_factor2 ( (INNER_SYM | CROSS | LEFT | RIGHT)? JOIN_SYM table_atom ( join_condition )? )* ;
 table_factor2:          table_factor3 (  STRAIGHT_JOIN table_atom ( ON expression )? )? ;
 table_factor3:          table_factor4 ( ( LEFT | RIGHT ) ( OUTER )? JOIN_SYM table_factor4 join_condition )* ;
 table_factor4:          table_atom ( NATURAL ( ( LEFT | RIGHT ) ( OUTER )? )? JOIN_SYM table_atom )? ;

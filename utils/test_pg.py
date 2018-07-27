@@ -161,6 +161,13 @@ def f3():
     AND gaia.phot_g_mean_mag >= 12.5
     AND gaia.phot_g_mean_mag <= 13 
     '''
+
+    query = '''
+    SELECT ra, dec, sn, concat('https://musewide.aip.de/cutout/api/datacubes/?A=3&B=3&RA=', ra, '&DEC=', dec)
+    FROM musewide_dr1.mw_44fields_main_table
+    ORDER BY sn DESC ;
+    '''
+
     qp = PostgreSQLQueryProcessor()
     qp.set_query(query)
     qp.process_query()
