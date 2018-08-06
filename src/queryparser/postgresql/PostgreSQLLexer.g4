@@ -258,7 +258,7 @@ QUARTER				: Q_ U_ A_ R_ T_ E_ R_  ;
 QUERY_SYM			: Q_ U_ E_ R_ Y_  ;
 QUOTE				: Q_ U_ O_ T_ E_  ;
 RADIANS				: R_ A_ D_ I_ A_ N_ S_  ;
-RAND				: R_ A_ N_ D_  ;
+RANDOM				: R_ A_ N_ D_ O_ M_ ;
 REAL				: R_ E_ A_ L_  ;
 REGEXP				: (R_ E_ G_ E_ X_ P_) | (R_ L_ I_ K_ E_);
 RELEASE_LOCK		: R_ E_ L_ E_ A_ S_ E_ '_' L_ O_ C_ K_  ;

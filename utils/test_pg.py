@@ -163,9 +163,7 @@ def f3():
     '''
 
     query = '''
-    SELECT ra, dec, sn, concat('https://musewide.aip.de/cutout/api/datacubes/?A=3&B=3&RA=', ra, '&DEC=', dec)
-    FROM musewide_dr1.mw_44fields_main_table
-    ORDER BY sn DESC ;
+    SELECT a FROM db.tab ORDER BY RANDOM()
     '''
 
     qp = PostgreSQLQueryProcessor()
@@ -179,7 +177,7 @@ def f3():
     print(qp.keywords)
     print(qp.functions)
 
-f2()
+f3()
 exit()
 
 alpha = (13 + 26 / 60 + 47.28 / 3600) * 15 - 180
