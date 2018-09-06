@@ -814,7 +814,7 @@ class ADQLTestCase(TestCase):
                                             "gdr2"."gaia_source"."dec"),
                                CIRCLE('ICRS',290.667,44.5,15))=1;
             """,
-            ('gdr2.gaia_source.dec', 'gdr2.gaia_source.ra'),
+            ('gdr2.gaia_source.*',),
             ('where', '*'),
             ('spoint', 'scircle', 'RADIANS'),
             (('gdr2', 'gaia_source'),),

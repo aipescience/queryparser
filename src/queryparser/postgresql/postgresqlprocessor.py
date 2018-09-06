@@ -188,12 +188,12 @@ class PostgreSQLQueryProcessor(object):
             calias = c[1]
 
             # if * is selected we don't care too much
-            if c[0][0] is None and c[0][1] is None and c[0][2] == '*':
-                for slt in select_list_tables:
-                    extra_columns.append([[slt[0][0][0], slt[0][0][1], cname,
-                                           c[0][3]], calias])
-                remove_column_idxs.append(i)
-                continue
+            #  if c[0][0] is None and c[0][1] is None and c[0][2] == '*':
+                #  for slt in select_list_tables:
+                    #  extra_columns.append([[slt[0][0][0], slt[0][0][1], cname,
+                                           #  c[0][3]], calias])
+                #  remove_column_idxs.append(i)
+                #  continue
 
             # this can happen for example in ... WHERE EXISTS ... clauses
             if cname is None and calias is None:

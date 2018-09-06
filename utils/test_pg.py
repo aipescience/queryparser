@@ -163,7 +163,7 @@ def f3():
     '''
 
     query = '''
-    SELECT a FROM db.tab ORDER BY RANDOM()
+    SELECT *, a as x FROM db.tab;
     '''
 
     qp = PostgreSQLQueryProcessor()
