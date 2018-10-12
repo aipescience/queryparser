@@ -357,7 +357,7 @@ DQ_SYM      : DQ DQ ;
 
 // '\xa0' is not regular space but a no-break space so it needs to be there too.
 WS
-   : ( ' ' | '\t' | '\n' | '\r' | '\xa0')+ -> channel(HIDDEN)
+   : ( ' ' | '\t' | '\n' | '\r' | '\u00a0')+ -> channel(HIDDEN)
 ;
 
 COMMENT: '--' ~( '\r' | '\n' )* -> skip ;
