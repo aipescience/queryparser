@@ -163,7 +163,7 @@ def f3():
     '''
 
     query = '''
-    SELECT *, a as x FROM db.tab;
+SELECT vmcsource.sourceid FROM bla.bla
     '''
 
     qp = PostgreSQLQueryProcessor()
