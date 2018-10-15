@@ -163,7 +163,9 @@ def f3():
     '''
 
     query = '''
-SELECT vmcsource.sourceid FROM bla.bla
+select * from gdr2.vari_cepheid as v
+join gdr2.gaia_source as g using(source_id)
+WHERE g.pos @ scircle(spoint(4.2917, -0.4629), 0.008) 
     '''
 
     qp = PostgreSQLQueryProcessor()

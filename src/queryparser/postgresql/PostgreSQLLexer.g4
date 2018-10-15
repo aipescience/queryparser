@@ -465,7 +465,13 @@ ID:
 
 COMMENT: '--' ~( '\r' | '\n' )* -> skip ;
 
-WS : ( ' ' | '\t' | '\n' | '\r' )+ -> channel(HIDDEN) ;
+// all unicode whitespace characters
+WS
+   : ( ' ' | '\t' | '\n' | '\r' | '\u000b' | '\u000c' |
+   '\u0085' | '\u00a0' | '\u1680' | '\u2000' | '\u2001' | '\u2002' | '\u2003' |
+   '\u2004' | '\u2005' | '\u2006' | '\u2007' | '\u2008' | '\u2009' | '\u200a' | '\u2028' |
+   '\u2029' | '\u202f' | '\u205f' | '\u3000' )+ -> channel(HIDDEN)
+;
 
 //fragment USER_VAR_SUBFIX2:	( '\'' (~'\'')+ '\'' ) ;
 //fragment USER_VAR_SUBFIX3:	( '"' (~'"')+ '"' ) ;
