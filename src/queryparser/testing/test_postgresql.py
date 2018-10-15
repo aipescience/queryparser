@@ -231,6 +231,36 @@ class PostgresqlTestCase(TestCase):
             ('gdr1.tgas_source',)
         )
 
+    def test_query052(self):
+        self._test_postgresql_parsing(
+            """
+	    SELECT * FROM gdr2.vari_cepheid AS v
+	    JOIN gdr2.gaia_source AS g USING(source_id)
+	    WHERE g.pos @ scircle(spoint(4.2917, -0.4629), 0.008) 
+            """,
+            ('gdr2.gaia_source.pos', 'gdr2.gaia_source.source_id',
+             'gdr2.vari_cepheid.*'),
+            ('where', 'join', '*'),
+            ('scircle', 'spoint'),
+            ('*: gdr2.vari_cepheid.*',),
+            ('gdr2.gaia_source', 'gdr2.vari_cepheid')
+        )
+
+    def test_query053(self):
+        '''
+        Test non-standard space characters.
+        '''
+        self._test_postgresql_parsing(
+            """
+	    SELECT s FROM db.tab;
+            """,
+            ('db.tab.s',),
+            (),
+            (),
+            ('s: db.tab.s',),
+            ('db.tab',)
+        )
+
     def test_syntax_error_001(self):
         q = """
             SELECT a FROM db.tab
