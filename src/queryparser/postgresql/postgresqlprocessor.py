@@ -35,17 +35,16 @@ class PostgreSQLQueryProcessor(object):
         PostgreSQL query string.
 
     """
-    def __init__(self, query=None, indexed_objects=None):
+    def __init__(self, query=None):
         self.walker = antlr4.ParseTreeWalker()
-
         self.columns = set()
         self.keywords = set()
         self.functions = set()
         self.display_columns = []
         self.syntax_error_listener = SyntaxErrorListener()
-        self._indexed_objects = indexed_objects
+
         if query is not None:
-            self._query = self._strip_query(query)
+            self.set_query(query)
             self.process_query()
 
     def _extract_instances(self, column_keyword_function_listener):
@@ -178,7 +177,6 @@ class PostgreSQLQueryProcessor(object):
         # higer up in the tree structure. We'll revisit them later.
         missing_columns = []
         remove_column_idxs = []
-        extra_columns = []
 
         for i, col in enumerate(columns):
             c = col[0]
@@ -323,7 +321,7 @@ class PostgreSQLQueryProcessor(object):
 
         return missing_columns
 
-    def process_query(self, replace_schema_name={}):
+    def process_query(self, replace_schema_name=None, indexed_objects=None):
         """
         Parses and processes the query. After a successful run it fills up
         columns, keywords, functions and syntax_errors lists.
@@ -343,7 +341,7 @@ class PostgreSQLQueryProcessor(object):
         if len(self.syntax_error_listener.syntax_errors):
             raise QuerySyntaxError(self.syntax_error_listener.syntax_errors)
 
-        if len(replace_schema_name.items()):
+        if replace_schema_name is not None:
             schema_name_listener = SchemaNameListener(replace_schema_name)
             self.walker.walk(schema_name_listener, tree)
             self._query = stream.getText()
@@ -475,12 +473,11 @@ class PostgreSQLQueryProcessor(object):
 
         # If we have indexed_objects, we are also accessing those. We
         # need to add them into the columns stack:
-        if self._indexed_objects is not None:
-            for k, v in self._indexed_objects.items():
+        if indexed_objects is not None:
+            for k, v in indexed_objects.items():
                 for vals in v:
-                    touched_columns.append([[vals[0][0], vals[0][1], vals[2],
-                                             None], None])
-                
+                    touched_columns.append([[vals[0][0], vals[0][1], vals[2], None], None])
+
         touched_columns = set([tuple(i[0]) for i in touched_columns])
 
         # extract display_columns
@@ -524,17 +521,16 @@ class PostgreSQLQueryProcessor(object):
         # If there are any pg_sphere objects that are indexed we need
         # to replace the ADQL translated query parts with the indexed column
         # names
-        if self._indexed_objects is not None:
+        if indexed_objects is not None:
             # we need to correctly alias 'pos' columns
-            for k, v in self._indexed_objects.items():
-                self._indexed_objects[k] = list([list(i) for i in v])
+            for k, v in indexed_objects.items():
+                indexed_objects[k] = list([list(i) for i in v])
                 for i, vals in enumerate(v):
                     for t in tables:
-                        if vals[0][0] == t[0][0] and vals[0][1] == t[0][1] and \
-                                t[1] is not None:
-                            self._indexed_objects[k][i][2] = t[1] + '.' + self._indexed_objects[k][i][2]
-            pg_sphere_listener = PgSphereListener(columns,
-                                                  self._indexed_objects)
+                        if vals[0][0] == t[0][0] and vals[0][1] == t[0][1] and t[1] is not None:
+                            indexed_objects[k][i][2] = t[1] + '.' + indexed_objects[k][i][2]
+
+            pg_sphere_listener = PgSphereListener(columns, indexed_objects)
             self.walker.walk(pg_sphere_listener, tree)
             for k, v in pg_sphere_listener.replace_dict.items():
                 self._query = self._query.replace(k, v)
@@ -566,7 +562,6 @@ class PostgreSQLQueryProcessor(object):
     def set_query(self, query):
         """
         Helper to set the query string.
-
         """
         self.columns = set()
         self.keywords = set()
