@@ -120,12 +120,12 @@ class TestCase(unittest.TestCase):
                                              tables=None, display_columns=None,
                                              indexed_objects=None):
         adt = ADQLQueryTranslator()
-        qp = PostgreSQLQueryProcessor(indexed_objects=indexed_objects)
+        qp = PostgreSQLQueryProcessor()
 
         adt.set_query(query)
 
         qp.set_query(adt.to_postgresql())
-        qp.process_query()
+        qp.process_query(indexed_objects=indexed_objects)
 
         qp_columns = ['.'.join([str(j) for j in i]) for i in qp.columns
                       if i[0] is not None and i[1] is not None]
