@@ -3,6 +3,7 @@
 from queryparser.postgresql import PostgreSQLQueryProcessor
 from queryparser.adql import ADQLQueryTranslator
 import numpy as np
+import time
 
 
 def test01():
@@ -119,22 +120,30 @@ def f2():
     AND 1 = CONTAINS(POINT('ICRS', gaia2.ra, gaia2.dec), CIRCLE('ICRS' ,080.8942, -69.7561,  0.5))
     """
     query = """
-    SELECT gaia.source_id, gaia.ra, gaia.dec, gd.r_est
-    FROM gdr2.gaia_source gaia, gdr2_contrib.geometric_distance gd
-    WHERE 1 = CONTAINS(POINT('ICRS', gaia.ra, gaia.dec), 
-                               CIRCLE('ICRS',245.8962, -26.5222, 0.5))
-    AND gaia.phot_g_mean_mag < 15
-    AND gaia.source_id = gd.source_id
+    SELECT a FROM db.tab WHERE p = 'AAA';
     """
-
+    #  query = """SELECT ra FROM gdr2.gaia_source AS gaia
+    #  WHERE 1=CONTAINS(POINT('ICRS', gaia.ra, gaia.dec), 
+    #  CIRCLE('ICRS', 245.8962, -26.5222, 0.5))"""
 
     adt = ADQLQueryTranslator(query)
+    st = time.time() 
     pgq = adt.to_postgresql()
-    print(pgq)
+    st = time.time() 
+    #  print(pgq)
 
     iob = {'spoint': ((('gdr2', 'gaia_source', 'ra'),
-                       ('gdr2', 'gaia_source', 'dec'), 'pos'),)}
+                       ('gdr2', 'gaia_source', 'dec'), 'pos'),
+                      (('gdr1', 'gaia_source', 'ra'),
+                       ('gdr1', 'gaia_source', 'dec'), 'pos'))}
     qp = PostgreSQLQueryProcessor(indexed_objects = iob)
+    qp.set_query(pgq)
+    print(pgq)
+    qp.process_query()
+    st = time.time() 
+
+    pgq = qp.query
+    qp = PostgreSQLQueryProcessor()
     qp.set_query(pgq)
     qp.process_query()
 
@@ -163,9 +172,17 @@ def f3():
     '''
 
     query = '''
-select * from gdr2.vari_cepheid as v
-join gdr2.gaia_source as g using(source_id)
-WHERE g.pos @ scircle(spoint(4.2917, -0.4629), 0.008) 
+SELECT vmcsource.sourceid, vmcsource.framesetid, xm.nid,gaia.source_id, xm.dist, vmcsource.ra, vmcsource.dec, gaia.phot_g_mean_mag, gaia.phot_bp_mean_mag, gaia.phot_rp_mean_mag, gaia.pmra, gaia.pmdec, gaia.astrometric_excess_noise, vmcsource.yapermag3, vmcsource.yapermag3err, vmcsource.japermag3, vmcsource.japermag3err, vmcsource.ksapermag3, vmcsource.ksapermag3err, vmcsource.mergedclass
+FROM gdr2.gaia_source AS gaia, "magellan"."vmc_source_20180702_x_gdr2_gaia_source" AS xm,
+"magellan"."vmc_source_20180702" AS vmcsource
+WHERE vmcsource.ra>=47 AND vmcsource.ra<=120 AND vmcsource.dec<=-62 AND vmcsource.dec>=-78
+AND vmcsource.japermag3err>0 AND vmcsource.ksapermag3err>0
+AND vmcsource.japermag3err<=0.1 AND vmcsource.ksapermag3err<=0.1
+AND(vmcsource.mergedclass=-1 OR vmcsource.mergedclass=-2)
+AND gaia.dec >= -80
+AND gaia.source_id = xm.source_id
+AND xm.nid = vmcsource.nid
+AND (vmcsource.priOrSec<=0 OR vmcsource.priOrSec=vmcsource.frameSetID);
     '''
 
     qp = PostgreSQLQueryProcessor()
@@ -179,7 +196,7 @@ WHERE g.pos @ scircle(spoint(4.2917, -0.4629), 0.008)
     print(qp.keywords)
     print(qp.functions)
 
-f3()
+f2()
 exit()
 
 alpha = (13 + 26 / 60 + 47.28 / 3600) * 15 - 180

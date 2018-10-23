@@ -28,14 +28,14 @@ def _remove_children(ctx):
 
 
 def _process_regular_identifier(ctx_text, sql_output):
-        if sql_output == 'mysql':
-            ri = ctx_text.rstrip("'").lstrip("'").rstrip('"').lstrip('"')
-            return '`' + ri + '`'
-        elif sql_output == 'postgresql':
-            return ctx_text
-            #  return '' + ri + ''
-        else:
-            return ri
+    if sql_output == 'mysql':
+        ri = ctx_text.rstrip("'").lstrip("'").rstrip('"').lstrip('"')
+        return '`' + ri + '`'
+    elif sql_output == 'postgresql':
+        return ctx_text
+        #  return '' + ri + ''
+    else:
+        return ri
 
 
 class SyntaxErrorListener(ErrorListener):
@@ -419,8 +419,6 @@ class FormatListener(ADQLParserListener):
                           ADQLParser.Character_string_literalContext):
                 if nd == "'":
                     nd = None
-                else:
-                    nd = "'" + nd + "'"
 
         if nd is not None:
             if isinstance(node.parentCtx, ADQLParser.Set_function_typeContext)\

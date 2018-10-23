@@ -26,7 +26,7 @@ catalog_name:                   ID ;
 centroid:                       CENTROID LPAREN geometry_value_expression RPAREN ;
 //character_representation:       nonquote_character ;// | SQ SQ ;
 char_function:                  LOWER LPAREN character_string_literal RPAREN ;
-character_string_literal:       SQ ( ID )* SQ ; //SQ ( character_representation )* SQ ;
+character_string_literal:       CSL ; //SQ ( SL )* SQ ; //SQ ( character_representation )* SQ ;
 character_value_expression:
           character_value_expression concatenation_operator ( value_expression_primary | string_value_function )
         | value_expression_primary

@@ -6,7 +6,7 @@ import shutil
 import subprocess
 import re
 
-ANTLR_JAR = 'antlr-4.7-complete.jar'
+ANTLR_JAR = 'antlr-4.7.1-complete.jar'
 ANTLR_DIRS = ('.', '/usr/local/lib/', '/usr/local/bin/')
 
 QUERYPARSER_SRC = 'src/queryparser/'

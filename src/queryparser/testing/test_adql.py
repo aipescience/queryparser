@@ -860,3 +860,16 @@ class ADQLTestCase(TestCase):
                          ('gdr2', 'gaia_source', 'dec'),
                          'pos'),)}
         )
+
+    def test_query213(self):
+        self._test_adql_postgresql_translation_parsing(
+            """
+            SELECT column_name FROM TAP_SCHEMA.columns
+            WHERE ucd LIKE '%meta.ref%'
+            """,
+            ('TAP_SCHEMA.columns.column_name', 'TAP_SCHEMA.columns.ucd'),
+            ('where', ),
+            (),
+            (('TAP_SCHEMA', 'columns'),),
+            ('column_name: TAP_SCHEMA.columns.column_name',)
+        )
