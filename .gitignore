@@ -26,3 +26,4 @@ src/queryparser/adql/gen/
 MANIFEST
 
 antlr-*
+*.interp
