@@ -30,8 +30,8 @@ def main():
 
     antlr_path = get_antlr_path()
     if not antlr_path:
-        raise RuntimeError('You need Antlr 4.7 installed in %s.'
-                           % ':'.join(ANTLR_DIRS))
+        raise RuntimeError('You need %s installed in %s.'
+                           % (ANTLR_JAR, ':'.join(ANTLR_DIRS)))
 
     for python_version in python_versions:
         for language in languages:
