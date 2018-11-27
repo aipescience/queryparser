@@ -75,7 +75,7 @@ having_clause:                  HAVING search_condition ;
 identifier:                     regular_identifier | delimited_identifier ;
 in_predicate:                   value_expression ( NOT )? IN in_predicate_value ;
 in_predicate_value:             table_subquery | LPAREN in_value_list RPAREN ;
-in_value_list:                  value_expression ( COMMA value_expression )+ ;
+in_value_list:                  value_expression ( COMMA value_expression )* ;
 intersects:                     INTERSECTS LPAREN geometry_value_expression COMMA geometry_value_expression RPAREN ;
 join_column_list:               column_name_list ;
 join_condition:                 ON search_condition ;

@@ -130,6 +130,7 @@ select_expression:
 
     ( orderby_clause )?
     ( limit_clause )?
+    ( offset_clause )?
 	( ( FOR_SYM UPDATE ) | ( LOCK IN_SYM SHARE_SYM MODE_SYM ) )?
 
     SEMI?
@@ -201,6 +202,7 @@ limit_clause:           LIMIT (( offset COMMA )? row_count) | ( row_count OFFSET
 match_against_statement:MATCH ( column_spec ( COMMA column_spec )* ) AGAINST ( expression ( search_modifier )? ) ;
 
 offset:		            INTEGER_NUM ;
+offset_clause:          OFFSET_SYM offset ;
 row_count:	            INTEGER_NUM ;
 
 orderby_clause:         ORDER_SYM BY_SYM orderby_item ( COMMA orderby_item )* ;
