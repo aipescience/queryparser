@@ -14,17 +14,15 @@ cast_data_type:
     | CHAR (LPAREN INTEGER_NUM RPAREN)?
     | DATE_SYM
     | DATETIME
-    | DECIMAL_SYM (LPAREN INTEGER_NUM (COMMA INTEGER_NUM)? RPAREN)?
-    | SIGNED_SYM (INTEGER_SYM)?
     | TIME_SYM
-    | UNSIGNED_SYM (INTEGER_SYM)?
+    | TIMESTAMP
+    | INTERVAL_SYM
+    | DECIMAL_SYM (LPAREN INTEGER_NUM (COMMA INTEGER_NUM)? RPAREN)?
+    | INTEGER_SYM
+    | BIGINT
     | FLOAT
+    | REAL
     | DOUBLE_PRECISION_SYM;
-
-search_modifier:
-	  (IN_SYM NATURAL LANGUAGE MODE_SYM ( WITH QUERY_SYM EXPANSION_SYM )?)
-	| (IN_SYM BOOLEAN_SYM MODE_SYM)
-	| (WITH QUERY_SYM EXPANSION_SYM) ;
 
 interval_unit:
 	  SECOND | MINUTE | HOUR | DAY_SYM | WEEK | MONTH | QUARTER | YEAR
@@ -32,8 +30,8 @@ interval_unit:
     | HOUR_MICROSECOND | HOUR_SECOND | HOUR_MINUTE | DAY_MICROSECOND
     | DAY_SECOND | DAY_MINUTE | DAY_HOUR | YEAR_MONTH ;
 
-transcoding_name:
-	  LATIN1 | UTF8 ;
+//transcoding_name:
+//	  LATIN1 | UTF8 ;
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -50,35 +48,25 @@ string_literal:		    TEXT_STRING ;
 // FUNCTIONS
 
 char_functions:
-	  ASCII_SYM | BIN | BIT_LENGTH | CHAR_LENGTH | CHAR | CONCAT_WS | CONCAT
-    | ELT | EXPORT_SET | FIELD | FIND_IN_SET | FORMAT | FROM_BASE64 | HEX
-    | INSERT | INSTR | LEFT | LENGTH | LOAD_FILE | LOCATE | LOWER | LPAD
-    | LTRIM | MAKE_SET | MID | OCT | ORD | QUOTE | REPEAT | REPLACE | REVERSE
-    | RIGHT | RPAD | RTRIM | SOUNDEX | SPACE | STRCMP | SUBSTRING_INDEX
-    | SUBSTRING | TO_BASE64 | TRIM | UNHEX | UPPER | WEIGHT_STRING ;
+	  ASCII_SYM | BIT_LENGTH | CHAR_LENGTH | CHR | CONCAT_WS | CONCAT
+    | LEFT | LENGTH | LOWER | LPAD | LTRIM | REPEAT | REPLACE | REVERSE
+    | RIGHT | RPAD | RTRIM | SUBSTRING | TRIM | UPPER ;
 
 group_functions:
-	  AVG | COUNT | MAX_SYM | MIN_SYM | SUM | BIT_AND | BIT_OR | BIT_XOR
-    | BIT_COUNT | GROUP_CONCAT | STD | STDDEV | STDDEV_POP | STDDEV_SAMP
-    | VAR_POP | VAR_SAMP | VARIANCE ;
+	  AVG | COUNT | MAX_SYM | MIN_SYM | SUM | BIT_AND | BIT_OR | BIT_XOR | BIT_COUNT
+	| STDDEV | STDDEV_POP | STDDEV_SAMP | VAR_POP | VAR_SAMP | VARIANCE ;
 
 number_functions:
-	  ABS | ACOS | ASIN | ATAN2 | ATAN | CBRT | CEIL | CEILING | CONV | COS | COT
-    | CRC32 | DEGREES | DIV | EXP | FLOOR | LN | LOG | MOD | PI | POW
-    | POWER | RADIANS | RANDOM | ROUND | SIGN | SIN | SQRT | TAN | TRUNCATE | GREATEST;
+	  ABS | ACOS | ASIN | ATAN2 | ATAN | CBRT | CEIL | CEILING | COS | COT
+    | DEGREES | DIV | EXP | FLOOR | LN | LOG | MOD | PI | POW
+    | POWER | RADIANS | RANDOM | ROUND | SIGN | SIN | SQRT | TAN | TRUNCATE | GREATEST ;
 
 other_functions:
-	  MAKE_SET | LOAD_FILE | IF | IFNULL | AES_ENCRYPT | AES_DECRYPT | DECODE
-    | ENCODE | DES_DECRYPT | DES_ENCRYPT | ENCRYPT | MD5 | OLD_PASSWORD
-    | PASSWORD | BENCHMARK | CHARSET | COERCIBILITY | COLLATION | CONNECTION_ID
-	| CURRENT_USER | DATABASE | SCHEMA | USER | SESSION_USER | SYSTEM_USER
-	| VERSION_SYM | FOUND_ROWS | LAST_INSERT_ID | DEFAULT | GET_LOCK
-    | RELEASE_LOCK | IS_FREE_LOCK | IS_USED_LOCK | MASTER_POS_WAIT | INET_ATON
-    | INET_NTOA | NAME_CONST | SLEEP | UUID | VALUES ;
+      ENCODE | MD5 | VALUES ;
 
 time_functions:
-	  ADDDATE | ADDTIME | CONVERT_TZ | CURDATE | CURTIME | DATE_ADD
-    | DATE_FORMAT | DATE_SUB | DATE_SYM | DATEDIFF | DAYNAME | DAYOFMONTH
+	  CONVERT_TZ | CURDATE | CURTIME | DATE_ADD
+    | DATE_FORMAT | DATE_PART | DATE_SYM | DAYNAME | DAYOFMONTH
     | DAYOFWEEK | DAYOFYEAR | EXTRACT | FROM_DAYS | FROM_UNIXTIME | GET_FORMAT
     | HOUR | LAST_DAY | MAKEDATE | MAKETIME | MICROSECOND | MINUTE | MONTH
     | MONTHNAME | NOW | PERIOD_ADD | PERIOD_DIFF | QUARTER | SEC_TO_TIME
@@ -88,10 +76,7 @@ time_functions:
     | WEEKDAY | WEEKOFYEAR | YEAR | YEARWEEK ;
 
 array_functions:
-    ARRAY_LENGTH ;
-
-//pg_sphere_data_type:
-//      SPOINT | SCIRCLE | SLINE | SELLIPSE | SPOLY | SPATH | SBOX ;
+      ARRAY_LENGTH ;
 
 pg_sphere_functions:
       AREA ;
@@ -99,7 +84,6 @@ pg_sphere_functions:
 functionList:
 	  number_functions | char_functions | time_functions | other_functions
     | pg_sphere_functions | array_functions ;
-
 
 literal_value:
       string_literal | number_literal | hex_literal | boolean_literal
@@ -111,13 +95,7 @@ literal_value:
 
 select_expression:
 	SELECT 
-
-	( ALL | DISTINCT | DISTINCTROW )?
-	( HIGH_PRIORITY )?
-	( STRAIGHT_JOIN )?
-	( SQL_SMALL_RESULT )? ( SQL_BIG_RESULT )? ( SQL_BUFFER_RESULT )?
-	( SQL_CACHE_SYM | SQL_NO_CACHE_SYM )? ( SQL_CALC_FOUND_ROWS )?
-   
+	( ALL | DISTINCT )?
     select_list
 	
 	(
@@ -131,7 +109,7 @@ select_expression:
     ( orderby_clause )?
     ( limit_clause )?
     ( offset_clause )?
-	( ( FOR_SYM UPDATE ) | ( LOCK IN_SYM SHARE_SYM MODE_SYM ) )?
+	( FOR_SYM UPDATE )?
 
     SEMI?
 ;
@@ -144,7 +122,7 @@ alias:                  ( AS_SYM )? ID ;
 bit_expr:               factor1 ( VERTBAR factor1 )? ;
 
 bool_primary:
-      predicate ( relational_op predicate )? | ( ( NOT_SYM )? EXISTS subquery);
+      predicate ( relational_op ( ANY )? predicate )? | ( ( NOT_SYM )? EXISTS subquery);
 
 case_when_statement:    CASE_SYM ( case_when_statement1 | case_when_statement2 )
                             ( ELSE_SYM bit_expr )? END_SYM;
@@ -154,12 +132,11 @@ column_list:            LPAREN column_spec ( COMMA column_spec )* RPAREN ;
 column_name:            ID;
 column_spec:            ( ( schema_name DOT )? table_name DOT )? column_name ( slice_spec )?;
 
-displayed_column :      ( table_spec DOT ASTERISK ) | ( ( bit_expr | sbit_expr ) ( alias )? ) ;
+displayed_column :      ( table_spec DOT ASTERISK ) | ( ( bit_expr | sbit_expr ) ( LIKE_SYM TEXT_STRING )? ( alias )? ) ;
 
-exp_factor1:	        exp_factor2 ( XOR exp_factor2 )* ;
-exp_factor2:	        exp_factor3 ( AND_SYM exp_factor3 )* ;
-exp_factor3:	        ( NOT_SYM )? exp_factor4 ;
-exp_factor4:	        bool_primary ( ( IS_SYM ( NOT_SYM )? (boolean_literal | NULL_SYM | ( DISTINCT FROM ) ) )?
+exp_factor1:	        exp_factor2 ( AND_SYM exp_factor2 )* ;
+exp_factor2:	        ( NOT_SYM )? exp_factor3 ;
+exp_factor3:	        bool_primary ( ( IS_SYM ( NOT_SYM )? (boolean_literal | NULL_SYM | ( DISTINCT FROM ) ) )?
                                      | ( ISNULL | NOTNULL )?
                                      );
 expression:	            ( exp_factor1 ( OR_SYM exp_factor1 )* ) ;
@@ -169,13 +146,13 @@ factor1:                factor2 ( BITAND factor2 )? ;
 factor2:                factor3 ( ( SHIFT_LEFT | SHIFT_RIGHT ) factor3 )? ;
 factor3:                factor4 ( ( PLUS | MINUS ) factor4 )* ;
 factor4:                factor5 ( ( ASTERISK | DIVIDE | MOD_SYM | POWER_OP) factor5 )* ;
-factor5:                ( PLUS | MINUS | NEGATION | BINARY )? simple_expr ( ( PLUS | MINUS ) interval_expr )? ;
+factor5:                ( PLUS | MINUS | NEGATION | BINARY | ABS_VAL_OR_SCONTAINS | DFACTORIAL )? simple_expr ( NOT_SYM )? ( ( PLUS | MINUS ) interval_expr )? ;
 
 function_call:
 	  ( functionList ( LPAREN ( expression ( COMMA expression )* )? RPAREN ) ? )
-	| ( CONVERT_SYM LPAREN expression COMMA cast_data_type RPAREN )
-	| ( CONVERT_SYM LPAREN expression USING_SYM transcoding_name RPAREN )
 	| ( CAST_SYM LPAREN expression AS_SYM cast_data_type RPAREN )
+	| ( CONVERT_SYM LPAREN TEXT_STRING COMMA TEXT_STRING COMMA TEXT_STRING RPAREN )
+	| ( POSITION_SYM LPAREN expression IN_SYM expression RPAREN )
 	| ( group_functions LPAREN ( ASTERISK | ALL | DISTINCT )? ( ( bit_expr | sbit_expr ) )? RPAREN ) ;
 
 groupby_clause:         GROUP_SYM BY_SYM groupby_item ( COMMA groupby_item )* ( WITH ROLLUP_SYM )? ;
@@ -198,8 +175,6 @@ interval_expr:          INTERVAL_SYM expression interval_unit ;
 join_condition:         ( ON expression ) | ( USING_SYM column_list ) ;
 
 limit_clause:           LIMIT (( offset COMMA )? row_count) | ( row_count OFFSET_SYM offset ) ;
-
-match_against_statement:MATCH ( column_spec ( COMMA column_spec )* ) AGAINST ( expression ( search_modifier )? ) ;
 
 offset:		            INTEGER_NUM ;
 offset_clause:          OFFSET_SYM offset ;
@@ -241,7 +216,6 @@ simple_expr:
 	| subquery
 	| EXISTS subquery 
 	| interval_expr
-	| match_against_statement 
 	| case_when_statement ;
 
 slice_spec:             ( LBRACK INTEGER_NUM ( COLON INTEGER_NUM )? RBRACK )+;
@@ -269,7 +243,7 @@ values_list:            VALUES ( expression_list ( COMMA expression_list )* );
 where_clause:           WHERE expression ;
 
 pg_sphere_op:
-      SCONTAINS | SCONTAINS2 | NEGATION | SLEFTCONTAINS2 | SNOTCONTAINS
+      ABS_VAL_OR_SCONTAINS | SCONTAINS2 | NEGATION | SLEFTCONTAINS2 | SNOTCONTAINS
     | SNOTCONTAINS2 | SLEFTNOTCONTAINS | SLEFTNOTCONTAINS2 | AND_SYM
     | SNOTOVERLAP ;
 
