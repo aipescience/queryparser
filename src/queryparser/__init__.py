@@ -3,7 +3,7 @@ __version__ = '0.4.2'
 __author__ = 'Gal Matijevic'
 __email__ = 'gmatijevic@aip.de'
 __license__ = 'Apache-2.0'
-__copyright__ = 'Copyright 2016-2017 Leibniz Institute for Astrophysics Potsdam (AIP)'
+__copyright__ = 'Copyright 2016-2020 Leibniz Institute for Astrophysics Potsdam (AIP)'
 
 VERSION = __version__
 
