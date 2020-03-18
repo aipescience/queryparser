@@ -6,8 +6,6 @@ import antlr4
 import logging
 import re
 
-#from antlr4.error.ErrorListener import ErrorListener
-
 from .MySQLParser import MySQLParser
 from .MySQLParserListener import MySQLParserListener
 
@@ -15,7 +13,6 @@ from ..common import parse_alias, process_column_name, \
         get_column_name_listener, get_table_name_listener
 
 #  logging.basicConfig(level=logging.INFO)
-
 
 
 class ColumnKeywordFunctionListener(MySQLParserListener):
@@ -166,15 +163,3 @@ class ColumnKeywordFunctionListener(MySQLParserListener):
                      self._extract_column(ctx, append=False)[1]))
         self.data.append([ctx.depth(), ctx,
                           self._extract_column(ctx, append=False)[1]])
-
-
-class SyntaxErrorListener(ErrorListener):
-    def __init__(self):
-        super(SyntaxErrorListener, self).__init__()
-        self.syntax_errors = []
-
-    def syntaxError(self, recognizer, offending_symbol, line, column, msg, e):
-        if offending_symbol is not None:
-            self.syntax_errors.append((line, column, offending_symbol.text))
-        else:
-            self.syntax_errors.append((line, column, msg))

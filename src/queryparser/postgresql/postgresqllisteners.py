@@ -6,8 +6,6 @@ import antlr4
 import logging
 import re
 
-from antlr4.error.ErrorListener import ErrorListener, ConsoleErrorListener
-
 from .PostgreSQLParser import PostgreSQLParser
 from .PostgreSQLParserListener import PostgreSQLParserListener
 
@@ -229,17 +227,3 @@ class PgSphereListener(PostgreSQLParserListener):
                     rt = ctx.start.getInputStream().getText(ctx.start.start,
                                                             ctx.stop.stop)
                     self.replace_dict[rt] = sp[2]
-
-
-class SyntaxErrorListener(ErrorListener):
-    def __init__(self):
-        super(SyntaxErrorListener, self).__init__()
-        self.syntax_errors = []
-
-    def syntaxError(self, recognizer, offending_symbol, line, column, msg, e):
-        if offending_symbol is not None:
-            self.syntax_errors.append((line, column, offending_symbol.text))
-        else:
-            self.syntax_errors.append((line, column, msg))
-
-
