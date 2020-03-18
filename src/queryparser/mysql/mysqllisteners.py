@@ -6,7 +6,7 @@ import antlr4
 import logging
 import re
 
-from antlr4.error.ErrorListener import ErrorListener
+#from antlr4.error.ErrorListener import ErrorListener
 
 from .MySQLParser import MySQLParser
 from .MySQLParserListener import MySQLParserListener
