@@ -8,5 +8,6 @@ __copyright__ = 'Copyright 2016-2020 Leibniz Institute for Astrophysics Potsdam 
 VERSION = __version__
 
 from . import adql
+from . import common
 from . import mysql
 from . import postgresql

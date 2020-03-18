@@ -14,14 +14,16 @@ import antlr4
 
 from .MySQLLexer import MySQLLexer
 from .MySQLParser import MySQLParser
+from .MySQLParserListener import MySQLParserListener
 
 from ..exceptions import QueryError, QuerySyntaxError
 
 from .mysqllisteners import ColumnKeywordFunctionListener,\
-        QueryListener, RemoveSubqueriesListener, SyntaxErrorListener,\
-        SchemaNameListener
+        SyntaxErrorListener
 
-from .mysqllisteners import parse_alias
+from ..common import parse_alias, process_column_name,\
+        get_column_name_listener, get_schema_name_listener,\
+        get_remove_subqueries_listener, get_query_listener
 
 
 class MySQLQueryProcessor(object):
@@ -68,7 +70,7 @@ class MySQLQueryProcessor(object):
                         other_columns.append([j])
                 else:
                     select_list_columns.append(i[2])
-                alias = parse_alias(i[1].alias())
+                alias = parse_alias(i[1].alias(), '`')
                 if alias is not None:
                     column_aliases.append(alias)
                 ctx_stack.append(i)
@@ -345,11 +347,13 @@ class MySQLQueryProcessor(object):
             raise QuerySyntaxError(self.syntax_error_listener.syntax_errors)
 
         if len(replace_schema_name.items()):
-            schema_name_listener = SchemaNameListener(replace_schema_name)
+            schema_name_listener = get_schema_name_listener(
+                    MySQLParserListener, '`')(replace_schema_name)
             self.walker.walk(schema_name_listener, tree)
             self._query = stream.getText()
 
-        query_listener = QueryListener()
+        query_listener = get_query_listener(MySQLParserListener,
+                MySQLParser, '`')()
         subquery_aliases = [None]
         keywords = []
         functions = []
@@ -375,7 +379,8 @@ class MySQLQueryProcessor(object):
 
         # Iterate through subqueries starting with the lowerst level
         for ccc, ctx in enumerate(query_listener.select_expressions[::-1]):
-            remove_subquieries_listener = RemoveSubqueriesListener(ctx.depth())
+            remove_subquieries_listener = get_remove_subqueries_listener(
+                    MySQLParserListener, MySQLParser)(ctx.depth())
             column_keyword_function_listener = ColumnKeywordFunctionListener()
 
             # Remove nested subqueries from select_expressions
@@ -470,7 +475,7 @@ class MySQLQueryProcessor(object):
                                        column_aliases_from_previous,
                                        touched_columns, subquery_contents)
             if len(mc):
-                unref_cols = "', '".join(['.'.join([j for j in i[0] if j])
+                unref_cols = "', '".join(['.'.join([j for j in i[0][:3] if j])
                                          for i in mc])
                 raise QueryError("Unreferenced column(s): '%s'." % unref_cols)
 

@@ -28,13 +28,15 @@ setup(
     maintainer_email=metadata['email'],
     license=metadata['license'],
     url='https://github.com/aipescience/queryparser',
-    description=u'Parses MySQL and translates ADQL to MySQL.',
+    description=u'Parses PostgreSQL/MySQL and translates ADQL to ' +\
+            'PostgreSQL/MySQL.',
     long_description=open('README.rst').read(),
     install_requires=requirements,
     classifiers=[],
     packages=[
         'queryparser',
         'queryparser.adql',
+        'queryparser.common',
         'queryparser.mysql',
         'queryparser.postgresql',
         'queryparser.exceptions'

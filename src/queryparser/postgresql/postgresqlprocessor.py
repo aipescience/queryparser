@@ -15,14 +15,17 @@ import sys
 
 from .PostgreSQLLexer import PostgreSQLLexer
 from .PostgreSQLParser import PostgreSQLParser
+from .PostgreSQLParserListener import PostgreSQLParserListener
 
 from ..exceptions import QueryError, QuerySyntaxError
 
 from .postgresqllisteners import ColumnKeywordFunctionListener,\
-        QueryListener, RemoveSubqueriesListener, SyntaxErrorListener,\
-        SchemaNameListener, PgSphereListener
+        SyntaxErrorListener,\
+        PgSphereListener
 
-from .postgresqllisteners import parse_alias
+from ..common import parse_alias, process_column_name,\
+        get_column_name_listener, get_schema_name_listener,\
+        get_remove_subqueries_listener, get_query_listener
 
 
 class PostgreSQLQueryProcessor(object):
@@ -69,7 +72,7 @@ class PostgreSQLQueryProcessor(object):
                         other_columns.append([j])
                 else:
                     select_list_columns.append(i[2])
-                alias = parse_alias(i[1].alias())
+                alias = parse_alias(i[1].alias(), '"')
                 if alias is not None:
                     column_aliases.append(alias)
                 ctx_stack.append(i)
@@ -342,11 +345,13 @@ class PostgreSQLQueryProcessor(object):
             raise QuerySyntaxError(self.syntax_error_listener.syntax_errors)
 
         if replace_schema_name is not None:
-            schema_name_listener = SchemaNameListener(replace_schema_name)
+            schema_name_listener = get_schema_name_listener(
+                    PostgreSQLParserListener, '"')(replace_schema_name)
             self.walker.walk(schema_name_listener, tree)
             self._query = stream.getText()
 
-        query_listener = QueryListener()
+        query_listener = get_query_listener(PostgreSQLParserListener,
+                PostgreSQLParser, '"')()
         subquery_aliases = [None]
         keywords = []
         functions = []
@@ -372,7 +377,8 @@ class PostgreSQLQueryProcessor(object):
 
         # Iterate through subqueries starting with the lowerst level
         for ccc, ctx in enumerate(query_listener.select_expressions[::-1]):
-            remove_subquieries_listener = RemoveSubqueriesListener(ctx.depth())
+            remove_subquieries_listener = get_remove_subqueries_listener(
+                    PostgreSQLParserListener, PostgreSQLParser)(ctx.depth())
             column_keyword_function_listener = ColumnKeywordFunctionListener()
 
             # Remove nested subqueries from select_expressions

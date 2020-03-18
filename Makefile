@@ -18,6 +18,14 @@ lib/python2/queryparser/%.py: src/queryparser/%.py
 	mkdir -p `dirname $@`
 	cp $< $@
 
+lib/python2/queryparser/common: \
+	lib/python2/queryparser/common/commonlisteners.py \
+	lib/python2/queryparser/common/__init__.py
+
+lib/python2/queryparser/common/%.py: src/queryparser/common/%.py
+	mkdir -p `dirname $@`
+	cp $< $@
+
 lib/python2/queryparser/adql: \
 		lib/python2/queryparser/adql/ADQLParser.py \
 		lib/python2/queryparser/adql/adqltranslator.py \
@@ -80,12 +88,21 @@ python3: lib/python3/queryparser
 lib/python3/queryparser: \
 		lib/python3/queryparser/__init__.py \
 		lib/python3/queryparser/adql \
+		lib/python3/queryparser/common \
 		lib/python3/queryparser/exceptions \
 		lib/python3/queryparser/mysql \
 		lib/python3/queryparser/postgresql \
 		lib/python3/queryparser/testing
 
 lib/python3/queryparser/%.py: src/queryparser/%.py
+	mkdir -p `dirname $@`
+	cp $< $@
+
+lib/python3/queryparser/common: \
+	lib/python3/queryparser/common/commonlisteners.py \
+	lib/python3/queryparser/common/__init__.py
+
+lib/python3/queryparser/common/%.py: src/queryparser/common/%.py
 	mkdir -p `dirname $@`
 	cp $< $@
 
