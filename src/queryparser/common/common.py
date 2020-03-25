@@ -4,11 +4,14 @@
 from __future__ import (absolute_import, print_function)
 
 import re
+import sys
 
 import antlr4
 from antlr4.error.ErrorListener import ErrorListener
 
 import logging
+
+from ..exceptions import QueryError, QuerySyntaxError
 
 
 def parse_alias(alias, quote_char):
@@ -392,3 +395,337 @@ class SyntaxErrorListener(ErrorListener):
             self.syntax_errors.append((line, column, offending_symbol.text))
         else:
             self.syntax_errors.append((line, column, msg))
+
+
+class SQLQueryProcessor(object):
+    """
+    Object used for processing MySQL/PostgreSQL queries. Its objective is query
+    validation (syntax error detection )and extraction of used columns,
+    keywords and functions.
+
+    :param query:
+        SQL query string.
+
+    """
+    def __init__(self, base, query=None):
+        self.base = base
+        self.walker = antlr4.ParseTreeWalker()
+        self.columns = set()
+        self.keywords = set()
+        self.functions = set()
+        self.display_columns = []
+        self.syntax_error_listener = SyntaxErrorListener()
+
+        if query is not None:
+            self.set_query(query)
+            self.process_query()
+
+    def _extract_instances(self, column_keyword_function_listener):
+        select_list_columns = []
+        other_columns = []
+        go_columns = []
+        column_aliases = []
+        select_list_tables = []
+        select_list_table_references = []
+        join = 0
+        join_using = None
+
+        # Keep track of the ctx stack
+        ctx_stack = []
+
+        for i in column_keyword_function_listener.data:
+            if isinstance(i[1], self.base.Displayed_columnContext):
+                # this happens if there is an expression involving
+                # more columns
+                if len(i[2]) > 1:
+                    for j in i[2]:
+                        other_columns.append([j])
+                else:
+                    select_list_columns.append(i[2])
+                alias = parse_alias(i[1].alias(), '"')
+                if alias is not None:
+                    column_aliases.append(alias)
+                ctx_stack.append(i)
+
+            if isinstance(i[1], self.base.Table_atomContext):
+                select_list_tables.append([i[2], i[0]])
+                ctx_stack.append(i)
+
+            if isinstance(i[1], self.base.Table_referencesContext):
+                if len(i) > 2:
+                    select_list_table_references.extend(i[2])
+                    ctx_stack.append(i)
+
+            if isinstance(i[1], self.base.Select_listContext):
+                if len(i) == 3:
+                    select_list_columns.append([[i[2][0][0] + [i[1]],
+                                                i[2][0][1]]])
+                    ctx_stack.append(i)
+
+            if isinstance(i[1], self.base.Where_clauseContext) or\
+               isinstance(i[1], self.base.Having_clauseContext):
+                if len(i[2]) > 1:
+                    for j in i[2]:
+                        other_columns.append([j])
+                else:
+                    other_columns.append(i[2])
+                ctx_stack.append(i)
+
+            if isinstance(i[1], self.base.Join_conditionContext):
+                join = i[0]
+                join_using = i[2]
+
+                # if USING we need all columns in all columns if they
+                # have no references
+                if i[1].USING_SYM():
+                    for ctx in ctx_stack[::-1]:
+                        if not isinstance(ctx[1],
+                                          self.base.Table_atomContext):
+                            break
+                        for ju in join_using:
+                            if ju[0][1] is None:
+                                other_columns.append([[[ctx[2][0][0],
+                                                        ctx[2][0][1],
+                                                        ju[0][2],
+                                                        ctx[1]], None]])
+                elif i[1].ON():
+                    if len(i[2]) > 1:
+                        for j in i[2]:
+                            other_columns.append([j])
+
+                ctx_stack.append(i)
+
+            if isinstance(i[1], self.base.Orderby_clauseContext):
+                if len(i[2]) > 1:
+                    for j in i[2]:
+                        go_columns.append([j])
+                else:
+                    go_columns.append(i[2])
+                ctx_stack.append(i)
+
+            if isinstance(i[1], self.base.Groupby_clauseContext):
+                if len(i[2]) > 1:
+                    for j in i[2]:
+                        go_columns.append([j])
+                else:
+                    go_columns.append(i[2])
+                ctx_stack.append(i)
+
+        return select_list_columns, select_list_tables,\
+            select_list_table_references, other_columns, go_columns, join,\
+            join_using, column_aliases
+
+    def _get_budget_column(self, c, tab, ref):
+        cname = c[0][2]
+        cctx = c[0][3]
+        calias = c[1]
+        t = tab
+
+        column_found = False
+
+        for bc in ref:
+            if bc[0][2] == '*':
+                t = [[bc[0][0], bc[0][1]], 'None']
+                column_found = True
+                break
+            elif bc[1] and c[0][2] == bc[1]:
+                t = [[bc[0][0], bc[0][1]], 'None']
+                cname = bc[0][2]
+                if c[1] is None:
+                    calias = c[0][2]
+                column_found = True
+                break
+            elif c[0][2] == bc[0][2] and bc[1] is None:
+                t = [[bc[0][0], bc[0][1]], 'None']
+                column_found = True
+                break
+
+        return cname, cctx, calias, column_found, t
+
+    def _extract_columns(self, columns, select_list_tables, ref_dict, join,
+                         budget, column_aliases, touched_columns=None,
+                         subquery_contents=None):
+
+        # Here we store all columns that might have references somewhere
+        # higer up in the tree structure. We'll revisit them later.
+        missing_columns = []
+        remove_column_idxs = []
+
+        for i, col in enumerate(columns):
+            c = col[0]
+
+            cname = c[0][2]
+            cctx = c[0][3]
+            calias = c[1]
+
+            # if * is selected we don't care too much
+            #  if c[0][0] is None and c[0][1] is None and c[0][2] == '*':
+                #  for slt in select_list_tables:
+                    #  extra_columns.append([[slt[0][0][0], slt[0][0][1], cname,
+                                           #  c[0][3]], calias])
+                #  remove_column_idxs.append(i)
+                #  continue
+
+            # this can happen for example in ... WHERE EXISTS ... clauses
+            if cname is None and calias is None:
+                remove_column_idxs.append(i)
+                continue
+
+            tab = [[None, None], None]
+            try:
+                tab = select_list_tables[0][0]
+                if tab[0][0] is None:
+                    raise QueryError('Missing schema specification.')
+
+                # We have to check if we also have a join on the same level
+                # and we are actually touching a column from the joined table
+                if join and c[0][2] != '*' and\
+                        (tab[1] != c[0][1] or
+                         (tab[1] is None and c[0][1] is None)):
+                    cname, cctx, calias, column_found, tab =\
+                            self._get_budget_column(c, tab, budget[-1][2])
+                    # raise an ambigous column
+                    if column_found and c[0][1] is None:
+                        raise QueryError("Column '%s' is possibly ambiguous."
+                                         % c[0][2])
+
+            except IndexError:
+                pass
+
+            try:
+                # ref can be a table or a budget of columns
+                ref = ref_dict[c[0][1]]
+                column_found = False
+
+                if isinstance(ref[0], int):
+                    # ref is a budget column
+                    cname, cctx, calias, column_found, tab =\
+                            self._get_budget_column(c, tab, ref[2])
+
+                    ref_cols = [j[0][2] for j in ref[2]]
+                    if not column_found and c[0][1] is not None\
+                            and c[0][1] != tab[0][1] and '*' not in ref_cols:
+                        raise QueryError("Unknown column '%s.%s'." % (c[0][1],
+                                                                      c[0][2]))
+
+                else:
+                    # ref is a table
+                    tab = ref[0]
+
+            except KeyError:
+                if None not in c[0]:
+                    cname = c[0][2]
+                    cctx = c[0][3]
+                    calias = c[1]
+                    tab = [[c[0][0], c[0][1]]]
+                    column_found = True
+
+                # table is either referenced directly or by an alias
+                elif c[0][2] is not None and c[0][1] is not None:
+                    if subquery_contents is not None:
+                        try:
+                            contents = subquery_contents[c[0][1]]
+                            cname, cctx, calias, column_found, tab =\
+                                self._get_budget_column(c, tab, contents)
+
+                        except KeyError:
+                            tabs = [j[0][0][:2] for j in
+                                    subquery_contents.values()]
+                            tabs += [j[0][0] for j in select_list_tables]
+                            column_found = False
+                            for t in tabs:
+                                if t[1] == c[0][1]:
+                                    cname = c[0][2]
+                                    cctx = c[0][3]
+                                    calias = c[1]
+                                    tab = [t]
+                                    column_found = True
+
+                            if not column_found:
+                                missing_columns.append(c)
+                                columns[i] = [[c[0][0], c[0][1],
+                                               c[0][2], c[0][3]], c[1]]
+                                if touched_columns is not None:
+                                    touched_columns.append([[c[0][0], c[0][1],
+                                                           c[0][2], c[0][3]],
+                                                           c[1]])
+                                continue
+                    else:
+                        if tab[0][1] == c[0][1]:
+                            columns[i] = [[tab[0][0], tab[0][1],
+                                          c[0][2], c[0][3]], c[1]]
+                        else:
+
+                            missing_columns.append(c)
+                            columns[i] = [[c[0][0], c[0][1],
+                                           c[0][2], c[0][3]], c[1]]
+                            if touched_columns is not None:
+                                touched_columns.append([[c[0][0], c[0][1],
+                                                       c[0][2], c[0][3]],
+                                                       c[1]])
+                        continue
+
+                elif c[0][2] is not None and c[0][2] != '*' and c[0][1] is \
+                        None and len(ref_dict.keys()) > 1 and not join:
+                    raise QueryError("Column '%s' is ambiguous." % c[0][2])
+
+                elif len(budget) and tab[0][0] is None and tab[0][1] is None:
+                    ref = budget[-1]
+                    column_found = False
+
+                    if isinstance(ref[0], int):
+                        cname, cctx, calias, column_found, tab =\
+                                self._get_budget_column(c, tab, ref[2])
+
+                        # We allow None.None colunms because they are produced
+                        # by count(*)
+                        if not column_found and c[0][2] is not None\
+                                and c[0][2] not in column_aliases:
+                            raise QueryError("Unknown column '%s'." % c[0][2])
+
+            if touched_columns is not None:
+                touched_columns.append([[tab[0][0], tab[0][1], cname, cctx],
+                                        calias])
+            else:
+                columns[i] = [[tab[0][0], tab[0][1], cname, c[0][3]], calias]
+
+        for i in remove_column_idxs[::-1]:
+            columns.pop(i)
+
+        return missing_columns
+
+    @property
+    def query(self):
+        """
+        Get the query string.
+
+        """
+        return self._query
+
+    def _strip_query(self, query):
+        if sys.version_info[0] < 3:
+            try:
+                query = unicode(query, 'utf-8')
+            except TypeError:
+                # already unicode so we don't do anything
+                pass
+        return query.lstrip('\n').rstrip().rstrip(';') + ';'
+
+    def _strip_column(self, col):
+        scol = [None, None, None]
+        for i in range(3):
+            if col[i] is not None:
+                scol[i] = col[i].lstrip('"').rstrip('"')
+        return tuple(scol)
+
+    def set_query(self, query):
+        """
+        Helper to set the query string.
+
+        """
+        self.columns = set()
+        self.keywords = set()
+        self.functions = set()
+        self.display_columns = []
+        self.syntax_error_listener = SyntaxErrorListener()
+        self._query = self._strip_query(query)

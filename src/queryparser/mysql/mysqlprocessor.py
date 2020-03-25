@@ -22,123 +22,14 @@ from ..common import parse_alias, process_column_name,\
         get_column_name_listener, get_schema_name_listener,\
         get_remove_subqueries_listener, get_query_listener,\
         get_column_keyword_function_listener,\
-        SyntaxErrorListener
+        SyntaxErrorListener,\
+        SQLQueryProcessor
 
 
-class MySQLQueryProcessor(object):
-    """
-    Object used for processing MySQL queries. Its objective is query validation
-    (syntax error detection )and extraction of used columns, keywords and
-    functions.
+class MySQLQueryProcessor(SQLQueryProcessor):
 
-    :param query:
-        MySQL query string.
-
-    """
     def __init__(self, query=None):
-        self.walker = antlr4.ParseTreeWalker()
-
-        self.columns = set()
-        self.keywords = set()
-        self.functions = set()
-        self.display_columns = []
-        self.syntax_error_listener = SyntaxErrorListener()
-        if query is not None:
-            self._query = self._strip_query(query)
-            self.process_query()
-
-    def _extract_instances(self, column_keyword_function_listener):
-        select_list_columns = []
-        other_columns = []
-        go_columns = []
-        column_aliases = []
-        select_list_tables = []
-        select_list_table_references = []
-        join = 0
-        join_using = None
-
-        # Keep track of the ctx stack
-        ctx_stack = []
-
-        for i in column_keyword_function_listener.data:
-            if isinstance(i[1], MySQLParser.Displayed_columnContext):
-                # this happens if there is an expression involving
-                # more columns
-                if len(i[2]) > 1:
-                    for j in i[2]:
-                        other_columns.append([j])
-                else:
-                    select_list_columns.append(i[2])
-                alias = parse_alias(i[1].alias(), '`')
-                if alias is not None:
-                    column_aliases.append(alias)
-                ctx_stack.append(i)
-
-            if isinstance(i[1], MySQLParser.Table_atomContext):
-                select_list_tables.append([i[2], i[0]])
-                ctx_stack.append(i)
-
-            if isinstance(i[1], MySQLParser.Table_referencesContext):
-                if len(i) > 2:
-                    select_list_table_references.extend(i[2])
-                    ctx_stack.append(i)
-
-            if isinstance(i[1], MySQLParser.Select_listContext):
-                if len(i) == 3:
-                    select_list_columns.append(i[2])
-                    ctx_stack.append(i)
-
-            if isinstance(i[1], MySQLParser.Where_clauseContext) or\
-               isinstance(i[1], MySQLParser.Having_clauseContext):
-                if len(i[2]) > 1:
-                    for j in i[2]:
-                        other_columns.append([j])
-                else:
-                    other_columns.append(i[2])
-                ctx_stack.append(i)
-
-            if isinstance(i[1], MySQLParser.Join_conditionContext):
-                join = i[0]
-                join_using = i[2]
-
-                # if USING we need all columns in all columns if they
-                # have no references
-                if i[1].USING_SYM():
-                    for ctx in ctx_stack[::-1]:
-                        if not isinstance(ctx[1],
-                                          MySQLParser.Table_atomContext):
-                            break
-                        for ju in join_using:
-                            if ju[0][1] is None:
-                                other_columns.append([[[ctx[2][0][0],
-                                                        ctx[2][0][1],
-                                                        ju[0][2]], None]])
-                elif i[1].ON():
-                    if len(i[2]) > 1:
-                        for j in i[2]:
-                            other_columns.append([j])
-
-                ctx_stack.append(i)
-
-            if isinstance(i[1], MySQLParser.Orderby_clauseContext):
-                if len(i[2]) > 1:
-                    for j in i[2]:
-                        go_columns.append([j])
-                else:
-                    go_columns.append(i[2])
-                ctx_stack.append(i)
-
-            if isinstance(i[1], MySQLParser.Groupby_clauseContext):
-                if len(i[2]) > 1:
-                    for j in i[2]:
-                        go_columns.append([j])
-                else:
-                    go_columns.append(i[2])
-                ctx_stack.append(i)
-
-        return select_list_columns, select_list_tables,\
-            select_list_table_references, other_columns, go_columns, join,\
-            join_using, column_aliases
+        super().__init__(MySQLParser, query)
 
     def _get_budget_column(self, c, tab, ref):
         cname = c[0][2]
@@ -513,26 +404,3 @@ class MySQLQueryProcessor(object):
         self.functions = list(set(functions))
         self.display_columns = [(i[0], i[1]) for i in display_columns]
         self.tables = tables
-
-    @property
-    def query(self):
-        """
-        Get the query string.
-
-        """
-        return self._query
-
-    def _strip_query(self, query):
-        return query.lstrip('\n').rstrip().rstrip(';') + ';'
-
-    def set_query(self, query):
-        """
-        Helper to set the query string.
-
-        """
-        self.columns = set()
-        self.keywords = set()
-        self.functions = set()
-        self.display_columns = []
-        self.syntax_error_listener = SyntaxErrorListener()
-        self._query = self._strip_query(query)
