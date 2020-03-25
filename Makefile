@@ -9,6 +9,7 @@ python2: lib/python2/queryparser
 lib/python2/queryparser: \
 		lib/python2/queryparser/__init__.py \
 		lib/python2/queryparser/adql \
+		lib/python2/queryparser/common \
 		lib/python2/queryparser/exceptions \
 		lib/python2/queryparser/mysql \
 		lib/python2/queryparser/postgresql \
@@ -19,7 +20,7 @@ lib/python2/queryparser/%.py: src/queryparser/%.py
 	cp $< $@
 
 lib/python2/queryparser/common: \
-	lib/python2/queryparser/common/commonlisteners.py \
+	lib/python2/queryparser/common/common.py \
 	lib/python2/queryparser/common/__init__.py
 
 lib/python2/queryparser/common/%.py: src/queryparser/common/%.py
@@ -99,7 +100,7 @@ lib/python3/queryparser/%.py: src/queryparser/%.py
 	cp $< $@
 
 lib/python3/queryparser/common: \
-	lib/python3/queryparser/common/commonlisteners.py \
+	lib/python3/queryparser/common/common.py \
 	lib/python3/queryparser/common/__init__.py
 
 lib/python3/queryparser/common/%.py: src/queryparser/common/%.py
