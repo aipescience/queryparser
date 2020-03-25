@@ -201,18 +201,6 @@ def get_query_listener(base, base_parser, quote_char):
     return QueryListener
 
 
-class SyntaxErrorListener(ErrorListener):
-    def __init__(self):
-        super(SyntaxErrorListener, self).__init__()
-        self.syntax_errors = []
-
-    def syntaxError(self, recognizer, offending_symbol, line, column, msg, e):
-        if offending_symbol is not None:
-            self.syntax_errors.append((line, column, offending_symbol.text))
-        else:
-            self.syntax_errors.append((line, column, msg))
-
-
 def get_column_keyword_function_listener(base, quote_char):
 
     class ColumnKeywordFunctionListener(base):
@@ -367,4 +355,40 @@ def get_column_keyword_function_listener(base, quote_char):
             self.data.append([ctx.depth(), ctx,
                               self._extract_column(ctx, append=False)[1]])
 
+        def enterSpoint(self, ctx):
+            self.functions.append('spoint')
+
+        def enterScircle(self, ctx):
+            self.functions.append('scircle')
+
+        def enterSline(self, ctx):
+            self.functions.append('sline')
+
+        def enterSellipse(self, ctx):
+            self.functions.append('sellipse')
+
+        def enterSbox(self, ctx):
+            self.functions.append('sbox')
+
+        def enterSpoly(self, ctx):
+            self.functions.append('spoly')
+
+        def enterSpath(self, ctx):
+            self.functions.append('spath')
+
+        def enterStrans(self, ctx):
+            self.functions.append('strans')
+
     return ColumnKeywordFunctionListener
+
+
+class SyntaxErrorListener(ErrorListener):
+    def __init__(self):
+        super(SyntaxErrorListener, self).__init__()
+        self.syntax_errors = []
+
+    def syntaxError(self, recognizer, offending_symbol, line, column, msg, e):
+        if offending_symbol is not None:
+            self.syntax_errors.append((line, column, offending_symbol.text))
+        else:
+            self.syntax_errors.append((line, column, msg))
