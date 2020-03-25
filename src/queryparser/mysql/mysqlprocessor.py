@@ -18,11 +18,10 @@ from .MySQLParserListener import MySQLParserListener
 
 from ..exceptions import QueryError, QuerySyntaxError
 
-from .mysqllisteners import ColumnKeywordFunctionListener
-
 from ..common import parse_alias, process_column_name,\
         get_column_name_listener, get_schema_name_listener,\
         get_remove_subqueries_listener, get_query_listener,\
+        get_column_keyword_function_listener,\
         SyntaxErrorListener
 
 
@@ -381,7 +380,10 @@ class MySQLQueryProcessor(object):
         for ccc, ctx in enumerate(query_listener.select_expressions[::-1]):
             remove_subquieries_listener = get_remove_subqueries_listener(
                     MySQLParserListener, MySQLParser)(ctx.depth())
-            column_keyword_function_listener = ColumnKeywordFunctionListener()
+            #column_keyword_function_listener = ColumnKeywordFunctionListener()
+            column_keyword_function_listener = \
+                    get_column_keyword_function_listener(
+                            MySQLParserListener, '`')()
 
             # Remove nested subqueries from select_expressions
             self.walker.walk(remove_subquieries_listener, ctx)

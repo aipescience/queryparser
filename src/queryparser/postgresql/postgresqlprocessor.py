@@ -19,13 +19,13 @@ from .PostgreSQLParserListener import PostgreSQLParserListener
 
 from ..exceptions import QueryError, QuerySyntaxError
 
-from .postgresqllisteners import ColumnKeywordFunctionListener,\
-        PgSphereListener
+from .postgresqllisteners import PgSphereListener
 
 from ..common import parse_alias, process_column_name,\
         get_column_name_listener, get_schema_name_listener,\
         get_remove_subqueries_listener, get_query_listener,\
-        SyntaxErrorListener
+        SyntaxErrorListener,\
+        get_column_keyword_function_listener
 
 
 class PostgreSQLQueryProcessor(object):
@@ -379,7 +379,10 @@ class PostgreSQLQueryProcessor(object):
         for ccc, ctx in enumerate(query_listener.select_expressions[::-1]):
             remove_subquieries_listener = get_remove_subqueries_listener(
                     PostgreSQLParserListener, PostgreSQLParser)(ctx.depth())
-            column_keyword_function_listener = ColumnKeywordFunctionListener()
+            #column_keyword_function_listener = ColumnKeywordFunctionListener()
+            column_keyword_function_listener = \
+                    get_column_keyword_function_listener(
+                            PostgreSQLParserListener, '"')()
 
             # Remove nested subqueries from select_expressions
             self.walker.walk(remove_subquieries_listener, ctx)

@@ -10,7 +10,8 @@ from .PostgreSQLParser import PostgreSQLParser
 from .PostgreSQLParserListener import PostgreSQLParserListener
 
 from ..common import parse_alias, process_column_name, \
-        get_column_name_listener, get_table_name_listener
+        get_column_name_listener, get_table_name_listener, \
+        get_column_keyword_function_listener
 #  logging.basicConfig(level=logging.INFO)
 
 
