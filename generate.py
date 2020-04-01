@@ -18,12 +18,10 @@ ADQL_SRC = 'src/queryparser/adql'
 def main():
     parser = argparse.ArgumentParser(description='Generate the parsers.')
     parser.add_argument('-l', help='language (ADQL / MySQL / PostgreSQL)')
-    parser.add_argument('-p', type=int, help='python version (2 or 3)')
 
     args = parser.parse_args()
 
     languages = [args.l] if args.l else ['adql', 'mysql', 'postgresql']
-    python_versions = [args.p] if args.p else [2, 3]
 
     if get_java_version() < 7:
         raise RuntimeError('You need a newer version of Java.')
@@ -33,16 +31,15 @@ def main():
         raise RuntimeError('You need %s installed in %s.'
                            % (ANTLR_JAR, ':'.join(ANTLR_DIRS)))
 
-    for python_version in python_versions:
-        for language in languages:
-            if language == 'adql':
-                build_adql_translator(antlr_path, python_version)
+    for language in languages:
+        if language == 'adql':
+            build_adql_translator(antlr_path)
 
-            if language == 'mysql':
-                build_mysql_parser(antlr_path, python_version)
+        if language == 'mysql':
+            build_mysql_parser(antlr_path)
 
-            if language == 'postgresql':
-                build_postgresql_parser(antlr_path, python_version)
+        if language == 'postgresql':
+            build_postgresql_parser(antlr_path)
 
 
 def get_java_version():
@@ -67,19 +64,18 @@ def get_antlr_path():
     return False
 
 
-def build_mysql_parser(antlr_path, python_version):
-    args = ['java', '-jar', antlr_path, '-Dlanguage=Python%d' % python_version,
+def build_mysql_parser(antlr_path):
+    args = ['java', '-jar', antlr_path, '-Dlanguage=Python3',
             '-lib', MYSQL_SRC]
 
-    print('building mysql lexer for python%i' % python_version)
+    print('building mysql lexer')
     subprocess.check_call(args + [os.path.join(MYSQL_SRC, 'MySQLLexer.g4')])
 
-    print('building mysql parser for python%i' % python_version)
+    print('building mysql parser')
     subprocess.check_call(args + [os.path.join(MYSQL_SRC, 'MySQLParser.g4')])
 
-    directory = os.path.join('lib',
-                             'python2' if python_version < 3 else 'python3',
-                             'queryparser/mysql')
+    directory = os.path.join('lib', 'queryparser/mysql')
+
     try:
         os.makedirs(directory)
     except OSError:
@@ -97,19 +93,20 @@ def build_mysql_parser(antlr_path, python_version):
     os.remove(os.path.join(MYSQL_SRC, 'MySQLParser.tokens'))
 
 
-def build_postgresql_parser(antlr_path, python_version):
-    args = ['java', '-jar', antlr_path, '-Dlanguage=Python%d' % python_version,
+def build_postgresql_parser(antlr_path):
+    args = ['java', '-jar', antlr_path, '-Dlanguage=Python3',
             '-lib', POSTGRESQL_SRC]
 
-    print('building postgresql lexer for python%i' % python_version)
-    subprocess.check_call(args + [os.path.join(POSTGRESQL_SRC, 'PostgreSQLLexer.g4')])
+    print('building postgresql lexer')
+    subprocess.check_call(args + [os.path.join(POSTGRESQL_SRC,
+        'PostgreSQLLexer.g4')])
 
-    print('building postgresql parser for python%i' % python_version)
-    subprocess.check_call(args + [os.path.join(POSTGRESQL_SRC, 'PostgreSQLParser.g4')])
+    print('building postgresql parser')
+    subprocess.check_call(args + [os.path.join(POSTGRESQL_SRC,
+        'PostgreSQLParser.g4')])
 
-    directory = os.path.join('lib',
-                             'python2' if python_version < 3 else 'python3',
-                             'queryparser/postgresql')
+    directory = os.path.join('lib', 'queryparser/postgresql')
+
     try:
         os.makedirs(directory)
     except OSError:
@@ -127,19 +124,18 @@ def build_postgresql_parser(antlr_path, python_version):
     os.remove(os.path.join(POSTGRESQL_SRC, 'PostgreSQLParser.tokens'))
 
 
-def build_adql_translator(antlr_path, python_version):
-    args = ['java', '-jar', antlr_path, '-Dlanguage=Python%d' % python_version,
+def build_adql_translator(antlr_path):
+    args = ['java', '-jar', antlr_path, '-Dlanguage=Python3',
             '-visitor', '-lib', ADQL_SRC]
 
-    print('building adql lexer for python%i' % python_version)
+    print('building adql lexer')
     subprocess.check_call(args + [os.path.join(ADQL_SRC, 'ADQLLexer.g4')])
 
-    print('building adql parser for python%i' % python_version)
+    print('building adql parser')
     subprocess.check_call(args + [os.path.join(ADQL_SRC, 'ADQLParser.g4')])
 
-    directory = os.path.join('lib',
-                             'python2' if python_version < 3 else 'python3',
-                             'queryparser/adql')
+    directory = os.path.join('lib', 'queryparser/adql')
+
     try:
         os.makedirs(directory)
     except OSError:

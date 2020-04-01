@@ -128,7 +128,7 @@ def get_schema_name_listener(base, quote_char):
                     nsn = unicode(nsn, 'utf-8')
                 except NameError:
                     pass
-                nsn = re.sub('(|{})(?!{})[\S]*[^{}](|{})'.format(quote_char,
+                nsn = re.sub(r'(|{})(?!{})[\S]*[^{}](|{})'.format(quote_char,
                     quote_char, quote_char, quote_char), r'\1{}\2'.format(nsn),
                     sn)
                 ctx.getTokens(ttype)[0].getSymbol().text = nsn
