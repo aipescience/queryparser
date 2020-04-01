@@ -32,12 +32,6 @@ The easiest way to install the package is by using the pip tool:
 
     pip install queryparser-python3
 
-or if you are using an older version (2.7) of python
-
-.. code-block:: shell
-
-    pip install queryparser-python2
-
 Alternatively, you can clone the repository and install it from there.
 However, this step also requires generating the parser which is a slighly
 more elaborate process (see below).
@@ -46,7 +40,7 @@ more elaborate process (see below).
 Generating the parser from the git repository
 ---------------------------------------------
 
-To generate the parsers you need `python` (either 2 or 3), `java` above version 
+To generate the parsers you need `python3` , `java` above version 
 7, and `antlr4` (`antlr-4.*-complete.jar` has to be installed inside the 
 `/usr/local/lib/` or `/usr/local/bin/` directories).
 
@@ -135,5 +129,4 @@ then run the test suite for a version of python you would like to test with
 
 .. code-block:: bash
     
-    pytest lib/python2
-    pytest lib/python3
+    pytest lib/
