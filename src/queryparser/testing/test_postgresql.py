@@ -31,6 +31,21 @@ class PostgresqlTestCase(TestCase):
             ('a: db.tab.a',),
             ('db.tab',)
         )
+        
+    def test_query010(self):
+        self._test_postgresql_parsing(
+            """
+            SELECT A.*, B.*
+            FROM db1.table1 A
+            LEFT JOIN db2.table1 B
+            ON A.id = B.id;
+            """,
+            ('db1.table1.*', 'db2.table1.*'),
+            ('join', '*'),
+            (),
+            ('*: db1.table1.*', '*: db2.table1.*'),
+            ('db1.table1', 'db2.table1')
+        )
 
 
     def test_query029(self):

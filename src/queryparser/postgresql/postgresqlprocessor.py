@@ -11,7 +11,6 @@ from __future__ import (absolute_import, print_function)
 __all__ = ["PostgreSQLQueryProcessor"]
 
 import antlr4
-import sys
 
 from .PostgreSQLLexer import PostgreSQLLexer
 from .PostgreSQLParser import PostgreSQLParser
@@ -21,12 +20,9 @@ from ..exceptions import QueryError, QuerySyntaxError
 
 from .postgresqllisteners import PgSphereListener
 
-from ..common import parse_alias, process_column_name,\
-        get_column_name_listener, get_schema_name_listener,\
+from ..common import get_schema_name_listener,\
         get_remove_subqueries_listener, get_query_listener,\
-        SyntaxErrorListener,\
-        get_column_keyword_function_listener,\
-        SQLQueryProcessor
+        get_column_keyword_function_listener, SQLQueryProcessor
 
 
 class PostgreSQLQueryProcessor(SQLQueryProcessor):
@@ -43,7 +39,6 @@ class PostgreSQLQueryProcessor(SQLQueryProcessor):
         # Antlr objects
         inpt = antlr4.InputStream(self.query)
         lexer = PostgreSQLLexer(inpt)
-        #  lexer.removeErrorListeners()
         stream = antlr4.CommonTokenStream(lexer)
         parser = PostgreSQLParser(stream)
         lexer._listeners = [self.syntax_error_listener]
@@ -119,7 +114,6 @@ class PostgreSQLQueryProcessor(SQLQueryProcessor):
                 join_using, column_aliases =\
                 self._extract_instances(column_keyword_function_listener)
 
-            #tables.extend([i[0][0] for i in select_list_tables])
             tables.extend([i[0] for i in select_list_tables])
 
             # Then we need to connect the column names s with tables and
@@ -161,6 +155,7 @@ class PostgreSQLQueryProcessor(SQLQueryProcessor):
                                        ref_dict, join, budget,
                                        column_aliases_from_previous,
                                        touched_columns)
+            
             missing_columns.extend([[i] for i in mc])
 
             if join:

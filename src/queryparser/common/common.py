@@ -400,7 +400,7 @@ class SyntaxErrorListener(ErrorListener):
 class SQLQueryProcessor(object):
     """
     Object used for processing MySQL/PostgreSQL queries. Its objective is query
-    validation (syntax error detection )and extraction of used columns,
+    validation (syntax error detection) and extraction of used columns,
     keywords and functions.
 
     :param query:

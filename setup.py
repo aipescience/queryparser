@@ -6,7 +6,7 @@ from setuptools import setup
 
 python_version = sys.version_info.major
 
-with open('lib/python%d/queryparser/__init__.py' % python_version) as f:
+with open('lib/queryparser/__init__.py') as f:
     metadata = dict(re.findall(r'__(.*)__ = [\']([^\']*)[\']', f.read()))
 
 requirements = [
@@ -42,7 +42,7 @@ setup(
         'queryparser.exceptions'
     ],
     package_dir={
-        '': 'lib/python%d' % python_version
+        '': 'lib'
     },
     include_package_data=True
 )

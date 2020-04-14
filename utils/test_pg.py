@@ -136,10 +136,10 @@ def f2():
                        ('gdr2', 'gaia_source', 'dec'), 'pos'),
                       (('gdr1', 'gaia_source', 'ra'),
                        ('gdr1', 'gaia_source', 'dec'), 'pos'))}
-    qp = PostgreSQLQueryProcessor(indexed_objects = iob)
+    qp = PostgreSQLQueryProcessor()
     qp.set_query(pgq)
     print(pgq)
-    qp.process_query()
+    qp.process_query(indexed_objects = iob)
     st = time.time() 
 
     pgq = qp.query
