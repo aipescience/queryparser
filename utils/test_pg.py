@@ -122,6 +122,12 @@ def f2():
     query = """
     SELECT a FROM db.tab WHERE p = 'AAA';
     """
+    query = """
+            SELECT A.*, B.*
+            FROM db1.table1 A
+            LEFT JOIN db2.table1 B
+            ON A.id = B.id;
+    """
     #  query = """SELECT ra FROM gdr2.gaia_source AS gaia
     #  WHERE 1=CONTAINS(POINT('ICRS', gaia.ra, gaia.dec), 
     #  CIRCLE('ICRS', 245.8962, -26.5222, 0.5))"""
@@ -138,7 +144,6 @@ def f2():
                        ('gdr1', 'gaia_source', 'dec'), 'pos'))}
     qp = PostgreSQLQueryProcessor()
     qp.set_query(pgq)
-    print(pgq)
     qp.process_query(indexed_objects = iob)
     st = time.time() 
 
@@ -149,6 +154,7 @@ def f2():
 
     print(qp.query)
     print(qp.columns)
+    print(qp.display_columns)
 
 
 def f3():
