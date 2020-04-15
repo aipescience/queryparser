@@ -123,19 +123,19 @@ def f2():
     SELECT a FROM db.tab WHERE p = 'AAA';
     """
     query = """
-            SELECT A.*, B.*
-            FROM db1.table1 A
-            LEFT JOIN db2.table1 B
-            ON A.id = B.id;
+	    SELECT * FROM gdr2.vari_cepheid AS v
+	    JOIN gdr2.gaia_source AS g USING(source_id)
+	    WHERE g.pos @ scircle(spoint(4.2917, -0.4629), 0.008) 
     """
+    # query='SELECT * FROM db.c, db.d'
     #  query = """SELECT ra FROM gdr2.gaia_source AS gaia
     #  WHERE 1=CONTAINS(POINT('ICRS', gaia.ra, gaia.dec), 
     #  CIRCLE('ICRS', 245.8962, -26.5222, 0.5))"""
 
-    adt = ADQLQueryTranslator(query)
-    st = time.time() 
-    pgq = adt.to_postgresql()
-    st = time.time() 
+    # adt = ADQLQueryTranslator(query)
+    # st = time.time() 
+    # pgq = adt.to_postgresql()
+    # st = time.time() 
     #  print(pgq)
 
     iob = {'spoint': ((('gdr2', 'gaia_source', 'ra'),
@@ -143,8 +143,9 @@ def f2():
                       (('gdr1', 'gaia_source', 'ra'),
                        ('gdr1', 'gaia_source', 'dec'), 'pos'))}
     qp = PostgreSQLQueryProcessor()
-    qp.set_query(pgq)
-    qp.process_query(indexed_objects = iob)
+    qp.set_query(query)
+    #qp.process_query(indexed_objects = iob)
+    qp.process_query()
     st = time.time() 
 
     pgq = qp.query

@@ -550,6 +550,7 @@ class SQLQueryProcessor(object):
         # higer up in the tree structure. We'll revisit them later.
         missing_columns = []
         remove_column_idxs = []
+        extra_columns = []
 
         for i, col in enumerate(columns):
             c = col[0]
@@ -559,12 +560,13 @@ class SQLQueryProcessor(object):
             calias = c[1]
 
             # if * is selected we don't care too much
-            #  if c[0][0] is None and c[0][1] is None and c[0][2] == '*':
-                #  for slt in select_list_tables:
-                    #  extra_columns.append([[slt[0][0][0], slt[0][0][1], cname,
-                                           #  c[0][3]], calias])
-                #  remove_column_idxs.append(i)
-                #  continue
+            if c[0][0] is None and c[0][1] is None and c[0][2] == '*'\
+            and not join:
+                for slt in select_list_tables:
+                    extra_columns.append([[slt[0][0][0], slt[0][0][1], cname,
+                                             c[0][3]], calias])
+                remove_column_idxs.append(i)
+                continue
 
             # this can happen for example in ... WHERE EXISTS ... clauses
             if cname is None and calias is None:
@@ -692,6 +694,7 @@ class SQLQueryProcessor(object):
         for i in remove_column_idxs[::-1]:
             columns.pop(i)
 
+        columns.extend(extra_columns)
         return missing_columns
 
     @property

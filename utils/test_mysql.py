@@ -29,6 +29,9 @@ def f3():
             ) AS subq
             GROUP BY id;
             """
+    query = """
+    SELECT * FROM db.c, db.d
+    """
     qp = MySQLQueryProcessor()
     qp.set_query(query)
     qp.process_query()
@@ -36,8 +39,8 @@ def f3():
     print(qp.query)
     print(qp.columns)
     print(qp.display_columns)
-    print(qp.tables)
-    print(qp.keywords)
-    print(qp.functions)
+    # print(qp.tables)
+    # print(qp.keywords)
+    # print(qp.functions)
 
 f3()

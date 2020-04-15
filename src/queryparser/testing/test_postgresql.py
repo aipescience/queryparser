@@ -276,6 +276,31 @@ class PostgresqlTestCase(TestCase):
             ('db.tab',)
         )
 
+    def test_query054(self):
+        self._test_postgresql_parsing(
+            """
+            SELECT *
+            FROM
+            (
+                SELECT a.* FROM db.a a, db.b,
+                (
+                    SELECT * FROM db.c, db.d
+                ) AS q
+            ) AS p
+
+            JOIN
+            
+            (
+                SELECT * FROM db.x, db.y
+            ) AS r
+            """,
+            ('db.a.*', 'db.c.*', 'db.d.*', 'db.x.*', 'db.y.*'),
+            ('*',),
+            (),
+            (),
+            ('db.a', 'db.b', 'db.c', 'db.d', 'db.x', 'db.y')
+        )
+
     def test_syntax_error_001(self):
         q = """
             SELECT a FROM db.tab
