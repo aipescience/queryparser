@@ -10,8 +10,6 @@ from __future__ import (absolute_import, print_function)
 
 __all__ = ["MySQLQueryProcessor"]
 
-import antlr4
-
 from .MySQLLexer import MySQLLexer
 from .MySQLParser import MySQLParser
 from .MySQLParserListener import MySQLParserListener
@@ -22,4 +20,4 @@ from ..common import SQLQueryProcessor
 class MySQLQueryProcessor(SQLQueryProcessor):
     def __init__(self, query=None):
         super().__init__(MySQLLexer, MySQLParser, MySQLParserListener, '`',
-                query)
+                         query)

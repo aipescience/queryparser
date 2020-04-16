@@ -34,7 +34,7 @@ class PgSphereListener(PostgreSQLParserListener):
             return
 
         cn = process_column_name(self.column_name_listener, self.walker, ctx,
-                '"')
+                                 '"')
         cols = []
 
         for c in cn:

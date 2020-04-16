@@ -3,13 +3,12 @@
 # and MySQL.
 from __future__ import (absolute_import, print_function)
 
+import logging
 import re
 import sys
 
 import antlr4
 from antlr4.error.ErrorListener import ErrorListener
-
-import logging
 
 from ..exceptions import QueryError, QuerySyntaxError
 
@@ -22,7 +21,7 @@ def parse_alias(alias, quote_char):
         antlr context.
 
     :parma quote_char:
-        which quotation character to use
+        which string quote character to use
 
     """
     if alias:
@@ -128,9 +127,9 @@ def get_schema_name_listener(base, quote_char):
                     nsn = unicode(nsn, 'utf-8')
                 except NameError:
                     pass
-                nsn = re.sub(r'(|{})(?!{})[\S]*[^{}](|{})'.format(quote_char,
-                    quote_char, quote_char, quote_char), r'\1{}\2'.format(nsn),
-                    sn)
+                nsn = re.sub(r'(|{})(?!{})[\S]*[^{}](|{})'.format(
+                    quote_char, quote_char, quote_char, quote_char),
+                    r'\1{}\2'.format(nsn), sn)
                 ctx.getTokens(ttype)[0].getSymbol().text = nsn
             except KeyError:
                 pass
@@ -219,8 +218,8 @@ def get_column_keyword_function_listener(base, quote_char):
             self.keywords = []
             self.functions = []
             self.column_name_listener = get_column_name_listener(base)()
-            self.table_name_listener = get_table_name_listener(base,
-                    quote_char)()
+            self.table_name_listener = get_table_name_listener(
+                    base, quote_char)()
             self.walker = antlr4.ParseTreeWalker()
 
             self.data = []
@@ -281,7 +280,7 @@ def get_column_keyword_function_listener(base, quote_char):
                 self.tables.append((alias, tn, ctx.depth()))
 
                 logging.info((ctx.depth(), ctx.__class__.__name__,
-                    [tn, alias]))
+                             [tn, alias]))
                 self.data.append([ctx.depth(), ctx, [tn, alias]])
 
         def enterDisplayed_column(self, ctx):
@@ -302,7 +301,7 @@ def get_column_keyword_function_listener(base, quote_char):
                 logging.info((ctx.depth(), ctx.__class__.__name__,
                              [[None, None, '*'], None]))
                 self.data.append([ctx.depth(), ctx, [[[None, None, '*'],
-                    None]]])
+                                 None]]])
                 self.columns.append(('*', None))
                 self.keywords.append('*')
 
@@ -421,7 +420,7 @@ class SQLQueryProcessor(object):
 
     """
     def __init__(self, base_lexer, base_parser, base_parser_listener,
-            quote_char, query=None, base_sphere_listener=None):
+                 quote_char, query=None, base_sphere_listener=None):
         self.lexer = base_lexer
         self.parser = base_parser
         self.parser_listener = base_parser_listener
@@ -581,10 +580,10 @@ class SQLQueryProcessor(object):
 
             # if * is selected we don't care too much
             if c[0][0] is None and c[0][1] is None and c[0][2] == '*'\
-            and not join:
+                    and not join:
                 for slt in select_list_tables:
                     extra_columns.append([[slt[0][0][0], slt[0][0][1], cname,
-                                             c[0][3]], calias])
+                                         c[0][3]], calias])
                 remove_column_idxs.append(i)
                 continue
 
@@ -656,7 +655,6 @@ class SQLQueryProcessor(object):
                             tabs += [j[0][0] for j in select_list_tables]
                             column_found = False
                             for t in tabs:
-                                #if t[0] == c[0][0] and t[1] == c[0][1]:
                                 if t[1] == c[0][1]:
                                     cname = c[0][2]
                                     cctx = c[0][3]
@@ -738,7 +736,7 @@ class SQLQueryProcessor(object):
             self._query = stream.getText()
 
         query_listener = get_query_listener(self.parser_listener,
-                self.parser, self.quote_char)()
+                                            self.parser, self.quote_char)()
         subquery_aliases = [None]
         keywords = []
         functions = []
@@ -766,10 +764,9 @@ class SQLQueryProcessor(object):
         for ccc, ctx in enumerate(query_listener.select_expressions[::-1]):
             remove_subquieries_listener = get_remove_subqueries_listener(
                     self.parser_listener, self.parser)(ctx.depth())
-            #column_keyword_function_listener = ColumnKeywordFunctionListener()
             column_keyword_function_listener = \
-                    get_column_keyword_function_listener(
-                            self.parser_listener, self.quote_char)()
+                get_column_keyword_function_listener(
+                    self.parser_listener, self.quote_char)()
 
             # Remove nested subqueries from select_expressions
             self.walker.walk(remove_subquieries_listener, ctx)
@@ -837,7 +834,7 @@ class SQLQueryProcessor(object):
                                        ref_dict, join, budget,
                                        column_aliases_from_previous,
                                        touched_columns)
-            
+
             missing_columns.extend([[i] for i in mc])
 
             if join:
@@ -873,7 +870,7 @@ class SQLQueryProcessor(object):
             for k, v in indexed_objects.items():
                 for vals in v:
                     touched_columns.append([[vals[0][0], vals[0][1], vals[2],
-                        None], None])
+                                           None], None])
 
         touched_columns = set([tuple(i[0]) for i in touched_columns])
 
@@ -911,12 +908,13 @@ class SQLQueryProcessor(object):
                                 for i in display_columns]
 
         self.tables = list(set([tuple([i[0][0].lstrip('"').rstrip('"')
-                        if i[0][0] is not None else i[0][0],
-                        i[0][1].lstrip('"').rstrip('"')
-                        if i[0][1] is not None else i[0][1]]) for i in tables]))
+                                      if i[0][0] is not None else i[0][0],
+                                      i[0][1].lstrip('"').rstrip('"')
+                                      if i[0][1] is not None else i[0][1]])
+                                for i in tables]))
 
         # If there are any sphere-like objects (pgsphere...) that are indexed
-        # we need to replace the ADQL translated query parts with the indexed 
+        # we need to replace the ADQL translated query parts with the indexed
         # column names
         if indexed_objects is not None:
             # we need to correctly alias 'pos' columns
@@ -924,14 +922,15 @@ class SQLQueryProcessor(object):
                 indexed_objects[k] = list([list(i) for i in v])
                 for i, vals in enumerate(v):
                     for t in tables:
-                        if vals[0][0] == t[0][0] and vals[0][1] == t[0][1] and t[1] is not None:
-                            indexed_objects[k][i][2] = t[1] + '.' + indexed_objects[k][i][2]
+                        if vals[0][0] == t[0][0] and vals[0][1] == t[0][1] and\
+                                t[1] is not None:
+                            indexed_objects[k][i][2] = t[1] + '.' +\
+                                    indexed_objects[k][i][2]
 
             sphere_listener = self.sphere_listener(columns, indexed_objects)
             self.walker.walk(sphere_listener, tree)
             for k, v in sphere_listener.replace_dict.items():
                 self._query = self._query.replace(k, v)
-
 
     @property
     def query(self):
@@ -944,7 +943,7 @@ class SQLQueryProcessor(object):
     def _strip_query(self, query):
         if sys.version_info[0] < 3:
             try:
-                query = unicode(query, 'utf-8')
+                query = str(query, 'utf-8')
             except TypeError:
                 # already unicode so we don't do anything
                 pass
