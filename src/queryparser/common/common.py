@@ -154,7 +154,8 @@ def get_remove_subqueries_listener(base, base_parser):
             if isinstance(parent, base_parser.SubqueryContext) and \
                ctx.depth() > self.depth:
                 # we need to remove all Select_expression instances, not
-                # just the last one so we loop over until we get all of them out
+                # just the last one so we loop over until we get all of them
+                # out
                 seinstances = [isinstance(i,
                                base_parser.Select_expressionContext)
                                for i in ctx.parentCtx.children]
@@ -403,18 +404,37 @@ class SQLQueryProcessor(object):
     validation (syntax error detection) and extraction of used columns,
     keywords and functions.
 
+    :param base_lexer:
+        Base antlr Lexer class.
+
+    :param base_parser:
+        Base antlr Parser class.
+
+    :param base_parser_listener:
+        Base antlr ParserListener class.
+
+    :param quote_char:
+        Which character is used to quote strings?
+
     :param query:
         SQL query string.
 
     """
-    def __init__(self, base, query=None):
-        self.base = base
+    def __init__(self, base_lexer, base_parser, base_parser_listener,
+            quote_char, query=None, base_sphere_listener=None):
+        self.lexer = base_lexer
+        self.parser = base_parser
+        self.parser_listener = base_parser_listener
+        self.quote_char = quote_char
+        self.sphere_listener = base_sphere_listener
+
         self.walker = antlr4.ParseTreeWalker()
+        self.syntax_error_listener = SyntaxErrorListener()
+
         self.columns = set()
         self.keywords = set()
         self.functions = set()
         self.display_columns = []
-        self.syntax_error_listener = SyntaxErrorListener()
 
         if query is not None:
             self.set_query(query)
@@ -434,7 +454,7 @@ class SQLQueryProcessor(object):
         ctx_stack = []
 
         for i in column_keyword_function_listener.data:
-            if isinstance(i[1], self.base.Displayed_columnContext):
+            if isinstance(i[1], self.parser.Displayed_columnContext):
                 # this happens if there is an expression involving
                 # more columns
                 if len(i[2]) > 1:
@@ -447,23 +467,23 @@ class SQLQueryProcessor(object):
                     column_aliases.append(alias)
                 ctx_stack.append(i)
 
-            if isinstance(i[1], self.base.Table_atomContext):
+            if isinstance(i[1], self.parser.Table_atomContext):
                 select_list_tables.append([i[2], i[0]])
                 ctx_stack.append(i)
 
-            if isinstance(i[1], self.base.Table_referencesContext):
+            if isinstance(i[1], self.parser.Table_referencesContext):
                 if len(i) > 2:
                     select_list_table_references.extend(i[2])
                     ctx_stack.append(i)
 
-            if isinstance(i[1], self.base.Select_listContext):
+            if isinstance(i[1], self.parser.Select_listContext):
                 if len(i) == 3:
                     select_list_columns.append([[i[2][0][0] + [i[1]],
                                                 i[2][0][1]]])
                     ctx_stack.append(i)
 
-            if isinstance(i[1], self.base.Where_clauseContext) or\
-               isinstance(i[1], self.base.Having_clauseContext):
+            if isinstance(i[1], self.parser.Where_clauseContext) or\
+               isinstance(i[1], self.parser.Having_clauseContext):
                 if len(i[2]) > 1:
                     for j in i[2]:
                         other_columns.append([j])
@@ -471,7 +491,7 @@ class SQLQueryProcessor(object):
                     other_columns.append(i[2])
                 ctx_stack.append(i)
 
-            if isinstance(i[1], self.base.Join_conditionContext):
+            if isinstance(i[1], self.parser.Join_conditionContext):
                 join = i[0]
                 join_using = i[2]
 
@@ -480,7 +500,7 @@ class SQLQueryProcessor(object):
                 if i[1].USING_SYM():
                     for ctx in ctx_stack[::-1]:
                         if not isinstance(ctx[1],
-                                          self.base.Table_atomContext):
+                                          self.parser.Table_atomContext):
                             break
                         for ju in join_using:
                             if ju[0][1] is None:
@@ -495,7 +515,7 @@ class SQLQueryProcessor(object):
 
                 ctx_stack.append(i)
 
-            if isinstance(i[1], self.base.Orderby_clauseContext):
+            if isinstance(i[1], self.parser.Orderby_clauseContext):
                 if len(i[2]) > 1:
                     for j in i[2]:
                         go_columns.append([j])
@@ -503,7 +523,7 @@ class SQLQueryProcessor(object):
                     go_columns.append(i[2])
                 ctx_stack.append(i)
 
-            if isinstance(i[1], self.base.Groupby_clauseContext):
+            if isinstance(i[1], self.parser.Groupby_clauseContext):
                 if len(i[2]) > 1:
                     for j in i[2]:
                         go_columns.append([j])
@@ -646,12 +666,9 @@ class SQLQueryProcessor(object):
 
                             if not column_found:
                                 missing_columns.append(c)
-                                columns[i] = [[c[0][0], c[0][1],
-                                               c[0][2], c[0][3]], c[1]]
+                                columns[i] = c
                                 if touched_columns is not None:
-                                    touched_columns.append([[c[0][0], c[0][1],
-                                                           c[0][2], c[0][3]],
-                                                           c[1]])
+                                    touched_columns.append(c)
                                 continue
                     else:
                         if tab[0][1] == c[0][1]:
@@ -660,12 +677,9 @@ class SQLQueryProcessor(object):
                         else:
 
                             missing_columns.append(c)
-                            columns[i] = [[c[0][0], c[0][1],
-                                           c[0][2], c[0][3]], c[1]]
+                            columns[i] = c
                             if touched_columns is not None:
-                                touched_columns.append([[c[0][0], c[0][1],
-                                                       c[0][2], c[0][3]],
-                                                       c[1]])
+                                touched_columns.append(c)
                         continue
 
                 elif c[0][2] is not None and c[0][2] != '*' and c[0][1] is \
@@ -697,6 +711,227 @@ class SQLQueryProcessor(object):
 
         columns.extend(extra_columns)
         return missing_columns
+
+    def process_query(self, replace_schema_name=None, indexed_objects=None):
+        """
+        Parses and processes the query. After a successful run it fills up
+        columns, keywords, functions and syntax_errors lists.
+
+        """
+        # Antlr objects
+        inpt = antlr4.InputStream(self.query)
+        lexer = self.lexer(inpt)
+        stream = antlr4.CommonTokenStream(lexer)
+        parser = self.parser(stream)
+        lexer._listeners = [self.syntax_error_listener]
+        parser._listeners = [self.syntax_error_listener]
+
+        # Parse the query
+        tree = parser.query()
+        if len(self.syntax_error_listener.syntax_errors):
+            raise QuerySyntaxError(self.syntax_error_listener.syntax_errors)
+
+        if replace_schema_name is not None:
+            schema_name_listener = get_schema_name_listener(
+                    self.parser_listener, self.quote_char)(replace_schema_name)
+            self.walker.walk(schema_name_listener, tree)
+            self._query = stream.getText()
+
+        query_listener = get_query_listener(self.parser_listener,
+                self.parser, self.quote_char)()
+        subquery_aliases = [None]
+        keywords = []
+        functions = []
+        tables = []
+
+        self.walker.walk(query_listener, tree)
+        keywords.extend(query_listener.keywords)
+        subquery_aliases = query_listener.subquery_aliases
+
+        # Columns that are accessed by the query
+        touched_columns = []
+        # List we use to propagete the columns through the tree
+        budget = []
+        # Are there any joins in the query?
+        join = 0
+
+        missing_columns = []
+
+        column_aliases = []
+        column_aliases_from_previous = []
+
+        subquery_contents = {}
+
+        # Iterate through subqueries starting with the lowest level
+        for ccc, ctx in enumerate(query_listener.select_expressions[::-1]):
+            remove_subquieries_listener = get_remove_subqueries_listener(
+                    self.parser_listener, self.parser)(ctx.depth())
+            #column_keyword_function_listener = ColumnKeywordFunctionListener()
+            column_keyword_function_listener = \
+                    get_column_keyword_function_listener(
+                            self.parser_listener, self.quote_char)()
+
+            # Remove nested subqueries from select_expressions
+            self.walker.walk(remove_subquieries_listener, ctx)
+
+            # Extract table and column names, keywords, functions
+            self.walker.walk(column_keyword_function_listener, ctx)
+
+            keywords.extend(column_keyword_function_listener.keywords)
+            functions.extend(column_keyword_function_listener.functions)
+
+            # Does the subquery has an alias?
+            try:
+                subquery_alias = subquery_aliases[ctx]
+            except KeyError:
+                subquery_alias = None
+
+            current_depth = column_keyword_function_listener.data[0][0]
+
+            # We get the columns from the select list along with all
+            # other touched columns and any posible join conditions
+            column_aliases_from_previous = [i for i in column_aliases]
+            select_list_columns, select_list_tables,\
+                select_list_table_references, other_columns, go_columns, join,\
+                join_using, column_aliases =\
+                self._extract_instances(column_keyword_function_listener)
+
+            tables.extend([i[0] for i in select_list_tables])
+
+            # Then we need to connect the column names s with tables and
+            # databases
+
+            ref_dict = {}
+
+            for ref in select_list_table_references:
+                ref_found = False
+                for tab in select_list_tables:
+                    if ref == tab[0][1]:
+                        ref_dict[ref] = tab
+                        ref_found = True
+
+                if not ref_found:
+                    for b in budget:
+                        if ref == b[1]:
+                            ref_dict[ref] = b
+
+            if not len(select_list_table_references):
+                for table in select_list_tables:
+                    ref_dict[table[0][0][1]] = table
+
+            mc = self._extract_columns(select_list_columns, select_list_tables,
+                                       ref_dict, join, budget,
+                                       column_aliases_from_previous)
+            missing_columns.extend([[i] for i in mc])
+
+            touched_columns.extend(select_list_columns)
+            current_columns = [i for i in select_list_columns]
+            budget.append([current_depth, subquery_alias, select_list_columns])
+
+            aliases = [i[1] for i in select_list_columns] + column_aliases
+            for col in go_columns:
+                if col[0][0][2] not in aliases:
+                    other_columns.append(col)
+
+            mc = self._extract_columns(other_columns, select_list_tables,
+                                       ref_dict, join, budget,
+                                       column_aliases_from_previous,
+                                       touched_columns)
+            
+            missing_columns.extend([[i] for i in mc])
+
+            if join:
+                join_columns = []
+                join_columns.append(budget.pop(-1))
+                if len(join_using) == 1:
+                    for tab in select_list_tables:
+                        touched_columns.append([[tab[0][0][0], tab[0][0][1],
+                                                 join_using[0][0][2]], None])
+                bp = []
+                for b in budget[::-1]:
+                    if b[0] > current_depth:
+                        bp.append(budget.pop(-1)[2])
+
+                budget.extend(join_columns)
+
+            if subquery_alias is not None:
+                subquery_contents[subquery_alias] = current_columns
+
+        if len(missing_columns):
+            mc = self._extract_columns(missing_columns, select_list_tables,
+                                       ref_dict, join, budget,
+                                       column_aliases_from_previous,
+                                       touched_columns, subquery_contents)
+            if len(mc):
+                unref_cols = "', '".join(['.'.join([j for j in i[0][:3] if j])
+                                         for i in mc])
+                raise QueryError("Unreferenced column(s): '%s'." % unref_cols)
+
+        # If we have indexed_objects, we are also accessing those. We
+        # need to add them into the columns stack:
+        if indexed_objects is not None:
+            for k, v in indexed_objects.items():
+                for vals in v:
+                    touched_columns.append([[vals[0][0], vals[0][1], vals[2],
+                        None], None])
+
+        touched_columns = set([tuple(i[0]) for i in touched_columns])
+
+        # extract display_columns
+        display_columns = []
+        mc = self._extract_columns([[i] for i in budget[-1][2]],
+                                   select_list_tables, ref_dict, join, budget,
+                                   column_aliases_from_previous,
+                                   display_columns, subquery_contents)
+
+        display_columns = [[i[1] if i[1] else i[0][2], i[0]]
+                           for i in display_columns]
+
+        # Let's get rid of all columns that are already covered by
+        # db.tab.*. Figure out a better way to do it and replace the code
+        # below.
+        asterisk_columns = []
+        del_columns = []
+        for col in touched_columns:
+            if col[2] == '*':
+                asterisk_columns.append(col)
+
+        for acol in asterisk_columns:
+            for col in touched_columns:
+                if acol[0] == col[0] and acol[1] == col[1] and \
+                        acol[2] != col[2]:
+                    del_columns.append(col)
+
+        columns = list(set(touched_columns).difference(del_columns))
+        self.columns = list(set([self._strip_column(i) for i in columns]))
+        self.keywords = list(set(keywords))
+        self.functions = list(set(functions))
+        self.display_columns = [(i[0].lstrip('"').rstrip('"'),
+                                list(self._strip_column(i[1])))
+                                for i in display_columns]
+
+        self.tables = list(set([tuple([i[0][0].lstrip('"').rstrip('"')
+                        if i[0][0] is not None else i[0][0],
+                        i[0][1].lstrip('"').rstrip('"')
+                        if i[0][1] is not None else i[0][1]]) for i in tables]))
+
+        # If there are any sphere-like objects (pgsphere...) that are indexed
+        # we need to replace the ADQL translated query parts with the indexed 
+        # column names
+        if indexed_objects is not None:
+            # we need to correctly alias 'pos' columns
+            for k, v in indexed_objects.items():
+                indexed_objects[k] = list([list(i) for i in v])
+                for i, vals in enumerate(v):
+                    for t in tables:
+                        if vals[0][0] == t[0][0] and vals[0][1] == t[0][1] and t[1] is not None:
+                            indexed_objects[k][i][2] = t[1] + '.' + indexed_objects[k][i][2]
+
+            sphere_listener = self.sphere_listener(columns, indexed_objects)
+            self.walker.walk(sphere_listener, tree)
+            for k, v in sphere_listener.replace_dict.items():
+                self._query = self._query.replace(k, v)
+
 
     @property
     def query(self):
