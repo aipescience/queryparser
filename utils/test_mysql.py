@@ -30,16 +30,20 @@ def f3():
             GROUP BY id;
             """
     query = """
-    SELECT * FROM db.c, db.d
+            SELECT A.*, B.*
+            FROM db1.table1 A
+            LEFT JOIN db2.table1 B
+            ON A.id = B.id;
     """
     qp = MySQLQueryProcessor()
     qp.set_query(query)
     qp.process_query()
 
     print(qp.query)
-    print(qp.columns)
+    for i in qp.columns:
+        print(i)
     print(qp.display_columns)
-    # print(qp.tables)
+    print(qp.tables)
     # print(qp.keywords)
     # print(qp.functions)
 

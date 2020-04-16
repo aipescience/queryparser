@@ -615,7 +615,7 @@ class SQLQueryProcessor(object):
                     tab = ref[0]
 
             except KeyError:
-                if None not in c[0]:
+                if None not in c[0][:3]:
                     cname = c[0][2]
                     cctx = c[0][3]
                     calias = c[1]
@@ -636,7 +636,8 @@ class SQLQueryProcessor(object):
                             tabs += [j[0][0] for j in select_list_tables]
                             column_found = False
                             for t in tabs:
-                                if t[0] == c[0][0] and t[1] == c[0][1]:
+                                #if t[0] == c[0][0] and t[1] == c[0][1]:
+                                if t[1] == c[0][1]:
                                     cname = c[0][2]
                                     cctx = c[0][3]
                                     calias = c[1]

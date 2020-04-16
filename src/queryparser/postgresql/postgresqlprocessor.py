@@ -80,7 +80,7 @@ class PostgreSQLQueryProcessor(SQLQueryProcessor):
 
         subquery_contents = {}
 
-        # Iterate through subqueries starting with the lowerst level
+        # Iterate through subqueries starting with the lowest level
         for ccc, ctx in enumerate(query_listener.select_expressions[::-1]):
             remove_subquieries_listener = get_remove_subqueries_listener(
                     PostgreSQLParserListener, PostgreSQLParser)(ctx.depth())
