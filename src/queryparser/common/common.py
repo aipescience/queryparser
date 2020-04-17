@@ -418,6 +418,10 @@ class SQLQueryProcessor(object):
     :param query:
         SQL query string.
 
+    :param base_sphere_listener:
+        Base sphere listener. For now only pg_sphere is supported but
+        other types of listeners can be added.
+
     """
     def __init__(self, base_lexer, base_parser, base_parser_listener,
                  quote_char, query=None, base_sphere_listener=None):
