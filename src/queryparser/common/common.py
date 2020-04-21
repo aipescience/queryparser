@@ -498,8 +498,6 @@ class SQLQueryProcessor(object):
                 join = i[0]
                 join_using = i[2]
 
-                # if USING we need all columns in all columns if they
-                # have no references
                 if i[1].USING_SYM():
                     for ctx in ctx_stack[::-1]:
                         if not isinstance(ctx[1],
@@ -920,7 +918,7 @@ class SQLQueryProcessor(object):
         # If there are any sphere-like objects (pgsphere...) that are indexed
         # we need to replace the ADQL translated query parts with the indexed
         # column names
-        if indexed_objects is not None:
+        if indexed_objects is not None and self.sphere_listener is not None:
             # we need to correctly alias 'pos' columns
             for k, v in indexed_objects.items():
                 indexed_objects[k] = list([list(i) for i in v])
@@ -945,12 +943,6 @@ class SQLQueryProcessor(object):
         return self._query
 
     def _strip_query(self, query):
-        if sys.version_info[0] < 3:
-            try:
-                query = str(query, 'utf-8')
-            except TypeError:
-                # already unicode so we don't do anything
-                pass
         return query.lstrip('\n').rstrip().rstrip(';') + ';'
 
     def _strip_column(self, col):

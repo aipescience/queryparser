@@ -124,7 +124,7 @@ def f2():
     """
     query = """
             SELECT A.*, B.*
-            FROM db1.table1 A
+            FROM db1."table1Ϋ" A
             LEFT JOIN db2.table1 B
             ON A.id = B.id;
     """

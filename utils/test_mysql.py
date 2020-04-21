@@ -30,10 +30,7 @@ def f3():
             GROUP BY id;
             """
     query = """
-            SELECT A.*, B.*
-            FROM db1.table1 A
-            LEFT JOIN db2.table1 B
-            ON A.id = B.id;
+    SELECT ABS(a),AVG(b) FROM db.tab;
     """
     qp = MySQLQueryProcessor()
     qp.set_query(query)
