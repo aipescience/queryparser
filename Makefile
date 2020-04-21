@@ -70,12 +70,16 @@ lib/queryparser/postgresql/%.py: src/queryparser/postgresql/%.py
 
 lib/queryparser/testing: \
 	lib/queryparser/testing/__init__.py \
-	lib/queryparser/testing/tests.py \
+	lib/queryparser/testing/tests.yaml \
 	lib/queryparser/testing/test_adql.py \
 	lib/queryparser/testing/test_mysql.py \
 	lib/queryparser/testing/test_postgresql.py
 
 lib/queryparser/testing/%.py: src/queryparser/testing/%.py
+	mkdir -p `dirname $@`
+	cp $< $@
+
+lib/queryparser/testing/%.yaml: src/queryparser/testing/%.yaml
 	mkdir -p `dirname $@`
 	cp $< $@
 

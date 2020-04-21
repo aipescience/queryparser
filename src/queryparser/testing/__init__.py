@@ -1,19 +1,25 @@
 # -*- coding: utf-8 -*-
 
-# import pytest 
+import pytest 
+
+from queryparser.adql import ADQLQueryTranslator
+from queryparser.exceptions import QueryError, QuerySyntaxError
 
 # from queryparser.mysql import MySQLQueryProcessor
 # from queryparser.postgresql import PostgreSQLQueryProcessor
 # from queryparser.adql import ADQLQueryTranslator
 
-#from .tests import common_tests
-
 
 def _test_parsing(query_processor, test):
-    query, columns, keywords, functions, display_columns, tables  = test
+    query, columns, keywords, functions, display_columns, tables,\
+            replace_schema_name = test
 
-    qp = query_processor(query)
-    qp.process_query()
+    if replace_schema_name is None:
+        qp = query_processor(query)
+    else:
+        qp = query_processor()
+        qp.set_query(query)
+        qp.process_query(replace_schema_name=replace_schema_name)
 
     qp_columns = ['.'.join([str(j) for j in i[:3]]) for i in qp.columns
                   if i[0] is not None and i[1] is not None]
@@ -27,7 +33,7 @@ def _test_parsing(query_processor, test):
         assert set(columns) == set(qp_columns)
 
     if keywords is not None:
-        assert set(keywords) == set(qp.keywords)
+        assert set([i.lower() for i in keywords]) == set(qp.keywords)
 
     if functions is not None:
         assert set(functions) == set(qp.functions)
@@ -38,6 +44,29 @@ def _test_parsing(query_processor, test):
     if tables is not None:
         assert set(tables) == set(qp_tables)
 
+
+def _test_syntax(query_processor, query):
+    with pytest.raises(QuerySyntaxError):
+        qp = query_processor(query)
+        qp.process_query()
+
+
+def _test_query(query_processor, query):
+    with pytest.raises(QueryError):
+        qp = query_processor(query)
+        qp.process_query()
+
+
+def _test_adql_translation(test):
+    query, translated_query, output = test
+    adt = ADQLQueryTranslator(query)
+
+    if translated_query is not None:
+        if output == 'mysql':
+            assert translated_query.strip() == adt.to_mysql()
+        elif output == 'postgresql':
+            assert translated_query.strip() == adt.to_postgresql()
+    
 
 # class TestCase(unittest.TestCase):
     # pass

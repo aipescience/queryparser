@@ -30,18 +30,19 @@ def f3():
             GROUP BY id;
             """
     query = """
-    SELECT ABS(a),AVG(b) FROM db.tab;
+        SELECT t1.a, t2.b, t3.c, t4.z
+          FROM d.tab t1, `db2`.`tab` t2, foo.tab t3, x.y t4
     """
     qp = MySQLQueryProcessor()
     qp.set_query(query)
-    qp.process_query()
+    qp.process_query(replace_schema_name={'d': 'foo', 'db2': 'bar', 'foo': 'bas'})
 
     print(qp.query)
     for i in qp.columns:
         print(i)
+    print(qp.keywords)
+    print(qp.functions)
     print(qp.display_columns)
     print(qp.tables)
-    # print(qp.keywords)
-    # print(qp.functions)
 
 f3()
