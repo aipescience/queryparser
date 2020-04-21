@@ -178,6 +178,17 @@ common_tests:
         - 
          'd': 'foo'
 
+
+common_translation_tests:
+    -
+        - SELECT POINT('icrs', ra, de) FROM db.tab
+        - ['db.tab.ra', 'db.tab.de']
+        -
+        - ['spoint', 'RADIANS']
+        -
+        -
+        -
+
         
 mysql_tests:
     -

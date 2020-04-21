@@ -5,14 +5,20 @@ import pytest
 from queryparser.adql import ADQLQueryTranslator
 from queryparser.exceptions import QueryError, QuerySyntaxError
 
-# from queryparser.mysql import MySQLQueryProcessor
-# from queryparser.postgresql import PostgreSQLQueryProcessor
+from queryparser.mysql import MySQLQueryProcessor
+from queryparser.postgresql import PostgreSQLQueryProcessor
 # from queryparser.adql import ADQLQueryTranslator
 
 
-def _test_parsing(query_processor, test):
+def _test_parsing(query_processor, test, translate=False):
     query, columns, keywords, functions, display_columns, tables,\
             replace_schema_name = test
+
+    if translate:
+        adt = ADQLQueryTranslator()
+        adt.set_query(query)
+        if query_processor == MySQLQueryProcessor:
+            query = adt.to_mysql()
 
     if replace_schema_name is None:
         qp = query_processor(query)
