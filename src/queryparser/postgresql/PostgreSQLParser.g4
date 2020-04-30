@@ -174,7 +174,7 @@ interval_expr:          INTERVAL_SYM expression interval_unit ;
 
 join_condition:         ( ON expression ) | ( USING_SYM column_list ) ;
 
-limit_clause:           LIMIT (( offset COMMA )? row_count) | ( row_count OFFSET_SYM offset ) ;
+limit_clause:           ( LIMIT row_count ( OFFSET_SYM offset )? ) | ( OFFSET_SYM offset LIMIT row_count );
 
 offset:		            INTEGER_NUM ;
 offset_clause:          OFFSET_SYM offset ;
