@@ -12,7 +12,7 @@ with open('lib/python%d/queryparser/__init__.py' % python_version) as f:
 requirements = [
     'pytest',
     'coverage',
-    'antlr4_python%d_runtime' % python_version
+    'antlr4-python%d-runtime' % python_version
 ]
 
 # work around for python 3.4 and antlr4-python3-runtime
