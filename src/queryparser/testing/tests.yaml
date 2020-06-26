@@ -1,5 +1,4 @@
-
-# Each test consists of:
+# Each test below consists of:
 #
 # - query string
 # - columns, each column in form db.tab.col
@@ -178,6 +177,377 @@ common_tests:
         - 
          'd': 'foo'
 
+    -   
+        - SELECT DISTINCT t.table_name
+          FROM tap_schema.tabs AS t
+          JOIN tap_schema.cols AS c USING (table_name)
+          WHERE (t.description LIKE '%qso%' OR t.description LIKE '%quasar%')
+          AND c.ucd LIKE '%em.X-ray%'
+        - ['tap_schema.tabs.table_name', 'tap_schema.cols.table_name',
+             'tap_schema.tabs.description', 'tap_schema.cols.ucd']
+        - ['join', 'where']
+        -
+        - ['table_name: tap_schema.tabs.table_name']
+        - ['tap_schema.tabs', 'tap_schema.cols']
+        -
+
+    -
+        - SELECT s.* FROM db.person p INNER JOIN db.shirt s
+          ON s.owner = p.id
+          WHERE p.name LIKE 'Lilliana%'
+          AND s.color <> 'white';
+        - ['db.shirt.*', 'db.person.id', 'db.person.name']
+        - ['join', 'where', '*']
+        -
+        - ['*: db.shirt.*']
+        - ['db.shirt', 'db.person']
+        -
+
+    -
+        - SELECT x, y, z, mass
+          FROM MDR1.FOF
+          GROUP BY snapnum
+          ORDER BY mass DESC
+          LIMIT 10
+        - ['MDR1.FOF.x', 'MDR1.FOF.y', 'MDR1.FOF.z', 'MDR1.FOF.mass',
+           'MDR1.FOF.snapnum']
+        - ['limit', 'order by', 'group by']
+        - 
+        - ['x: MDR1.FOF.x', 'y: MDR1.FOF.y', 'z: MDR1.FOF.z',
+           'mass: MDR1.FOF.mass']
+        - ['MDR1.FOF']
+        -
+
+    -
+        - SELECT x, y, z, mass
+          FROM MDR1.FOF
+          LIMIT 100, 200
+        - ['MDR1.FOF.x', 'MDR1.FOF.y', 'MDR1.FOF.z', 'MDR1.FOF.mass']
+        - ['limit']
+        - 
+        - ['x: MDR1.FOF.x', 'y: MDR1.FOF.y', 'z: MDR1.FOF.z',
+             'mass: MDR1.FOF.mass']
+        - ['MDR1.FOF']
+        -
+
+    -
+        - SELECT bdmId, Rbin, mass, dens FROM Bolshoi.BDMVProf
+          WHERE bdmId =
+                (SELECT bdmId FROM Bolshoi.BDMV
+                 WHERE snapnum=416 ORDER BY Mvir DESC LIMIT 1)
+          OR
+                bdmId =
+                (SELECT bdmId FROM Bolshoi.BDMV
+                 WHERE snapnum=416 ORDER BY Mvir DESC LIMIT 1,2)
+          ORDER BY Rbin
+        - ['Bolshoi.BDMVProf.bdmId', 'Bolshoi.BDMVProf.Rbin',
+           'Bolshoi.BDMVProf.mass', 'Bolshoi.BDMVProf.dens',
+           'Bolshoi.BDMV.bdmId', 'Bolshoi.BDMV.snapnum',
+           'Bolshoi.BDMV.Mvir']
+        - ['where', 'order by', 'limit']
+        -
+        - ['bdmId: Bolshoi.BDMVProf.bdmId', 'Rbin: Bolshoi.BDMVProf.Rbin',
+           'mass: Bolshoi.BDMVProf.mass', 'dens: Bolshoi.BDMVProf.dens']
+        - ['Bolshoi.BDMVProf', 'Bolshoi.BDMV']
+        -
+
+    -   
+        - SELECT h.Mvir, h.spin, g.diskMassStellar,
+                 g.diskMassStellar/h.Mvir AS mass_ratio
+          FROM MDPL2.Rockstar AS h, MDPL2.Galacticus AS g
+          WHERE g.rockstarId = h.rockstarId
+          AND h.snapnum=125 AND g.snapnum=125
+          AND h.Mvir>1.e10
+          ORDER BY g.diskMassStellar/h.Mvir
+        - ['MDPL2.Rockstar.Mvir', 'MDPL2.Galacticus.diskMassStellar',
+           'MDPL2.Rockstar.rockstarId', 'MDPL2.Galacticus.rockstarId',
+           'MDPL2.Rockstar.snapnum', 'MDPL2.Galacticus.snapnum',
+           'MDPL2.Rockstar.spin']
+        - ['where', 'order by']
+        -
+        - ['Mvir: MDPL2.Rockstar.Mvir',
+           'diskMassStellar: MDPL2.Galacticus.diskMassStellar',
+           'spin: MDPL2.Rockstar.spin']
+        - ['MDPL2.Rockstar', 'MDPL2.Galacticus']
+        -
+
+    -
+        - SELECT bdmId, Rbin, mass, dens
+          FROM Bolshoi.BDMVProf
+          WHERE bdmId =
+                (SELECT bdmId FROM Bolshoi.BDMV
+                 WHERE snapnum=416 ORDER BY Mvir DESC LIMIT 1)
+          OR
+                bdmId =
+                (SELECT bdmId FROM Bolshoi.BDMV
+                 WHERE bdmId =
+                         (SELECT bdmId FROM Bolshoi.BDMV
+                          WHERE snapnum=416 ORDER BY Mvir DESC LIMIT 1)
+                 OR
+                       bdmId =
+                         (SELECT bdmId FROM Bolshoi.BDMV
+                          WHERE snapnum=AVG(Mvir))
+                )
+          ORDER BY Rbin
+        - ['Bolshoi.BDMVProf.bdmId', 'Bolshoi.BDMVProf.Rbin',
+           'Bolshoi.BDMVProf.mass', 'Bolshoi.BDMVProf.dens',
+           'Bolshoi.BDMV.bdmId', 'Bolshoi.BDMV.snapnum',
+           'Bolshoi.BDMV.Mvir']
+        - ['where', 'order by', 'limit']
+        - ['AVG']
+        - ['bdmId: Bolshoi.BDMVProf.bdmId', 'Rbin: Bolshoi.BDMVProf.Rbin',
+           'mass: Bolshoi.BDMVProf.mass', 'dens: Bolshoi.BDMVProf.dens']
+        - ['Bolshoi.BDMVProf', 'Bolshoi.BDMV']
+        -
+
+    -
+        - SELECT t.RAVE_OBS_ID AS c1, t.HEALPix AS c2,
+                 h.logg_SC AS c3, h.TEFF AS c4
+          FROM RAVEPUB_DR5.RAVE_DR5 AS t
+          JOIN (
+              SELECT sc.RAVE_OBS_ID, logg_SC, k.TEFF
+              FROM RAVEPUB_DR5.RAVE_Gravity_SC sc
+              JOIN (
+                  SELECT RAVE_OBS_ID, TEFF
+                  FROM RAVEPUB_DR5.RAVE_ON
+                  LIMIT 1000
+              ) AS k USING (RAVE_OBS_ID)
+          ) AS h USING (RAVE_OBS_ID)
+        - ['RAVEPUB_DR5.RAVE_DR5.RAVE_OBS_ID',
+           'RAVEPUB_DR5.RAVE_DR5.HEALPix', 'RAVEPUB_DR5.RAVE_ON.TEFF',
+           'RAVEPUB_DR5.RAVE_Gravity_SC.logg_SC',
+           'RAVEPUB_DR5.RAVE_ON.RAVE_OBS_ID',
+           'RAVEPUB_DR5.RAVE_Gravity_SC.RAVE_OBS_ID']
+        - ['join', 'limit']
+        -
+        - ['c1: RAVEPUB_DR5.RAVE_DR5.RAVE_OBS_ID',
+             'c2: RAVEPUB_DR5.RAVE_DR5.HEALPix',
+             'c3: RAVEPUB_DR5.RAVE_Gravity_SC.logg_SC',
+             'c4: RAVEPUB_DR5.RAVE_ON.TEFF']
+        - ['RAVEPUB_DR5.RAVE_DR5', 'RAVEPUB_DR5.RAVE_Gravity_SC',
+             'RAVEPUB_DR5.RAVE_ON']
+        -
+
+    -
+        - SELECT db.tab.a FROM db.tab;
+        - ['db.tab.a']
+        -
+        -
+        - ['a: db.tab.a']
+        - ['db.tab']
+        -
+
+    -
+        - SELECT COUNT(*) AS n, id, mra, mlem AS qqq, blem
+          FROM (
+              SELECT inner1.id, mra, mlem,
+                     inner2.col3 + inner2.parallax AS blem
+              FROM (
+                  SELECT qwerty.id, MAX(ra) AS mra, inner1.parallax,
+                         qwerty.mlem mlem
+                  FROM db.tab dbt
+                  JOIN (
+                      SELECT rekt AS parallax, id, mlem
+                      FROM db.bar
+                  ) AS qwerty USING (id)
+              ) AS inner1
+              JOIN (
+                  SELECT qqq, col2 AS ra2, parallax, subsub.col3
+                  FROM (
+                      SELECT ra AS qqq, col2, col3, parallax
+                      FROM db.gaia AS gaia
+                      WHERE col5 > 5
+                  ) AS subsub
+              ) AS inner2
+              ON inner1.parallax = inner2.parallax
+          ) AS subq
+          GROUP BY id;
+        - ['db.bar.id', 'db.bar.rekt', 'db.bar.mlem', 'db.tab.id',
+           'db.tab.ra', 'db.gaia.ra', 'db.gaia.col2',
+           'db.gaia.col3', 'db.gaia.parallax', 'db.gaia.col5']
+        - ['join', 'where', 'group by']
+        - ['MAX', 'COUNT']
+        - ['n: None.None.None', 'id: db.bar.id', 'mra: db.tab.ra',
+           'qqq: db.bar.mlem', 'blem: None.None.blem']
+        - ['db.tab', 'db.bar', 'db.gaia']
+        -
+
+    -
+        - SELECT
+          g_min_ks_index / 10 AS g_min_ks,
+          g_mag_abs_index / 10 AS g_mag_abs,
+          count(*) AS n
+          FROM (
+              SELECT gaia.source_id,
+              floor((gaia.phot_g_mean_mag+5*log(gaia.parallax)-10) * 10)
+                  AS g_mag_abs_index,
+              floor((gaia.phot_g_mean_mag-tmass.ks_m) * 10)
+                  AS g_min_ks_index
+              FROM gaiadr1.tgas_source AS gaia
+              INNER JOIN gaiadr1.tmass_best_neighbour AS xmatch
+              ON gaia.source_id = xmatch.source_id
+              INNER JOIN gaiadr1.tmass_original_valid AS tmass
+              ON tmass.tmass_oid = xmatch.tmass_oid
+              WHERE gaia.parallax/gaia.parallax_error >= 5 AND
+              xmatch.ph_qual = 'AAA' AND
+              sqrt(power(2.5 / log(10) * gaia.phot_g_mean_flux_error
+                  / gaia.phot_g_mean_flux, 2)) <= 0.05 AND
+              sqrt(power(2.5 / log(10) * gaia.phot_g_mean_flux_error
+                  / gaia.phot_g_mean_flux, 2)
+              + power(tmass.ks_msigcom, 2)) <= 0.05
+          ) AS subquery
+          GROUP BY g_min_ks_index, g_mag_abs_index
+        - ['gaiadr1.tgas_source.source_id',
+           'gaiadr1.tgas_source.parallax',
+           'gaiadr1.tgas_source.parallax_error',
+           'gaiadr1.tgas_source.phot_g_mean_flux',
+           'gaiadr1.tgas_source.phot_g_mean_flux_error',
+           'gaiadr1.tgas_source.phot_g_mean_mag',
+           'gaiadr1.tmass_best_neighbour.ph_qual',
+           'gaiadr1.tmass_best_neighbour.source_id',
+           'gaiadr1.tmass_best_neighbour.tmass_oid',
+           'gaiadr1.tmass_original_valid.ks_m',
+           'gaiadr1.tmass_original_valid.ks_msigcom',
+           'gaiadr1.tmass_original_valid.tmass_oid']
+        - ['where', 'join', 'group by']
+        - ['sqrt', 'log', 'count', 'floor', 'power']
+        - ['g_min_ks: None.None.g_min_ks_index',
+           'g_mag_abs: None.None.g_mag_abs_index',
+           'n: None.None.None']
+        - ['gaiadr1.tgas_source', 'gaiadr1.tmass_best_neighbour',
+           'gaiadr1.tmass_original_valid']
+        -
+
+    -
+        - SELECT ra, sub.qqq, t1.bar
+          FROM db.tab t1
+          JOIN (
+              SELECT subsub.col1 AS qqq, subsub.col2, subsub.id, bar
+              FROM (
+                  SELECT col1, col2, id, foo AS bar
+                  FROM db.blem
+                  LIMIT 10
+              ) AS subsub
+          ) sub USING(id);
+        - ['db.blem.col1', 'db.blem.col2', 'db.blem.id', 'db.blem.foo',
+           'db.tab.ra', 'db.tab.bar', 'db.tab.id']
+        - ['join', 'limit']
+        -
+        -
+        - ['db.tab', 'db.blem']
+        -
+        
+    -
+        - SELECT t1.a, t2.b, t3.c, t4.z
+          FROM d.tab t1, db2.tab t2, foo.tab t3, x.y t4
+        - ['foo.tab.a', 'bar.tab.b', 'bas.tab.c', 'x.y.z']
+        - 
+        -
+        - ['a: foo.tab.a', 'b: bar.tab.b', 'c: bas.tab.c', 'z: x.y.z']
+        - ['foo.tab', 'bas.tab', 'bar.tab', 'x.y']
+        - 
+          'd': 'foo'
+          'db2': 'bar'
+          'foo': 'bas'
+
+    -
+        -  SELECT *, AVG(par) as apar FROM db.tab;
+        - ['db.tab.*']
+        -
+        - ['AVG']
+        - ['*: db.tab.*', 'apar: db.tab.par']
+        - ['db.tab']
+        -
+
+    -
+        - SELECT q.ra, q.de, tab2.par
+          FROM (
+              SELECT *, MAX(meh) FROM db.tab
+          ) as q
+          LEFT OUTER JOIN db.tab2 USING(ra, dist)
+          JOIN db.undef AS ud ON ud.dist = q.par
+        - ['db.tab.*', 'db.tab2.ra', 'db.tab2.dist',
+           'db.undef.dist', 'db.tab2.par']
+        - ['join', '*']
+        - ['MAX']
+        - ['ra: db.tab.ra', 'de: db.tab.de', 'par: db.tab2.par']
+        - ['db.tab', 'db.tab2', 'db.undef']
+        -
+
+    -
+        - SELECT a, b
+          FROM (
+              SELECT * FROM db.tab1
+              UNION
+              SELECT c, d FROM db.tab2
+          ) AS sub
+        - ['db.tab1.*', 'db.tab2.c', 'db.tab2.d']
+        - ['union', '*']
+        -
+        - ['a: db.tab1.a', 'b: db.tab1.b']
+        - ['db.tab1', 'db.tab2']
+        -
+
+    -
+        - SELECT a FROM db.tab HAVING b > 0
+        - ['db.tab.a', 'db.tab.b']
+        - ['having']
+        -
+        - ['a: db.tab.a']
+        - ['db.tab']
+        -
+
+    -
+        - SELECT a FROM db.tab WHERE EXISTS (
+              SELECT b from db.foo WHERE x > y
+          )
+        - ['db.tab.a', 'db.foo.b', 'db.foo.x', 'db.foo.y']
+        - ['where']
+        -
+        - ['a: db.tab.a']
+        - ['db.tab', 'db.foo']
+        -
+ 
+    -
+        - SELECT *
+          FROM (
+              SELECT *
+              FROM db.a, db.b, (SELECT * FROM db.c, db.d) AS q
+          ) AS p
+          JOIN (SELECT * FROM db.x, db.y) AS r
+        - ['db.a.*', 'db.b.*', 'db.c.*', 'db.d.*', 'db.x.*', 'db.y.*']
+        - ['*']
+        -
+        -
+        - ['db.a', 'db.b', 'db.c', 'db.d', 'db.x', 'db.y']
+        -
+
+    -
+        - SELECT *
+          FROM (
+              SELECT a.*
+              FROM db.a, db.b, (SELECT * FROM db.c, db.d) AS q
+          ) AS p
+          JOIN (SELECT * FROM db.x, db.y) AS r
+        - ['db.a.*', 'db.c.*', 'db.d.*', 'db.x.*', 'db.y.*']
+        - ['*']
+        -
+        -
+        - ['db.a', 'db.b', 'db.c', 'db.d', 'db.x', 'db.y']
+        -
+
+    -
+        - SELECT A.*, B.*
+          FROM db1.table1 A
+          LEFT JOIN db2.table1 B
+          ON A.id = B.id;
+        - ['db1.table1.*', 'db2.table1.*']
+        - ['join', '*']
+        -
+        - ['*: db1.table1.*', '*: db2.table1.*']
+        - ['db1.table1', 'db2.table1']
+        -
+
 
 common_translation_tests:
     -
@@ -206,17 +576,90 @@ mysql_tests:
         -
 
     -
-        - SELECT t1.a, t2.b, t3.c, t4.z
-          FROM d.tab t1, `db2`.`tab` t2, foo.tab t3, x.y t4
-        - ['foo.tab.a', 'bar.tab.b', 'bas.tab.c', 'x.y.z']
+        - SELECT `fi@1`, fi2
+          FROM db.test_table WHERE foo = '1'
+          UNION
+          SELECT fi1, fi2
+          FROM bd.test_table WHERE bar = '1';
+        - ['db.test_table.fi@1', 'db.test_table.fi2', 'bd.test_table.fi1',
+           'bd.test_table.fi2', 'db.test_table.foo', 'bd.test_table.bar']
+        - ['where', 'union']
         - 
+        - ['fi@1: db.test_table.fi@1', 'fi2: db.test_table.fi2']
+        - ['db.test_table', 'bd.test_table']
         -
-        - ['a: foo.tab.a', 'b: bar.tab.b', 'c: bas.tab.c', 'z: x.y.z']
-        - ['foo.tab', 'bas.tab', 'bar.tab', 'x.y']
+
+    -
+        - SELECT log10(mass)/sqrt(x) AS logM
+          FROM MDR1.FOF
+        - ['MDR1.FOF.mass', 'MDR1.FOF.x']
         - 
-         'd': 'foo'
-         'db2': 'bar'
-         'foo': 'bas'
+        - ['log10', 'sqrt']
+        - 
+        - ['MDR1.FOF']
+        -
+
+    -
+        - SELECT log10(ABS(x)) AS log_x
+          FROM MDR1.FOF
+        - ['MDR1.FOF.x']
+        -
+        - ['log10', 'ABS']
+        - ['log_x: MDR1.FOF.x']
+        - ['MDR1.FOF']
+        -
+
+    -
+        - SELECT DEGREES(sdist(spoint(RADIANS(0.0), RADIANS(0.0)),
+                               spoint(RADIANS(`VII/233/xsc`.`RAJ2000`),
+                               RADIANS(`VII/233/xsc`.`DEJ2000`))))
+          FROM `db`.`VII/233/xsc` LIMIT 10;
+        - ['db.VII/233/xsc.DEJ2000', 'db.VII/233/xsc.RAJ2000']
+        - ['limit']
+        - ['DEGREES', 'RADIANS', 'sdist', 'spoint']
+        - 
+        - ['db.VII/233/xsc']
+        -
+
+    -
+        - SELECT Data FROM db.Users
+          WHERE Name ="" or ""="" AND Pass ="" or ""=""
+        - ['db.Users.Data', 'db.Users.Name', 'db.Users.Pass']
+        - ['where']
+        -
+        - ['Data: db.Users.Data']
+        - ['db.Users']
+        -
+
+    -
+        - SELECT CONVERT(ra, DECIMAL(12,9)) as ra2, ra as ra1
+          FROM GDR1.gaia_source
+          WHERE dec BETWEEN 51 AND 51.5
+          AND ra BETWEEN 126.25 AND 127.25
+        - ['GDR1.gaia_source.ra', 'GDR1.gaia_source.dec']
+        - ['where']
+        -
+        - ['ra1: GDR1.gaia_source.ra', 'ra2: GDR1.gaia_source.ra']
+        - ['GDR1.gaia_source']
+        -
+
+    -
+        - SELECT DEGREES(sdist(spoint(RADIANS(ra), RADIANS(dec)),
+                         spoint(RADIANS(266.41683), RADIANS(-29.00781))))
+          AS dist
+          FROM GDR1.gaia_source
+          WHERE 1 = srcontainsl(spoint(RADIANS(ra), RADIANS(dec)),
+                                scircle(spoint(RADIANS(266.41683),
+                                               RADIANS(-29.00781)),
+                                               RADIANS(0.08333333)))
+          ORDER BY dist ASC
+        - ['GDR1.gaia_source.ra', 'GDR1.gaia_source.dec']
+        - ['where', 'order by']
+        - ['sdist', 'scircle', 'RADIANS', 'spoint', 'srcontainsl',
+           'DEGREES']
+        -
+        - ['GDR1.gaia_source']
+        -
 
 
 postgresql_tests:
@@ -283,11 +726,89 @@ postgresql_tests:
         - ['gdr1.phot_variable_time_series_gfov', 'gdr1.rrlyrae']
         -
 
+    -
+        - SELECT a
+          FROM db.tab,
+          (VALUES (1, 'one'), (2, 'two'), (3, 'three')) AS t (num,letter);
+        - ['db.tab.a']
+        -
+        -
+        - ['a: db.tab.a']
+        - ['db.tab']
+        -
+
+    -
+        - SELECT arr[1:3] FROM db.phot;
+        - ['db.phot.arr']
+        -
+        -
+        - ['arr: db.phot.arr']
+        - ['db.phot']
+        -
+
+    -
+        - SELECT arr[1:3][1][2][3][4] FROM db.phot;
+        - ['db.phot.arr']
+        -
+        -
+        - ['arr: db.phot.arr']
+        - ['db.phot']
+        -
+
+    -
+        - SELECT ra, dec FROM gdr1.gaia_source
+          WHERE pos @ scircle(spoint(1.44, 0.23), 0.01);
+        - ['gdr1.gaia_source.ra', 'gdr1.gaia_source.dec',
+           'gdr1.gaia_source.pos']
+        - ['where']
+        - ['scircle', 'spoint']
+        - ['ra: gdr1.gaia_source.ra', 'dec: gdr1.gaia_source.dec']
+        - ['gdr1.gaia_source']
+        -
+
+    -
+        - SELECT q2.c / q1.c FROM (
+              SELECT CAST(COUNT(*) AS FLOAT) AS c
+              FROM gdr1.tgas_source
+          ) AS q1 
+          CROSS JOIN (
+              SELECT COUNT(*) AS c
+              FROM gdr1.tgas_source
+              WHERE parallax / parallax_error > 10
+          ) AS q2
+        - ['gdr1.tgas_source.parallax', 'gdr1.tgas_source.parallax_error',
+           'gdr1.tgas_source.None']
+        - ['where']
+        - ['COUNT']
+        -
+        - ['gdr1.tgas_source']
+        -
+
+    -
+        - SELECT * FROM gdr2.vari_cepheid AS v
+          JOIN gdr2.gaia_source AS g USING(source_id)
+          WHERE g.pos @ scircle(spoint(4.2917, -0.4629), 0.008) 
+        - ['gdr2.gaia_source.pos', 'gdr2.gaia_source.source_id',
+           'gdr2.vari_cepheid.*']
+        - ['where', 'join', '*']
+        - ['scircle', 'spoint']
+        - ['*: gdr2.vari_cepheid.*']
+        - ['gdr2.gaia_source', 'gdr2.vari_cepheid']
+        -
+
+# Each test below consists of:
+#
+# - ADQL query string
+# - translated query string
 
 adql_mysql_tests:
     -
         - SELECT POINT('icrs', 10, 10) AS "p" FROM "db".tab
         - SELECT spoint(RADIANS(10.0), RADIANS(10.0)) AS `p` FROM `db`.`tab`;
+
+    -
+        - SELECT TOP 10 AREA(CIRCLE('ICRS', "tab".RA, -2.23, 176.98)) FROM db.tab
+        - SELECT sarea(scircle(spoint(RADIANS(`tab`.`RA`) RADIANS(-2.23)), RADIANS(176.98))) FROM `db`.`tab` LIMIT 10;
 
 
 adql_postgresql_tests:
@@ -295,6 +816,10 @@ adql_postgresql_tests:
         - SELECT POINT('icrs', 10, 10) AS "p" FROM "db".tab
         - SELECT spoint(RADIANS(10.0), RADIANS(10.0)) AS "p" FROM "db".tab;
 
+
+# Each test below consists of:
+#
+# - syntactically incorrect query string
 
 common_syntax_tests:
     - SELECR a FROM db.tab;

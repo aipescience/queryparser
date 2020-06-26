@@ -17,6 +17,8 @@ htmlcov
 env
 env3
 
+attic
+
 lib
 build
 dist

@@ -123,10 +123,8 @@ def f2():
     SELECT a FROM db.tab WHERE p = 'AAA';
     """
     query = """
-            SELECT A.*, B.*
-            FROM db1."table1Ϋ" A
-            LEFT JOIN db2.table1 B
-            ON A.id = B.id;
+          -- multidimensional matrices can be parsed too
+          SELECT arr[1:3][1][2][3][4] FROM db.phot;
     """
     # query='SELECT * FROM db.c, db.d'
     #  query = """SELECT ra FROM gdr2.gaia_source AS gaia
@@ -151,8 +149,8 @@ def f2():
     # pgq = qp.query
     qp = PostgreSQLQueryProcessor()
     qp.set_query(query)
-    qp.process_query(indexed_objects = iob)
-    # qp.process_query()
+    # qp.process_query(indexed_objects = iob)
+    qp.process_query()
 
     print(qp.query)
     print(qp.columns)
