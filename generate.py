@@ -49,7 +49,10 @@ def get_java_version():
         match = re.search('version \"(\d+).(\d+).(.*?)\"',
                           output.decode('utf-8'))
         if match:
-            return int(match.group(2))
+            ver = int(match.group(2))
+            if ver == 0:
+                ver = int(match.group(1))
+            return ver
     except OSError:
         pass
 
