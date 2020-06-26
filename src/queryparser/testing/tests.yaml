@@ -808,7 +808,7 @@ adql_mysql_tests:
 
     -
         - SELECT TOP 10 AREA(CIRCLE('ICRS', "tab".RA, -2.23, 176.98)) FROM db.tab
-        - SELECT sarea(scircle(spoint(RADIANS(`tab`.`RA`) RADIANS(-2.23)), RADIANS(176.98))) FROM `db`.`tab` LIMIT 10;
+        - SELECT sarea(scircle(spoint(RADIANS(`tab`.`RA`), RADIANS(-2.23)), RADIANS(176.98))) FROM `db`.`tab` LIMIT 10;
 
 
 adql_postgresql_tests:
