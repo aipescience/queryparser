@@ -713,17 +713,9 @@ TEXT_STRING:
 ID:
 	(( 'A'..'Z' | 'a'..'z' | '_' | '$') ( 'A'..'Z' | 'a'..'z' | '_' | '$' | '0'..'9' )*) |
 	('`' (('\u0020' .. '\u005F') | ('\u0061' .. '\u007f'))+ '`')
-	//('`' (('\u0020' .. '\u005F') | ('\u0061' .. '\uabff'))+ '`')
 ;
 
 COMMENT: '#' ~( '\r' | '\n' )* -> skip ;
     
 
-WS : ( ' ' | '\t' | '\n' | '\r' )+ -> channel(HIDDEN) ;//-> skip ;
-
-fragment USER_VAR_SUBFIX1:	(  '`' (~'`' )+ '`'  ) ;
-fragment USER_VAR_SUBFIX2:	( '\'' (~'\'')+ '\'' ) ;
-fragment USER_VAR_SUBFIX3:	( '"' (~'"')+ '"' ) ;
-fragment USER_VAR_SUBFIX4:	( 'A'..'Z' | 'a'..'z' | '_' | '$' | '0'..'9' | DOT )+ ;
-USER_VAR:	'@' (USER_VAR_SUBFIX1 | USER_VAR_SUBFIX2 | USER_VAR_SUBFIX3 | USER_VAR_SUBFIX4) ;
-
+WS : ( ' ' | '\t' | '\n' | '\r' )+ -> channel(HIDDEN) ;

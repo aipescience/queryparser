@@ -24,16 +24,6 @@ cast_data_type:
     | REAL
     | DOUBLE_PRECISION_SYM;
 
-interval_unit:
-	  SECOND | MINUTE | HOUR | DAY_SYM | WEEK | MONTH | QUARTER | YEAR
-    | SECOND_MICROSECOND | MINUTE_MICROSECOND | MINUTE_SECOND
-    | HOUR_MICROSECOND | HOUR_SECOND | HOUR_MINUTE | DAY_MICROSECOND
-    | DAY_SECOND | DAY_MINUTE | DAY_HOUR | YEAR_MONTH ;
-
-//transcoding_name:
-//	  LATIN1 | UTF8 ;
-
-
 //////////////////////////////////////////////////////////////////////////////
 // LITERALS
 
@@ -50,30 +40,23 @@ string_literal:		    TEXT_STRING ;
 char_functions:
 	  ASCII_SYM | BIT_LENGTH | CHAR_LENGTH | CHR | CONCAT_WS | CONCAT
     | LEFT | LENGTH | LOWER | LPAD | LTRIM | REPEAT | REPLACE | REVERSE
-    | RIGHT | RPAD | RTRIM | SUBSTRING | TRIM | UPPER ;
+    | RIGHT | RPAD | RTRIM | SUBSTRING | UPPER ;
 
 group_functions:
-	  AVG | COUNT | MAX_SYM | MIN_SYM | SUM | BIT_AND | BIT_OR | BIT_XOR | BIT_COUNT
+	  AVG | COUNT | MAX_SYM | MIN_SYM | SUM | BIT_AND | BIT_OR
 	| STDDEV | STDDEV_POP | STDDEV_SAMP | VAR_POP | VAR_SAMP | VARIANCE ;
 
 number_functions:
 	  ABS | ACOS | ASIN | ATAN2 | ATAN | CBRT | CEIL | CEILING | COS | COT
     | DEGREES | DIV | EXP | FLOOR | LN | LOG | MOD | PI | POW
-    | POWER | RADIANS | RANDOM | ROUND | SIGN | SIN | SQRT | TAN | TRUNCATE | GREATEST ;
+    | POWER | RADIANS | RANDOM | ROUND | SIGN | SIN | SQRT | TAN | TRUNCATE ;
 
 other_functions:
-      ENCODE | MD5 | VALUES ;
+      ENCODE | MD5 ;
 
 time_functions:
-	  CONVERT_TZ | CURDATE | CURTIME | DATE_ADD
-    | DATE_FORMAT | DATE_PART | DATE_SYM | DAYNAME | DAYOFMONTH
-    | DAYOFWEEK | DAYOFYEAR | EXTRACT | FROM_DAYS | FROM_UNIXTIME | GET_FORMAT
-    | HOUR | LAST_DAY | MAKEDATE | MAKETIME | MICROSECOND | MINUTE | MONTH
-    | MONTHNAME | NOW | PERIOD_ADD | PERIOD_DIFF | QUARTER | SEC_TO_TIME
-    | SECOND | STR_TO_DATE | SUBTIME | SYSDATE | TIME_FORMAT | TIME_TO_SEC
-    | TIME_SYM | TIMEDIFF | TIMESTAMP | TIMESTAMPADD | TIMESTAMPDIFF | TO_DAYS
-    | TO_SECONDS | UNIX_TIMESTAMP | UTC_DATE | UTC_TIME | UTC_TIMESTAMP | WEEK
-    | WEEKDAY | WEEKOFYEAR | YEAR | YEARWEEK ;
+      DATE_PART | DATE_SYM | NOW | SECOND | TIME_SYM | TIMESTAMP 
+    | UTC_DATE | UTC_TIME | UTC_TIMESTAMP | YEAR ;
 
 array_functions:
       ARRAY_LENGTH ;
@@ -170,7 +153,7 @@ index_name:             ID ;
 index_list:             index_name ( COMMA index_name )* ;
 index_options:          ( INDEX_SYM | KEY_SYM ) ( FOR_SYM (( JOIN_SYM ) | ( ORDER_SYM BY_SYM ) | ( GROUP_SYM BY_SYM )) )? ;
 
-interval_expr:          INTERVAL_SYM expression interval_unit ;
+interval_expr:          INTERVAL_SYM string_literal;
 
 join_condition:         ( ON expression ) | ( USING_SYM column_list ) ;
 
@@ -257,7 +240,7 @@ sbit_expr:
     | ( SLENGTH ( scircle | sbox | spoly | simple_expr ) )
     | ( SCENTER ( scircle | sellipse | simple_expr ) )
     | ( MINUS ( sline | spath | simple_expr ) )
-    | ( ( spoint | scircle | sline | sellipse | spoly | spath | simple_expr )? ( ( PLUS | MINUS )? strans )+ ) ;
+    | ( ( spoint | scircle | sline | sellipse | spoly | spath | simple_expr ) ( ( PLUS | MINUS )? strans )+ ) ;
 
 
 spoint:                 SPOINT LPAREN bit_expr COMMA bit_expr RPAREN ;
