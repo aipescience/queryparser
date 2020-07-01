@@ -14,7 +14,7 @@ from .PostgreSQLLexer import PostgreSQLLexer
 from .PostgreSQLParser import PostgreSQLParser
 from .PostgreSQLParserListener import PostgreSQLParserListener
 
-from .postgresqllisteners import PgSphereListener
+#  from .postgresqllisteners import PgSphereListener
 
 from ..common import SQLQueryProcessor
 
@@ -22,5 +22,4 @@ from ..common import SQLQueryProcessor
 class PostgreSQLQueryProcessor(SQLQueryProcessor):
     def __init__(self, query=None):
         super().__init__(PostgreSQLLexer, PostgreSQLParser,
-                         PostgreSQLParserListener, '"', query,
-                         PgSphereListener)
+                         PostgreSQLParserListener, '"', query)

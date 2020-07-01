@@ -36,7 +36,6 @@ def process_column_name(column_name_listener, walker, ctx, quote_char):
     cn[1] - table
     cn[2] - column
     cn[3] - ctx
-    cn[4] - column was selected, not yet implemented
     '''
     cn = []
     column_name_listener.column_name = []

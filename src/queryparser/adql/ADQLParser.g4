@@ -40,7 +40,7 @@ comparison_predicate:           value_expression comp_op value_expression ;
 concatenation_operator:         CONCAT ;
 contains:                       CONTAINS LPAREN geometry_value_expression COMMA geometry_value_expression RPAREN ;
 coord_sys:                      string_value_expression ;
-coord_value:                    point | column_reference ;
+coord_value:                    point | column_reference | centroid ;
 coord1:                         COORD1 LPAREN coord_value RPAREN ;
 coord2:                         COORD2 LPAREN coord_value RPAREN ;
 coordinate1:                    numeric_value_expression ;

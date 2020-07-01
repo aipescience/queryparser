@@ -31,17 +31,25 @@ All tests from the test suite can be executed with
 pytest lib
 ```
 
-Indivual dialect functionality (MySQL in this case) with increased verbosity
+Individual dialect functionality (MySQL in this case) with increased verbosity
 can be tested with
 
 ```bash
 pytest /lib/queryparser/testing/test_mysql.py -v
 ```
 
-Individual tests (20th MySQL test in this case) are ran with
+Individual tests (20th MySQL test in this case, but otherwise any test
+that includes the string 't20') are ran with
 
 ```bash
 pytest /lib/queryparser/testing/test_mysql.py -k t20
+```
+
+If the package `pytest-cov` is installed then the detailed coverage report
+can be generated with
+
+```bash
+pytest --cov=queryparser --cov-report html lib
 ```
 
 Grammar development
@@ -62,7 +70,7 @@ Processor and translator development
 ------------------------------------
 
 Currently, queryparser package consists of two processors (MySQL and PostgreSQL),
-and an ADQL translator. The processors accept ant SELECT-like query and
+and an ADQL translator. The processors accept any SELECT-like query and
 after the process_query() method has been executed, several elements of
 the query are extracted (all touch columns and tables, used keywords and functions).
 Before the processing the query is validated and invalid queries are rejected.

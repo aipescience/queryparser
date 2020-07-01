@@ -304,8 +304,12 @@ class ADQLFunctionsTranslationVisitor(ADQLParserVisitor):
         self.contexts[ctx] = ctx_text
 
     def visitDistance(self, ctx):
-        arg = (self.contexts[ctx.children[2].children[0]],
-               self.contexts[ctx.children[4].children[0]])
+        try:
+            arg = (self.contexts[ctx.children[2].children[0]],
+                   self.contexts[ctx.children[4].children[0]])
+        except KeyError:
+            raise QueryError('Distance in the current implementation is ' +
+                    'possible only between to explicitly defined points.')
 
         if self.output_sql == 'mysql':
             ctx_text = '%s(sdist(%s, %s))' % ((self.conunits, ) + arg)
@@ -319,8 +323,6 @@ class ADQLFunctionsTranslationVisitor(ADQLParserVisitor):
         self.contexts[ctx] = ctx_text
 
     def visitIntersects(self, ctx):
-        #  arg = (self.contexts[ctx.children[2].children[0].children[0]],
-        #         self.contexts[ctx.children[4].children[0].children[0]])
         arg = (self.contexts[ctx.children[2].children[0]],
                self.contexts[ctx.children[4].children[0]])
 
@@ -456,7 +458,6 @@ class ADQLQueryTranslator(object):
 
     """
     def __init__(self, query=None):
-        self.syntax_error_listener = SyntaxErrorListener()
         self._query = None
 
         if query is not None:
@@ -471,6 +472,7 @@ class ADQLQueryTranslator(object):
         lexer = ADQLLexer(inpt)
         self.stream = antlr4.CommonTokenStream(lexer)
         self.parser = ADQLParser(self.stream)
+        self.syntax_error_listener = SyntaxErrorListener()
         self.parser._listeners = [self.syntax_error_listener]
 
         self.tree = self.parser.query()
@@ -529,6 +531,9 @@ class ADQLQueryTranslator(object):
         translator_visitor.visit(self.tree)
 
         translated_query = self.translate(translator_visitor)
+        # fix wrapper functions:
+        for func in (('CENTROID ', 'scenter'), ('DISTANCE ', 'sdist')):
+            translated_query = translated_query.replace(*func)
         return translated_query
 
     def to_postgresql(self):
@@ -554,4 +559,7 @@ class ADQLQueryTranslator(object):
         translator_visitor.visit(self.tree)
 
         translated_query = self.translate(translator_visitor)
+        # fix wrapper functions:
+        #  for func in (('CENTROID ', 'center'), ('DISTANCE ', 'dist')):
+            #  translated_query = translated_query.replace(*func)
         return translated_query
