@@ -127,13 +127,14 @@ def f2():
           SELECT arr[1:3][1][2][3][4] FROM db.phot;
     """
     # query='SELECT * FROM db.c, db.d'
-    #  query = """SELECT ra FROM gdr2.gaia_source AS gaia
-    #  WHERE 1=CONTAINS(POINT('ICRS', gaia.ra, gaia.dec), 
-    #  CIRCLE('ICRS', 245.8962, -26.5222, 0.5))"""
+    query = """SELECT ra FROM gdr2.gaia_source AS gaia
+    WHERE 1=CONTAINS(POINT('ICRS', gaia.ra, gaia.dec), 
+    CIRCLE('ICRS', 245.8962, -26.5222, 0.5))"""
 
-    # adt = ADQLQueryTranslator(query)
+    print(query)
+    adt = ADQLQueryTranslator(query)
     # st = time.time() 
-    # pgq = adt.to_postgresql()
+    pgq = adt.to_postgresql()
     # st = time.time() 
     #  print(pgq)
 
@@ -148,14 +149,15 @@ def f2():
 
     # pgq = qp.query
     qp = PostgreSQLQueryProcessor()
-    qp.set_query(query)
-    # qp.process_query(indexed_objects = iob)
-    qp.process_query()
+    qp.set_query(pgq)
+    qp.process_query(indexed_objects = iob)
+    #  qp.process_query()
 
     print(qp.query)
     print(qp.columns)
     print(qp.display_columns)
     print(qp.tables)
+    print(qp.functions)
 
 
 def f3():

@@ -9,8 +9,12 @@ from queryparser.exceptions import QueryError, QuerySyntaxError
 
 
 def _test_parsing(query_processor, test, translate=False):
-    query, columns, keywords, functions, display_columns, tables,\
-            replace_schema_name = test
+    if len(test) == 6:
+        query, columns, keywords, functions, display_columns, tables = test
+        replace_schema_name = None
+    elif len(test) == 7:
+        query, columns, keywords, functions, display_columns, tables,\
+                replace_schema_name = test
 
     if translate:
         adt = ADQLQueryTranslator()
@@ -54,21 +58,25 @@ def _test_parsing(query_processor, test, translate=False):
 def _test_syntax(query_processor, query):
     with pytest.raises(QuerySyntaxError):
         qp = query_processor(query)
-        qp.process_query()
 
 
 def _test_query(query_processor, query):
     with pytest.raises(QueryError):
         qp = query_processor(query)
-        qp.process_query()
 
 
-def _test_adql_translation(test):
+def _test_adql_translation(test, rtrn=False):
     query, translated_query, output = test
     adt = ADQLQueryTranslator(query)
 
     if translated_query is not None:
         if output == 'mysql':
-            assert translated_query.strip() == adt.to_mysql()
+            tq = adt.to_mysql()
+            assert translated_query.strip() == tq
+
         elif output == 'postgresql':
-            assert translated_query.strip() == adt.to_postgresql()
+            tq = adt.to_postgresql()
+            assert translated_query.strip() == tq
+
+        if rtrn:
+            return tq
