@@ -139,9 +139,9 @@ def f2():
     #  print(pgq)
 
     iob = {'spoint': ((('gdr2', 'gaia_source', 'ra'),
-                       ('gdr2', 'gaia_source', 'dec'), 'pos'),
-                      (('gdr1', 'gaia_source', 'ra'),
-                       ('gdr1', 'gaia_source', 'dec'), 'pos'))}
+                       ('gdr2', 'gaia_source', 'dec'), 'pos'),)}
+                      #  (('gdr1', 'gaia_source', 'ra'),
+                       #  ('gdr1', 'gaia_source', 'dec'), 'pos'))}
     # qp = PostgreSQLQueryProcessor()
     # qp.set_query(query)
     # qp.process_query()

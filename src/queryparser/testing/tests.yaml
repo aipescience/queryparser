@@ -749,21 +749,23 @@ postgresql_tests:
         - SELECT ra FROM gdr2.gaia_source AS gaia
           WHERE spoint(RADIANS(gaia.ra), RADIANS(gaia.dec)) @
           scircle(spoint(RADIANS(245.8962), RADIANS(-26.5222)), RADIANS(0.5));
-        - ['gdr2.gaia_source.pos', 'gdr2.gaia_source.dec',
-           'gdr2.gaia_source.ra']
+        - ['gdr2.gaia_source.dec', 'gdr2.gaia_source.ra']
         - ['where']
-        - ['radians', 'spoint', 'scircle']
+        - ['RADIANS', 'spoint', 'scircle']
         - ['ra: gdr2.gaia_source.ra']
         - ['gdr2.gaia_source']
 
 
 indexed_adql_postgres_tests:
-
     -  
         - SELECT ra FROM gdr2.gaia_source AS gaia
           WHERE 1=CONTAINS(POINT('ICRS', gaia.ra, gaia.dec), 
                            CIRCLE('ICRS', 245.89, -26.52, 0.5));
-        - SELECT ra FROM gdr2.gaia_source AS gaia WHERE spoint(RADIANS(gaia.ra), RADIANS(gaia.dec)) @ scircle(spoint(RADIANS(245.8962), RADIANS(-26.5222)), RADIANS(0.5));
+        - SELECT ra FROM gdr2.gaia_source AS gaia WHERE gaia.pos @ scircle(spoint(RADIANS(245.8962), RADIANS(-26.5222)), RADIANS(0.5));
+        - spoint:
+          - ['gdr2', 'gaia_source', 'ra']
+          - ['gdr2', 'gaia_source', 'dec']
+          - 'pos'
 
 # Each test below consists of:
 #

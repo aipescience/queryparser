@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from . import _test_parsing, _test_syntax, _test_query
+from . import _test_indexed_adql_translation
 
 from queryparser.postgresql import PostgreSQLQueryProcessor
 
@@ -31,3 +32,8 @@ def test_postgresql_syntax(t):
 @pytest.mark.parametrize("t", tests['common_query_tests'])
 def test_postrgresql_query(t):
     _test_query(PostgreSQLQueryProcessor, t)
+
+
+@pytest.mark.parametrize("t", tests['indexed_adql_postgres_tests'])
+def test_indexed_adql_postrgresql_query(t):
+    _test_indexed_adql_translation(t + ['postgresql'])
