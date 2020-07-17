@@ -59,7 +59,7 @@ Grammar development
 -------------------
 
 queryparser's grammar is written in antlr4 language. Each dialect's grammar
-consist of a couple of files, a lexer that defines the symbols and words,
+stack consist of two files, a lexer that defines the symbols and words,
 and a parser that defines the rules. Both files can be edited with any
 text editor, however, PyCharm has an integrated antlr functionality and it 
 makes development and grammar debugging much easier.
