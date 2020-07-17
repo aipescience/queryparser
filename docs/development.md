@@ -1,14 +1,17 @@
 Development notes
 =================
 
-Let us first clone the repository:
+Below are a more detailed description and instructions for anyone who is
+interested in further developing the package.
+
+To start, let us first clone the repository:
 
 ```bash
 git clone git@github.com:aipescience/queryparser.git
 ```
 
-and then create a virtual environment inside of which we can install the
-package and activate it:
+and then create a virtual environment (inside of which we will install the
+package) and activate it:
 
 ```bash
 python -m venv qpenv

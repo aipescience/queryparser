@@ -760,12 +760,13 @@ indexed_adql_postgres_tests:
     -  
         - SELECT ra FROM gdr2.gaia_source AS gaia
           WHERE 1=CONTAINS(POINT('ICRS', gaia.ra, gaia.dec), 
-                           CIRCLE('ICRS', 245.89, -26.52, 0.5));
+                           CIRCLE('ICRS', 245.8962, -26.5222, 0.5));
         - SELECT ra FROM gdr2.gaia_source AS gaia WHERE gaia.pos @ scircle(spoint(RADIANS(245.8962), RADIANS(-26.5222)), RADIANS(0.5));
         - spoint:
-          - ['gdr2', 'gaia_source', 'ra']
-          - ['gdr2', 'gaia_source', 'dec']
-          - 'pos'
+          -
+            - !!python/tuple ['gdr2', 'gaia_source', 'ra']
+            - !!python/tuple ['gdr2', 'gaia_source', 'dec']
+            - 'pos'
 
 # Each test below consists of:
 #

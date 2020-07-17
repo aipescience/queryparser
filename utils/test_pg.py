@@ -142,6 +142,7 @@ def f2():
                        ('gdr2', 'gaia_source', 'dec'), 'pos'),)}
                       #  (('gdr1', 'gaia_source', 'ra'),
                        #  ('gdr1', 'gaia_source', 'dec'), 'pos'))}
+    print('iob', iob)
     # qp = PostgreSQLQueryProcessor()
     # qp.set_query(query)
     # qp.process_query()
@@ -153,11 +154,12 @@ def f2():
     qp.process_query(indexed_objects = iob)
     #  qp.process_query()
 
-    print(qp.query)
-    print(qp.columns)
-    print(qp.display_columns)
-    print(qp.tables)
-    print(qp.functions)
+    print('iob', iob)
+    print('q', qp.query)
+    #  print(qp.columns)
+    #  print(qp.display_columns)
+    #  print(qp.tables)
+    #  print(qp.functions)
 
 
 def f3():
@@ -205,7 +207,26 @@ AND (vmcsource.priOrSec<=0 OR vmcsource.priOrSec=vmcsource.frameSetID);
     print(qp.keywords)
     print(qp.functions)
 
-f2()
+
+def f4():
+    query = """SELECT ra FROM gdr2.gaia_source AS gaia WHERE 1=CONTAINS(POINT('ICRS', gaia.ra, gaia.dec), CIRCLE('ICRS', 245.8962, -26.5222, 0.5))"""
+
+    adt = ADQLQueryTranslator(query)
+    pgq = adt.to_postgresql()
+
+    iob = {'spoint': ((('gdr2', 'gaia_source', 'ra'),
+                       ('gdr2', 'gaia_source', 'dec'), 'pos'),)}
+
+    qp = PostgreSQLQueryProcessor()
+    qp.set_query(pgq)
+    qp.process_query(indexed_objects = iob)
+
+    print('iob', iob)
+    print('oq', query)
+    print('tq', pgq)
+    print(' q', qp.query)
+
+f4()
 exit()
 
 alpha = (13 + 26 / 60 + 47.28 / 3600) * 15 - 180

@@ -25,7 +25,6 @@ class PgSphereListener(PostgreSQLParserListener):
                 pass
 
         self.indexed_objects = indexed_objects
-        print(indexed_objects)
         self.replace_dict = {}
 
     def enterSpoint(self, ctx):

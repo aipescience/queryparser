@@ -86,5 +86,5 @@ def _test_indexed_adql_translation(test):
             tq = adt.to_postgresql()
             qp = PostgreSQLQueryProcessor()
             qp.set_query(tq)
-            qp.process_query(iob)
+            qp.process_query(indexed_objects=iob)
             assert translated_query.strip() == qp.query
