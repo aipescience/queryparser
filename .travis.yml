@@ -4,9 +4,9 @@ cache: pip
 matrix:
   include:
   - python: 3.6
-    env: SOURCE_DIR=lib/python3
+    env: SOURCE_DIR=lib
   - python: 3.8
-    env: SOURCE_DIR=lib/python3
+    env: SOURCE_DIR=lib
 
 install:
 - wget http://www.antlr.org/download/antlr-4.8-complete.jar
