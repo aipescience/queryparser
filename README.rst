@@ -1,7 +1,8 @@
 queryparser
 ===========
 
-**Tool for parsing and processing MySQL and ADQL SELECT queries**
+**Tool for parsing and processing of MySQL/PostgreSQL and translation of
+ADQL SELECT-like queries**
 
 Designed to be used in conjunction with `django-daiquri <http://github.com/aipescience/django-daiquiri/>`_
 as a query processing backend but it can be easily used as a stand-alone tool
@@ -33,7 +34,7 @@ The easiest way to install the package is by using the pip tool:
     pip install queryparser-python3
 
 Alternatively, you can clone the repository and install it from there.
-However, this step also requires generating the parser which is a slighly
+However, this step also requires generating the parser which is a slightly
 more elaborate process (see below).
 
 
@@ -50,8 +51,7 @@ After cloning the project run
 
     make
 
-and a `lib` directory will be created with the complete source for python2
-and python3. After that run
+and a `lib` directory will be created. After that, run
 
 .. code-block:: bash
 
@@ -60,7 +60,7 @@ and python3. After that run
 to install the generated parser in your virtual environment.
 
 
-Parsing MySQL
+Parsing MySQL and PostgreSQL
 -------------
 
 Parsing and processing of MySQL queries can be done by creating an instance
@@ -85,11 +85,22 @@ and running it with
 
     qp.process_query()
 
-After the processing, the processor object ``qp`` will include tables, columns,
-functions, and keywords used in the query or will raise a ``QuerySyntaxError``
-if there are any syntax errors in the query.
+After the processing is completed, the processor object ``qp`` will include
+tables, columns, functions, and keywords used in the query or will raise a
+``QuerySyntaxError`` if there are any syntax errors in the query.
 
 Alternatively, passing the query at initialization automatically processes it.
+
+PostgreSQL parsing is very similar to MySQL, except it requires importing
+the `PostgreSQLProcessor` class:
+
+.. code-block:: python
+
+    from queryparser.postgresql import PostgreSQLQueryProcessor
+
+    qp = PostgreSQLQueryProcessor()
+
+The rest of the functionality remains the same.
 
 
 Translating ADQL
@@ -130,3 +141,5 @@ then run the test suite for a version of python you would like to test with
 .. code-block:: bash
     
     pytest lib/
+
+More elaborate testing procedures can be found in the development notes. 

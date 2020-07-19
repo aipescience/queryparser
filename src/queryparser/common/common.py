@@ -17,7 +17,7 @@ def parse_alias(alias, quote_char):
     Extract the alias if available.
 
     :param alias:
-        antlr context.
+        antlr context
 
     :parma quote_char:
         which string quote character to use
@@ -32,10 +32,26 @@ def parse_alias(alias, quote_char):
 
 def process_column_name(column_name_listener, walker, ctx, quote_char):
     '''
+    A helper function that strips the quote characters from the column
+    names. The returned list includes:
+
     cn[0] - schema
     cn[1] - table
     cn[2] - column
     cn[3] - ctx
+
+    :param column_name_listener:
+        column_name_listener object
+
+    :param walker:
+        antlr walker object 
+
+    :param ctx:
+        antlr context to walk through
+
+    :param quote_char:
+        which quote character are we expecting?
+
     '''
     cn = []
     column_name_listener.column_name = []
@@ -566,7 +582,7 @@ class SQLQueryProcessor(object):
                          subquery_contents=None):
 
         # Here we store all columns that might have references somewhere
-        # higer up in the tree structure. We'll revisit them later.
+        # higher up in the tree structure. We'll revisit them later.
         missing_columns = []
         remove_column_idxs = []
         extra_columns = []
@@ -605,7 +621,7 @@ class SQLQueryProcessor(object):
                          (tab[1] is None and c[0][1] is None)):
                     cname, cctx, calias, column_found, tab =\
                             self._get_budget_column(c, tab, budget[-1][2])
-                    # raise an ambigous column
+                    # raise an ambiguous column
                     if column_found and c[0][1] is None:
                         raise QueryError("Column '%s' is possibly ambiguous."
                                          % c[0][2])
@@ -692,7 +708,7 @@ class SQLQueryProcessor(object):
                         cname, cctx, calias, column_found, tab =\
                                 self._get_budget_column(c, tab, ref[2])
 
-                        # We allow None.None colunms because they are produced
+                        # We allow None.None columns because they are produced
                         # by count(*)
                         if not column_found and c[0][2] is not None\
                                 and c[0][2] not in column_aliases:
@@ -714,6 +730,19 @@ class SQLQueryProcessor(object):
         """
         Parses and processes the query. After a successful run it fills up
         columns, keywords, functions and syntax_errors lists.
+
+        :param replace_schema_name:
+            A new schema name to be put in place of the original.
+
+        :param indexed_objects:
+            A dictionary defining pgsphere objects to be replaced with 
+            precomputed (on the database level) columns. For example,
+
+            iob = {'spoint': ((('gdr2', 'gaia_source', 'ra'),
+                               ('gdr2', 'gaia_source', 'dec'), 'pos'),)}
+
+            will replace 'spoint(RADIANS(ra), RADIANS(dec))' with a 'pos'
+            column.
 
         """
         # Antlr objects
@@ -748,7 +777,7 @@ class SQLQueryProcessor(object):
 
         # Columns that are accessed by the query
         touched_columns = []
-        # List we use to propagete the columns through the tree
+        # List we use to propagate the columns through the tree
         budget = []
         # Are there any joins in the query?
         join = 0
@@ -786,7 +815,7 @@ class SQLQueryProcessor(object):
             current_depth = column_keyword_function_listener.data[0][0]
 
             # We get the columns from the select list along with all
-            # other touched columns and any posible join conditions
+            # other touched columns and any possible join conditions
             column_aliases_from_previous = [i for i in column_aliases]
             select_list_columns, select_list_tables,\
                 select_list_table_references, other_columns, go_columns, join,\

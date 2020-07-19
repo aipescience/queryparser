@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from . import _test_parsing, _test_adql_translation
+from . import _test_parsing, _test_adql_translation, _test_syntax
 
+from queryparser.adql import ADQLQueryTranslator
 from queryparser.mysql import MySQLQueryProcessor
 from queryparser.postgresql import PostgreSQLQueryProcessor
 
@@ -32,3 +33,8 @@ def test_adql_mysql_parsing(t):
 @pytest.mark.parametrize("t", tests['common_translation_tests'])
 def test_adql_postgresql_parsing(t):
     _test_parsing(PostgreSQLQueryProcessor, t, translate=True)
+
+
+@pytest.mark.parametrize("t", tests['common_syntax_tests'])
+def test_postgresql_syntax(t):
+    _test_syntax(ADQLQueryTranslator , t)

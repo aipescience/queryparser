@@ -756,6 +756,12 @@ postgresql_tests:
         - ['gdr2.gaia_source']
 
 
+# Each test below consists of:
+#
+# - ADQL query string
+# - translated query string with replaced indexed object
+# - dictionary of indexed objects to be replaced and their specifications
+
 indexed_adql_postgres_tests:
     -  
         - SELECT ra FROM gdr2.gaia_source AS gaia
@@ -767,6 +773,7 @@ indexed_adql_postgres_tests:
             - !!python/tuple ['gdr2', 'gaia_source', 'ra']
             - !!python/tuple ['gdr2', 'gaia_source', 'dec']
             - 'pos'
+
 
 # Each test below consists of:
 #
@@ -782,8 +789,24 @@ adql_mysql_tests:
         - SELECT TOP 10 AREA(CIRCLE('ICRS', "tab".RA, -2.23, 176.98)) FROM db.tab
         - SELECT sarea(scircle(spoint(RADIANS(`tab`.`RA`), RADIANS(-2.23)), RADIANS(176.98))) FROM `db`.`tab` LIMIT 10;
 
+    - 
+        - SELECT CENTROID(CIRCLE('ICRS', 10.0, -10.5, 2.0)) FROM db.tab;
+        - SELECT scenter(scircle(spoint(RADIANS(10.0), RADIANS(-10.5)), RADIANS(2.0))) FROM `db`.`tab`;
+
+    -
+        - SELECT TOP 10 ra, dec FROM db.tab WHERE 1=CONTAINS(POINT('ICRS', ra, dec), BOX('ICRS', -3.0, 5.0, 4.0, 10.0));
+        - SELECT `ra`, `dec` FROM `db`.`tab` WHERE 1 = srcontainsl(spoint(RADIANS(`ra`), RADIANS(`dec`)), sbox(spoint(RADIANS(-3.0),RADIANS(5.0)),spoint(RADIANS(1.000000000000),RADIANS(15.000000000000)))) LIMIT 10;
+
+    -
+        - SELECT TOP 10 DISTANCE(POINT('ICRS', ra, dec), POINT('ICRS', 13.66, -58.3)) FROM db.tab;
+        - SELECT DEGREES(sdist(spoint(RADIANS(`ra`), RADIANS(`dec`)), spoint(RADIANS(13.66), RADIANS(-58.3)))) FROM `db`.`tab` LIMIT 10;
+
 
 adql_postgresql_tests:
+    -
+        - SELECT TOP 10 AREA(CIRCLE('ICRS', "tab".RA, -2.23, 176.98)) FROM db.tab
+        - SELECT area(scircle(spoint(RADIANS("tab".RA), RADIANS(-2.23)), RADIANS(176.98))) FROM db.tab LIMIT 10;
+
     -
         - SELECT POINT('icrs', 10, 10) AS "p" FROM "db".tab
         - SELECT spoint(RADIANS(10.0), RADIANS(10.0)) AS "p" FROM "db".tab;
@@ -793,8 +816,8 @@ adql_postgresql_tests:
         - SELECT ra, dec FROM db.tab WHERE spoint(RADIANS(ra), RADIANS(dec)) @ sbox(spoint(RADIANS(-3.0),RADIANS(5.0)),spoint(RADIANS(1.000000000000),RADIANS(15.000000000000))) LIMIT 10;
 
     -
-        - SELECT TOP 10 ra, dec FROM db.tab WHERE 1=CONTAINS(POINT('ICRS', ra, dec), POLYGON('ICRS', 10.0, -10.5, 20.0, 20.5, 30.0, 30.5));
-        - SELECT ra, dec FROM db.tab WHERE spoint(RADIANS(ra), RADIANS(dec)) @ spoly('{(10.0d,-10.5d),(20.0d,20.5d),(30.0d,30.5d)}') LIMIT 10;
+        - SELECT TOP 10 LOG10(ra), LOG(dec) FROM db.tab WHERE 1=CONTAINS(POINT('ICRS', ra, dec), POLYGON('ICRS', 10.0, -10.5, 20.0, 20.5, 30.0, 30.5));
+        - SELECT LOG(ra), LN(dec) FROM db.tab WHERE spoint(RADIANS(ra), RADIANS(dec)) @ spoly('{(10.0d,-10.5d),(20.0d,20.5d),(30.0d,30.5d)}') LIMIT 10;
 
     - 
         - SELECT CENTROID(CIRCLE('ICRS', 10.0, -10.5, 2.0)) FROM db.tab;
@@ -807,6 +830,8 @@ adql_postgresql_tests:
     - 
         - SELECT INTERSECTS(CIRCLE('ICRS', 0, 0, 10), BOX('ICRS', -2, -4, 5, 5)) FROM db.tab;
         - SELECT scircle(spoint(RADIANS(0.0), RADIANS(0.0)), RADIANS(10.0)) && sbox(spoint(RADIANS(-2.0),RADIANS(-4.0)),spoint(RADIANS(3.000000000000),RADIANS(1.000000000000))) FROM db.tab;
+
+
 # Each test below consists of:
 #
 # - syntactically incorrect query string

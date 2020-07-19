@@ -65,6 +65,13 @@ def f1():
     ) AS gmag_tab
     GROUP BY gmag;
     """
+    query = '''
+    SELECT *
+    FROM gdr1.gaia_source
+    WHERE 1=CONTAINS(
+    POINT('ICRS',ra,dec),
+    CIRCLE('ICRS',31, -19, 0.5))
+    '''
 
     adt = ADQLQueryTranslator(query)
     pgq = adt.to_postgresql()
@@ -226,7 +233,7 @@ def f4():
     print('tq', pgq)
     print(' q', qp.query)
 
-f4()
+f1()
 exit()
 
 alpha = (13 + 26 / 60 + 47.28 / 3600) * 15 - 180

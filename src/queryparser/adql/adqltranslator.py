@@ -33,7 +33,6 @@ def _process_regular_identifier(ctx_text, sql_output):
         return '`' + ri + '`'
     elif sql_output == 'postgresql':
         return ctx_text
-        #  return '' + ri + ''
     else:
         return ri
 
@@ -139,8 +138,6 @@ class ADQLGeometryTranslationVisitor(ADQLParserVisitor):
         if len(coords) == 3:
             coords = coords[1:]
 
-        #  ctx_text = "spoint( %s(%s),%s(%s) )" % (self.conunits, coords[0],
-        #                                          self.conunits, coords[1])
         if self.output_sql == 'mysql':
             ctx_text = "spoint( %s(%s), %s(%s) )" % (self.conunits, coords[0],
                                                      self.conunits, coords[1])
@@ -168,7 +165,8 @@ class ADQLGeometryTranslationVisitor(ADQLParserVisitor):
         if self.output_sql in ('mysql', 'postgresql'):
             ctx_text = "sbox( spoint(%s(%s),%s(%s)),spoint(%s(%s),%s(%s)) )" %\
                 (self.conunits, pars[0], self.conunits, pars[1],
-                 self.conunits, '%.12f' % topright_x, self.conunits, '%.12f' % topright_y)
+                 self.conunits, '%.12f' % topright_x, self.conunits,
+                 '%.12f' % topright_y)
         else:
             ctx_text = ''
 
@@ -309,7 +307,8 @@ class ADQLFunctionsTranslationVisitor(ADQLParserVisitor):
                    self.contexts[ctx.children[4].children[0]])
         except KeyError:
             raise QueryError('Distance in the current implementation is ' +
-                    'possible only between to explicitly defined points.')
+                             'possible only between to explicitly defined' +
+                             'points.')
 
         if self.output_sql == 'mysql':
             ctx_text = '%s(sdist(%s, %s))' % ((self.conunits, ) + arg)
@@ -341,7 +340,9 @@ class ADQLFunctionsTranslationVisitor(ADQLParserVisitor):
         if self.output_sql == 'postgresql' and ctx_text[:5].lower() == 'log10':
             _remove_children(ctx)
             self.contexts[ctx] = 'LOG' + ctx_text[5:]
-            
+        elif self.output_sql == 'postgresql' and ctx_text[:3].lower() == 'log':
+            _remove_children(ctx)
+            self.contexts[ctx] = 'LN' + ctx_text[3:]
 
 
 class SelectQueryListener(ADQLParserListener):
@@ -440,7 +441,6 @@ class FormatListener(ADQLParserListener):
     def format_query(self):
         query = ' '.join(self.nodes).rstrip(';')
         query = query.replace('_ ', '')
-        # Remove some spaces
         query = query.replace(' . ', '.')
         query = query.replace(' , ', ', ')
         query = query.replace('( ', '(')
@@ -559,7 +559,4 @@ class ADQLQueryTranslator(object):
         translator_visitor.visit(self.tree)
 
         translated_query = self.translate(translator_visitor)
-        # fix wrapper functions:
-        #  for func in (('CENTROID ', 'center'), ('DISTANCE ', 'dist')):
-            #  translated_query = translated_query.replace(*func)
         return translated_query

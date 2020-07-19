@@ -57,12 +57,12 @@ def _test_parsing(query_processor, test, translate=False):
 
 def _test_syntax(query_processor, query):
     with pytest.raises(QuerySyntaxError):
-        qp = query_processor(query)
+        query_processor(query)
 
 
 def _test_query(query_processor, query):
     with pytest.raises(QueryError):
-        qp = query_processor(query)
+        query_processor(query)
 
 
 def _test_adql_translation(test):
