@@ -20,7 +20,7 @@ if sys.version_info.major == 3 and sys.version_info.minor < 5:
     requirements += ['typing']
 
 setup(
-    name='queryparser-python%d' % python_version,
+    name='queryparser-python3',
     version=metadata['version'],
     author=metadata['author'],
     author_email=metadata['email'],
@@ -31,6 +31,7 @@ setup(
     description=u'Parses PostgreSQL/MySQL and translates ADQL to ' +\
             'PostgreSQL/MySQL.',
     long_description=open('README.rst').read(),
+    long_description_content_type='text/x-rst',
     install_requires=requirements,
     classifiers=[],
     packages=[

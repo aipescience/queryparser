@@ -117,11 +117,11 @@ walker = antlr4.ParseTreeWalker()
 walker.walk(listener, context)
 ```
 
-Listener is a class with methods that react each time the walker  stumbles upon a rule
+Listener is a class with methods that react each time the walker stumbles upon a rule
 defined in the parser part of the grammar. For example, if there is method
 called `enterAlias()` defined inside of a listener, it will be called once
 the walker reaches an `Alias` (as it is defined in the antlr parser file) in a
-query (context).
+query or another context.
 
 ### Indexed objects
 
@@ -167,3 +167,9 @@ functions (spoint, scircle, sbox...).
 
 ## New releases
 
+1. Change the version number in `src/queryparser/__init__.py`
+2. `python setup.py sdist bdist_wheel`
+3. `twine check dist/*`
+4. `twine upload --repository-url https://test.pypi.org/legacy/ dist/*`
+5. `twine upload dist/*`
+6. Create a new release on github.

@@ -61,7 +61,7 @@ to install the generated parser in your virtual environment.
 
 
 Parsing MySQL and PostgreSQL
--------------
+----------------------------
 
 Parsing and processing of MySQL queries can be done by creating an instance
 of the ``MySQLQueryProcessor`` class
