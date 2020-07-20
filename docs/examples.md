@@ -59,8 +59,7 @@ and may be aliased which is why it is useful to have a reference to which
 exact database column names they are pointing to.
 
 
-### A more complicated SQL query selecting from multiple tables and having 
-multiple joins
+### A more complicated SQL query selecting from multiple tables and having multiple joins
 
 ```SQL
 SELECT t.RAVE_OBS_ID AS c1, t.HEALPix AS c2,
