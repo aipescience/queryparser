@@ -154,7 +154,7 @@ iob = {'spoint': ((('gdr2', 'gaia_source', 'ra'),
                    ('gdr2', 'gaia_source', 'dec'), 'pos'),)}                                                                                                                                                                                                                                                            
 qp = PostgreSQLQueryProcessor()                                                                                                                                                                                                                                                                                       
 qp.set_query(postgres_query)                                                                                                                                                                                                                                                                                                   
-qp.process_query(indexed_objects = iob)
+qp.process_query(indexed_objects=iob)
 ```
 
 The `qp.query` string will now give us
