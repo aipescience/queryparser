@@ -66,23 +66,28 @@ def f1():
     GROUP BY gmag;
     """
     query = '''
-    SELECT *
-    FROM gdr1.gaia_source
-    WHERE 1=CONTAINS(
-    POINT('ICRS',ra,dec),
-    CIRCLE('ICRS',31, -19, 0.5))
+SELECT gaia.source_id, gaia.ra, gaia.dec, gd.r_est
+FROM gdr2.gaia_source gaia, gdr2_contrib.geometric_distance gd
+WHERE 1 = CONTAINS(POINT('ICRS', gaia.ra, gaia.dec), 
+                   CIRCLE('ICRS',245.8962, -26.5222, 0.5))
+AND gaia.phot_g_mean_mag < 15
+AND gd.r_est > 1500 AND gd.r_est < 2300
+AND gaia.source_id = gd.source_id
     '''
 
     adt = ADQLQueryTranslator(query)
     pgq = adt.to_postgresql()
     print(pgq)
+    return
     qp = PostgreSQLQueryProcessor()
-    qp.set_query(pgq)
+    #  qp.set_query(pgq)
+    qp.set_query(query)
     qp.process_query()
     print(qp.columns)
     print(qp.display_columns)
     print(qp.tables)
     print(qp.functions)
+    print(qp.keywords)
 
 
 def f2():
@@ -138,6 +143,22 @@ def f2():
     WHERE 1=CONTAINS(POINT('ICRS', gaia.ra, gaia.dec), 
     CIRCLE('ICRS', 245.8962, -26.5222, 0.5))"""
 
+    query = """
+    SELECT gaia.source_id, gaia.ra, gaia.dec, gd.r_est
+
+    FROM gdr2.gaia_source gaia, gdr2_contrib.geometric_distance gd
+
+    WHERE 1 = CONTAINS(POINT('ICRS', gaia.ra, gaia.dec), 
+
+                               CIRCLE('ICRS',245.8962, -26.5222, 0.5))
+
+    AND gaia.phot_g_mean_mag < 15
+
+    AND gd.r_est > 1500 AND gd.r_est < 2300
+
+    AND gaia.source_id = gd.source_id
+    """
+
     print(query)
     adt = ADQLQueryTranslator(query)
     # st = time.time() 
@@ -147,7 +168,7 @@ def f2():
 
     iob = {'spoint': ((('gdr2', 'gaia_source', 'ra'),
                        ('gdr2', 'gaia_source', 'dec'), 'pos'),)}
-                      #  (('gdr1', 'gaia_source', 'ra'),
+                      #  (('gdr2', 'gaia_source', 'ra'),
                        #  ('gdr1', 'gaia_source', 'dec'), 'pos'))}
     print('iob', iob)
     # qp = PostgreSQLQueryProcessor()
@@ -233,7 +254,7 @@ def f4():
     print('tq', pgq)
     print(' q', qp.query)
 
-f1()
+f2()
 exit()
 
 alpha = (13 + 26 / 60 + 47.28 / 3600) * 15 - 180

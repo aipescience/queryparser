@@ -1,5 +1,17 @@
 # Development notes
 
+queryparser is a python tool for parsing of MySQL/PostgreSQL SELECT-like queries.
+It checks whether the query is syntactically and structurally correct and 
+after traversing the query structure extracts all touched columns (even if
+they are aliased multiple times), touched tables, along with all used keywords
+and functions. These are accessible to the user after the query has been 
+processed and can be used to check, for example, for permissions before the
+query is sent to the server.
+
+In addition, queryparser can also work with ADQL queries which can be translated
+to either MySQL or PostgreSQL language and then further processed the same
+way.
+
 Below is a more detailed description along with instructions for anyone who is
 interested in further developing the package.
 
@@ -76,9 +88,9 @@ inside of the `testing` directory.
 ## Grammar development
 
 queryparser's grammar is written in antlr4 language. Each dialect's grammar
-stack consist of two files, a lexer that defines the symbols and words (any
-combination of characters),
-and a parser that defines the rules. Both files can be edited with any
+stack consist of two files. A lexer that defines the symbols and words (any
+combination of characters), including how to handle white-spaces.
+The parser defines the rules of the SQL languages. Both files can be edited with any
 text editor, however, PyCharm has an integrated antlr functionality and it 
 makes development and grammar debugging much easier.
 
