@@ -150,10 +150,10 @@ this `spoint` with the name of the pre-computed column. This can be achieved
 by defining the `indexed_objects` dictionary and passing it to the processor.
 
 ```python
-iob = {'spoint': ((('gdr2', 'gaia_source', 'ra'),                                                                                                                                                                                                                                                                       
-                   ('gdr2', 'gaia_source', 'dec'), 'pos'),)}                                                                                                                                                                                                                                                            
-qp = PostgreSQLQueryProcessor()                                                                                                                                                                                                                                                                                       
-qp.set_query(postgres_query)                                                                                                                                                                                                                                                                                                   
+iob = {'spoint': ((('gdr2', 'gaia_source', 'ra'),
+                   ('gdr2', 'gaia_source', 'dec'), 'pos'),)}
+qp = PostgreSQLQueryProcessor()
+qp.set_query(postgres_query)
 qp.process_query(indexed_objects=iob)
 ```
 
