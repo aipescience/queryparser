@@ -1,7 +1,7 @@
 # Examples
 
 
-* A simple PostgreSQL query
+### A simple PostgreSQL query
 
 ```SQL
 -- Compute HEALPix value from source_id
@@ -59,7 +59,7 @@ and may be aliased which is why it is useful to have a reference to which
 exact database column names they are pointing to.
 
 
-* A more complicated SQL query selecting from multiple tables and having 
+### A more complicated SQL query selecting from multiple tables and having 
 multiple joins
 
 ```SQL
@@ -103,7 +103,7 @@ print(qp.keywords)
 ```
 
 
-* ADQL to PostgreSQL using indexed spoint object
+### ADQL to PostgreSQL using indexed spoint object
 
 The need indexed objects is explained in the development document. Here we will
 demonstrate how to use them.
