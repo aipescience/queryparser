@@ -54,9 +54,9 @@ print(qp.keywords)
 ```
 
 Besides the touched columns that are stored inside of `qp.columns` we also
-get the `display_columns`. These are the columns that being selected (following the SELECT keyword)
-and may be aliased which is why it's useful to have a reference to which
-exact database column name they are pointing to.
+get the `display_columns`. These columns are selected (following the SELECT keyword)
+and may be aliased which is why it is useful to have a reference to which
+exact database column names they are pointing to.
 
 
 * A more complicated SQL query selecting from multiple tables and having 
