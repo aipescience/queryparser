@@ -135,6 +135,11 @@ called `enterAlias()` defined inside of a listener, it will be called once
 the walker reaches an `Alias` (as it is defined in the antlr parser file) in a
 query or another context.
 
+The main queryparser class that includes this antlr functionality is called
+`SQLQueryProcessor`. Besides the helper functions it includes the 
+`process_query()` that binds the processing together. MySQL and PostgreSQL
+processors inherit from this class and extend it with their own listeners.
+
 ### Indexed objects
 
 The need for indexed objects is easiest to explain through an example. Let us
