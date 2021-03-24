@@ -104,6 +104,13 @@ different languages, including python. Generating parsers for this project
 is done easily with the helper script `generate.py` that can be found in
 the root directory of the project.
 
+#### Adding new PostgreSQL function
+
+To add a new PostgreSQL function first edit the `PostgreSQLLexer.g4` file and
+register the name of the new function. After the name has been added to the
+list of known variables and can be recognized by the lexer, the function can
+be added to the list under `custom_function` in the file `PostgreSQLParser.g4`.
+
 ## Processor and translator development
 
 Currently, queryparser package consists of two processors (MySQL and PostgreSQL),
