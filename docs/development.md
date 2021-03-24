@@ -109,7 +109,8 @@ the root directory of the project.
 To add a new PostgreSQL function first edit the `PostgreSQLLexer.g4` file and
 register the name of the new function. After the name has been added to the
 list of known variables and can be recognized by the lexer, the function can
-be added to the list under `custom_function` in the file `PostgreSQLParser.g4`.
+be added to the list under `custom_functions` in the file
+`PostgreSQLParser.g4`.
 
 ## Processor and translator development
 
