@@ -86,6 +86,7 @@ FLOOR				: F_ L_ O_ O_ R_  ;
 FOR_SYM				: F_ O_ R_  ;
 FORCE_SYM           : F_ O_ R_ C_ E_ ;
 FROM				: F_ R_ O_ M_  ;
+GAIA_HEALPIX_INDEX  : G_ A_ I_ A_ '_' H_ E_ A_ L_ P_ I_ X_ '_' I_ N_ D_ E_ X_ ;
 GROUP_SYM			: G_ R_ O_ U_ P_  ;
 HAVING				: H_ A_ V_ I_ N_ G_  ;
 IGNORE_SYM			: I_ G_ N_ O_ R_ E_  ;

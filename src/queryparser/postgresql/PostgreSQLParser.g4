@@ -61,12 +61,15 @@ time_functions:
 array_functions:
       ARRAY_LENGTH ;
 
+custom_functions:
+      GAIA_HEALPIX_INDEX ;
+
 pg_sphere_functions:
       AREA ;
 
 functionList:
 	  number_functions | char_functions | time_functions | other_functions
-    | pg_sphere_functions | array_functions ;
+    | pg_sphere_functions | array_functions | custom_functions;
 
 literal_value:
       string_literal | number_literal | hex_literal | boolean_literal
