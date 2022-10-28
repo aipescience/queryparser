@@ -62,7 +62,7 @@ array_functions:
       ARRAY_LENGTH ;
 
 custom_functions:
-      GAIA_HEALPIX_INDEX ;
+      GAIA_HEALPIX_INDEX | PDIST ;
 
 pg_sphere_functions:
       AREA ;

@@ -127,6 +127,7 @@ ON				    : O_ N_  ;
 ORDER_SYM			: O_ R_ D_ E_ R_  ;
 OUTER				: O_ U_ T_ E_ R_  ;
 PARTITION_SYM		: P_ A_ R_ T_ I_ T_ I_ O_ N_  ;
+PDIST               : P_ D_ I_ S_ T_ ;
 PI				    : P_ I_  ;
 POSITION_SYM        : P_ O_ S_ I_ T_ I_ O_ N_ ;
 POW				    : P_ O_ W_  ;

@@ -622,6 +622,15 @@ mysql_tests:
 
 
 postgresql_tests:
+
+    -
+        - SELECT pdist(1000, 10, 11, 12, 11, 11, 12)
+        - 
+        - 
+        - 
+        - 
+        - 
+
     -
         - SELECT ra, dec FROM gdr1.gaia_source
           WHERE pos @ scircle(spoint(1.44, 0.23), 0.01)
