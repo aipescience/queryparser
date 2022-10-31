@@ -627,7 +627,7 @@ postgresql_tests:
         - SELECT pdist(1000, 10, 11, 12, 11, 11, 12)
         - 
         - 
-        - 
+        - ['pdist']
         - 
         - 
 
