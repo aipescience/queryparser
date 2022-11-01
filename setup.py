@@ -30,7 +30,7 @@ setup(
     url='https://github.com/aipescience/queryparser',
     description=u'Parses PostgreSQL/MySQL and translates ADQL to ' +\
             'PostgreSQL/MySQL.',
-    long_description=open('README.rst').read(),
+    long_description=open('README.md').read(),
     long_description_content_type='text/x-rst',
     install_requires=requirements,
     classifiers=[],
