@@ -10,7 +10,7 @@ or integrated into another project.
 
 
 [![pytest Workflow Status](https://github.com/aipescience/queryparser/actions/workflows/pytest.yml/badge.svg)](https://github.com/aipescience/queryparser/actions/workflows/pytest.yml)
-[![Coverage Status](https://coveralls.io/repos/aipescience/queryparser/badge.svg?branch=dev&service=github)](https://coveralls.io/github/django-daiquiri/daiquiri?branch=master)
+[![Coverage Status](https://coveralls.io/repos/aipescience/queryparser/badge.svg?branch=dev&service=github)](https://coveralls.io/github/aipescience/queryparser?branch=dev)
 [![License](http://img.shields.io/badge/license-APACHE-blue.svg?style=flat)](https://github.com/aipescience/queryparser/blob/master/LICENSE)
 [![Latest Version](https://img.shields.io/pypi/v/queryparser-python3.svg?style=flat)](https://pypi.org/project/queryparser-python3/)
 
