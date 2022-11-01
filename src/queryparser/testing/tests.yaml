@@ -632,6 +632,15 @@ postgresql_tests:
         - 
 
     -
+        - SELECT DISTINCT ON ("source"."tycho2_id") "tycho2_id", "source"."tycho2_dist"
+          FROM "applause_dr3"."source_calib" AS "source"
+        - ['applause_dr3.source_calib.tycho2_id', 'applause_dr3.source_calib.tycho2_dist']
+        - 
+        - 
+        - 
+        - 
+
+    -
         - SELECT ra, dec FROM gdr1.gaia_source
           WHERE pos @ scircle(spoint(1.44, 0.23), 0.01)
         - ['gdr1.gaia_source.ra', 'gdr1.gaia_source.dec',
