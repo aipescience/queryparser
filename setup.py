@@ -9,11 +9,8 @@ python_version = sys.version_info.major
 with open('lib/queryparser/__init__.py') as f:
     metadata = dict(re.findall(r'__(.*)__ = [\']([^\']*)[\']', f.read()))
 
-requirements = [
-    'pytest',
-    'coverage',
-    'antlr4-python%d-runtime' % python_version
-]
+with open('requirements.txt') as f:
+    requirements = f.readlines()
 
 # work around for python 3.4 and antlr4-python3-runtime
 if sys.version_info.major == 3 and sys.version_info.minor < 5:
