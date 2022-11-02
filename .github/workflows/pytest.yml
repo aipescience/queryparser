@@ -26,7 +26,25 @@ jobs:
           wget http://www.antlr.org/download/antlr-4.11.1-complete.jar
           make
           pip install -r requirements.txt -I -e .
+          pip install coveralls
           
       - name: Run Tests
         run: |
-          pytest lib/
+          pytest lib/ --cov=queryparser
+          coveralls --service=github
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+          
+  coveralls:
+    name: Indicate completion to coveralls
+    needs: build
+    runs-on: ubuntu-latest
+    container: python:3-slim
+    steps:
+    - name: Run Coveralls finish
+      run: |
+        pip install coveralls
+        coveralls --service=github --finish
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
