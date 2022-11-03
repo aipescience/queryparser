@@ -90,6 +90,7 @@ GAIA_HEALPIX_INDEX  : G_ A_ I_ A_ '_' H_ E_ A_ L_ P_ I_ X_ '_' I_ N_ D_ E_ X_ ;
 GROUP_SYM			: G_ R_ O_ U_ P_  ;
 HAVING				: H_ A_ V_ I_ N_ G_  ;
 IGNORE_SYM			: I_ G_ N_ O_ R_ E_  ;
+ILIKE_SYM			: I_ L_ I_ K_ E_  ;
 INDEX_SYM			: I_ N_ D_ E_ X_  ;
 INNER_SYM			: I_ N_ N_ E_ R_  ;
 INTEGER_SYM			: I_ N_ T_ E_ G_ E_ R_  ;

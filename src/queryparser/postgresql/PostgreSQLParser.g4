@@ -118,7 +118,9 @@ column_list:            LPAREN column_spec ( COMMA column_spec )* RPAREN ;
 column_name:            ID;
 column_spec:            ( ( schema_name DOT )? table_name DOT )? column_name ( slice_spec )?;
 
-displayed_column :      ( table_spec DOT ASTERISK ) | ( ( bit_expr | sbit_expr ) ( LIKE_SYM TEXT_STRING )? ( alias )? ) ;
+displayed_column :      ( table_spec DOT ASTERISK )
+                      | ( ( bit_expr | sbit_expr ) ( LIKE_SYM TEXT_STRING )? ( alias )? )
+                      | ( ( bit_expr | sbit_expr ) ( ILIKE_SYM TEXT_STRING )? ( alias )? ) ;
 
 exp_factor1:	        exp_factor2 ( AND_SYM exp_factor2 )* ;
 exp_factor2:	        ( NOT_SYM )? exp_factor3 ;
@@ -177,11 +179,13 @@ bit_fac1:
       ( NOT_SYM )? (
           (IN_SYM ( subquery | expression_list ))
         | (LIKE_SYM simple_expr ( ESCAPE_SYM simple_expr )?)
+        | (ILIKE_SYM simple_expr ( ESCAPE_SYM simple_expr )?)
         | (REGEXP ( bit_expr | sbit_expr ))
         | (BETWEEN ( SYMMETRIC )? ( bit_expr | sbit_expr ) AND_SYM predicate)
       ) ;
 
-bit_fac2:               SOUNDS_SYM LIKE_SYM ( bit_expr | sbit_expr );
+bit_fac2:               ((SOUNDS_SYM LIKE_SYM ( bit_expr | sbit_expr ))
+                       | (SOUNDS_SYM ILIKE_SYM ( bit_expr | sbit_expr )));
 predicate:
 	  ( bit_expr | sbit_expr ) (( bit_fac1 | bit_fac2)?) ;
 
@@ -195,16 +199,16 @@ subselect_list:         ( displayed_column ( COMMA displayed_column )* );
 select_statement:       select_expression ( (UNION_SYM ( ALL )? ) select_expression )* ;
 
 simple_expr:
-	  literal_value
-	| expression_list
-	| column_spec
-	| function_call
-	//| USER_VAR
-	| (ROW_SYM expression_list)
-	| subquery
-	| EXISTS subquery 
-	| interval_expr
-	| case_when_statement ;
+      literal_value
+    | expression_list
+    | column_spec
+    | function_call
+    //| USER_VAR
+    | (ROW_SYM expression_list)
+    | subquery
+    | EXISTS subquery
+    | interval_expr
+    | case_when_statement ;
 
 slice_spec:             ( LBRACK INTEGER_NUM ( COLON INTEGER_NUM )? RBRACK )+;
 
