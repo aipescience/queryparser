@@ -119,8 +119,7 @@ column_name:            ID;
 column_spec:            ( ( schema_name DOT )? table_name DOT )? column_name ( slice_spec )?;
 
 displayed_column :      ( table_spec DOT ASTERISK )
-                      | ( ( bit_expr | sbit_expr ) ( LIKE_SYM TEXT_STRING )? ( alias )? )
-                      | ( ( bit_expr | sbit_expr ) ( ILIKE_SYM TEXT_STRING )? ( alias )? ) ;
+                      | ( ( bit_expr | sbit_expr ) ( ( LIKE_SYM | ILIKE_SYM ) TEXT_STRING )? ( alias )? ) ;
 
 exp_factor1:	        exp_factor2 ( AND_SYM exp_factor2 )* ;
 exp_factor2:	        ( NOT_SYM )? exp_factor3 ;
@@ -178,14 +177,12 @@ partition_names:	    partition_name ( COMMA partition_name )* ;
 bit_fac1:
       ( NOT_SYM )? (
           (IN_SYM ( subquery | expression_list ))
-        | (LIKE_SYM simple_expr ( ESCAPE_SYM simple_expr )?)
-        | (ILIKE_SYM simple_expr ( ESCAPE_SYM simple_expr )?)
+        | ((LIKE_SYM | ILIKE_SYM) simple_expr ( ESCAPE_SYM simple_expr )?)
         | (REGEXP ( bit_expr | sbit_expr ))
         | (BETWEEN ( SYMMETRIC )? ( bit_expr | sbit_expr ) AND_SYM predicate)
       ) ;
 
-bit_fac2:               ((SOUNDS_SYM LIKE_SYM ( bit_expr | sbit_expr ))
-                       | (SOUNDS_SYM ILIKE_SYM ( bit_expr | sbit_expr )));
+bit_fac2:               (SOUNDS_SYM ( LIKE_SYM | ILIKE_SYM ) ( bit_expr | sbit_expr ));
 predicate:
 	  ( bit_expr | sbit_expr ) (( bit_fac1 | bit_fac2)?) ;
 
