@@ -1,4 +1,4 @@
-## 0.6.0 (yyyy-mm-dd)
+## 0.6.0 (2022-11-04)
 
 - bump the version of `antlr4-python3-runtime` to 4.11.1
 - added support for two custom functions - `gaia_healpix_index`, `pdist`
