@@ -1,3 +1,9 @@
+## ADQL
+#### Missing functions
+`CAST` function is not supported at all
+
+
+## PostgreSQL
 #### Missing functions 
 Functions that are supported in pg14 but are not processed py the queryparser
 
