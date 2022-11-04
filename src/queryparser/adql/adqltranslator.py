@@ -16,10 +16,10 @@ from ..exceptions import QueryError, QuerySyntaxError
 # Function names need to be trecognized because there whitespace
 # between the name and left parenthesis is not allowed and needs to be
 # deleted.
-adql_function_names = ('ABS', 'CEILING', 'DEGREES', 'EXP', 'FLOOR', 'LOG',
-                       'LOG10', 'MOD', 'PI', 'POWER', 'RADIANS', 'RAND',
-                       'SQRT', 'TRUNCATE', 'COUNT', 'ACOS', 'ASIN', 'ATAN',
-                       'ATAN2', 'COS', 'COT', 'SIN', 'TAN')
+adql_function_names = ('ABS', 'ACOS', 'ASIN', 'ATAN', 'ATAN2', 'CEILING',
+                       'COS', 'DEGREES', 'EXP', 'FLOOR', 'LOG', 'LOG10',
+                       'MOD', 'PI', 'POWER', 'RADIANS', 'RAND', 'SIN',
+                       'SQRT', 'TAN', 'TRUNCATE')
 
 
 def _remove_children(ctx):
