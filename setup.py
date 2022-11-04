@@ -28,7 +28,7 @@ setup(
     description=u'Parses PostgreSQL/MySQL and translates ADQL to ' +\
             'PostgreSQL/MySQL.',
     long_description=open('README.md').read(),
-    long_description_content_type='text/x-rst',
+    long_description_content_type='text/markdown',
     install_requires=requirements,
     classifiers=[],
     packages=[

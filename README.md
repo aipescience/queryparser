@@ -10,7 +10,7 @@ or integrated into another project.
 
 
 [![pytest Workflow Status](https://github.com/aipescience/queryparser/actions/workflows/pytest.yml/badge.svg)](https://github.com/aipescience/queryparser/actions/workflows/pytest.yml)
-[![Coverage Status](https://coveralls.io/repos/aipescience/queryparser/badge.svg?branch=dev&service=github)](https://coveralls.io/github/aipescience/queryparser?branch=dev)
+[![Coverage Status](https://coveralls.io/repos/aipescience/queryparser/badge.svg?branch=master&service=github)](https://coveralls.io/github/aipescience/queryparser?branch=master)
 [![License](http://img.shields.io/badge/license-APACHE-blue.svg?style=flat)](https://github.com/aipescience/queryparser/blob/master/LICENSE)
 [![Latest Version](https://img.shields.io/pypi/v/queryparser-python3.svg?style=flat)](https://pypi.org/project/queryparser-python3/)
 
@@ -22,7 +22,9 @@ Installation
 The easiest way to install the package is by using the pip tool:
 
 ```bash
+
     pip install queryparser-python3
+
 ```
 
 Alternatively, you can clone the repository and install it from there.
@@ -56,7 +58,7 @@ Parsing MySQL and PostgreSQL
 ----------------------------
 
 Parsing and processing of MySQL queries can be done by creating an instance
-of the ``MySQLQueryProcessor`` class
+of the `MySQLQueryProcessor` class
 
 ```python
     from queryparser.mysql import MySQLQueryProcessor
@@ -76,9 +78,9 @@ and running it with
     qp.process_query()
 ```
 
-After the processing is completed, the processor object ``qp`` will include
+After the processing is completed, the processor object `qp` will include
 tables, columns, functions, and keywords used in the query or will raise a
-``QuerySyntaxError`` if there are any syntax errors in the query.
+`QuerySyntaxError` if there are any syntax errors in the query.
 
 Alternatively, passing the query at initialization automatically processes it.
 
@@ -97,7 +99,7 @@ Translating ADQL
 ----------------
 
 Translation of ADQL queries is done similarly by first creating an instance of
-the ``ADQLQueryTranslator`` class
+the `ADQLQueryTranslator` class
 
 ```python
     from queryparser.adql import ADQLQueryTranslator
@@ -113,7 +115,7 @@ and calling
 
 which returns a translated string representing a valid MySQL query if
 the ADQL query had no errors. The MySQL query can then be parsed with the
-``MySQLQueryProcessor`` in the same way as shown above.
+`MySQLQueryProcessor` in the same way as shown above.
 
 
 Testing
