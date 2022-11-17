@@ -162,7 +162,7 @@ set_limit:                      TOP unsigned_decimal ;
 set_quantifier:                 DISTINCT | ALL ;
 sign:                           PLUS | MINUS ;
 signed_integer:                 ( sign )? unsigned_decimal ;
-sort_key:                       column_name | unsigned_decimal ;
+sort_key:                       value_expression| column_reference | unsigned_decimal ;
 sort_specification:             sort_key (ordering_specification )? ;
 sort_specification_list:        sort_specification ( COMMA sort_specification )* ;
 string_geometry_function:       extract_coordsys ;
