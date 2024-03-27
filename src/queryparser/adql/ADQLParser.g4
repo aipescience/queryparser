@@ -20,7 +20,8 @@ boolean_value_expression:       boolean_literal | user_defined_function ; //| bo
 box:
           BOX
           LPAREN
-          coord_sys COMMA coordinates COMMA numeric_value_expression COMMA numeric_value_expression
+          ( coord_sys COMMA )?
+          coordinates COMMA numeric_value_expression COMMA numeric_value_expression
           RPAREN ;
 catalog_name:                   ID ;
 centroid:                       CENTROID LPAREN geometry_value_expression RPAREN ;
@@ -31,7 +32,7 @@ character_value_expression:
           character_value_expression concatenation_operator ( value_expression_primary | string_value_function )
         | value_expression_primary
         | string_value_function ;
-circle:                         CIRCLE LPAREN coord_sys COMMA coordinates COMMA radius RPAREN ;
+circle:                         CIRCLE LPAREN ( coord_sys COMMA )? coordinates COMMA radius RPAREN ;
 column_name:                    identifier ;
 column_name_list:               column_name ( COMMA column_name )* ;
 column_reference:               ( qualifier DOT )? column_name ;
@@ -127,9 +128,11 @@ order_by_clause:                ORDER BY sort_specification_list ;
 ordering_specification:         ASC | DESC ;
 outer_join_type:                LEFT | RIGHT | FULL ;
 pattern:                        character_value_expression ;
-point:                          POINT LPAREN coord_sys COMMA coordinates RPAREN ;
-polygon:                        POLYGON LPAREN coord_sys COMMA coordinates COMMA
-          coordinates ( COMMA coordinates )+ RPAREN ;
+point:                          POINT LPAREN ( coord_sys COMMA )? coordinates RPAREN ;
+polygon:                        POLYGON LPAREN
+                                ( coord_sys COMMA )?
+                                coordinates COMMA
+                                coordinates ( COMMA coordinates )+ RPAREN ;
 predicate:
           comparison_predicate
         | between_predicate

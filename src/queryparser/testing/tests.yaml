@@ -820,9 +820,16 @@ adql_mysql_tests:
         - SELECT DEGREES(sdist(spoint(RADIANS(`ra`), RADIANS(`dec`)), spoint(RADIANS(13.66), RADIANS(-58.3)))) FROM `db`.`tab` LIMIT 10;
 
 
+# the coordsys strings are deprecated since adql 2.1. The tests including the
+# coordsys will ensure the backward compatibility for adql2.0 but can be removed
+# later.
 adql_postgresql_tests:
     -
         - SELECT TOP 10 AREA(CIRCLE('ICRS', "tab".RA, -2.23, 176.98)) FROM db.tab
+        - SELECT area(scircle(spoint(RADIANS("tab".RA), RADIANS(-2.23)), RADIANS(176.98))) FROM db.tab LIMIT 10;
+
+    -
+        - SELECT TOP 10 AREA(CIRCLE("tab".RA, -2.23, 176.98)) FROM db.tab
         - SELECT area(scircle(spoint(RADIANS("tab".RA), RADIANS(-2.23)), RADIANS(176.98))) FROM db.tab LIMIT 10;
 
     -
@@ -830,14 +837,26 @@ adql_postgresql_tests:
         - SELECT spoint(RADIANS(10.0), RADIANS(10.0)) AS "p" FROM "db".tab;
 
     -
+        - SELECT POINT(10, 10) AS "p" FROM "db".tab
+        - SELECT spoint(RADIANS(10.0), RADIANS(10.0)) AS "p" FROM "db".tab;
+
+    -
         - SELECT TOP 10 ra, dec FROM db.tab WHERE 1=CONTAINS(POINT('ICRS', ra, dec), BOX('ICRS', -3.0, 5.0, 4.0, 10.0));
+        - SELECT ra, dec FROM db.tab WHERE spoint(RADIANS(ra), RADIANS(dec)) @ sbox(spoint(RADIANS(-3.0),RADIANS(5.0)),spoint(RADIANS(1.000000000000),RADIANS(15.000000000000))) LIMIT 10;
+
+    -
+        - SELECT TOP 10 ra, dec FROM db.tab WHERE 1=CONTAINS(POINT(ra, dec), BOX(-3.0, 5.0, 4.0, 10.0));
         - SELECT ra, dec FROM db.tab WHERE spoint(RADIANS(ra), RADIANS(dec)) @ sbox(spoint(RADIANS(-3.0),RADIANS(5.0)),spoint(RADIANS(1.000000000000),RADIANS(15.000000000000))) LIMIT 10;
 
     -
         - SELECT TOP 10 LOG10(ra), LOG(dec) FROM db.tab WHERE 1=CONTAINS(POINT('ICRS', ra, dec), POLYGON('ICRS', 10.0, -10.5, 20.0, 20.5, 30.0, 30.5));
         - SELECT LOG(ra), LN(dec) FROM db.tab WHERE spoint(RADIANS(ra), RADIANS(dec)) @ spoly('{(10.0d,-10.5d),(20.0d,20.5d),(30.0d,30.5d)}') LIMIT 10;
 
-    - 
+    -
+        - SELECT TOP 10 LOG10(ra), LOG(dec) FROM db.tab WHERE 1=CONTAINS(POINT(ra, dec), POLYGON(10.0, -10.5, 20.0, 20.5, 30.0, 30.5));
+        - SELECT LOG(ra), LN(dec) FROM db.tab WHERE spoint(RADIANS(ra), RADIANS(dec)) @ spoly('{(10.0d,-10.5d),(20.0d,20.5d),(30.0d,30.5d)}') LIMIT 10;
+
+    -
         - SELECT CENTROID(CIRCLE('ICRS', 10.0, -10.5, 2.0)) FROM db.tab;
         - SELECT center(scircle(spoint(RADIANS(10.0), RADIANS(-10.5)), RADIANS(2.0))) FROM db.tab;
 

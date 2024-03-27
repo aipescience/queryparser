@@ -23,7 +23,7 @@ adql_function_names = ('ABS', 'ACOS', 'ASIN', 'ATAN', 'ATAN2', 'CEILING',
 
 
 def _remove_children(ctx):
-    for i in range(ctx.getChildCount() - 1):
+    for _ in range(ctx.getChildCount() - 1):
         ctx.removeLastChild()
 
 
@@ -133,8 +133,12 @@ class ADQLGeometryTranslationVisitor(ADQLParserVisitor):
 
     def visitPoint(self, ctx):
         coords = []
-        for j in (2, 4):
-            coords.extend(self._convert_values(ctx, j))
+        if len(ctx.children) > 4:
+            for j in (2, 4):
+                coords.extend(self._convert_values(ctx, j))
+        else:
+            coords.extend(self._convert_values(ctx, 2))
+
         if len(coords) == 3:
             coords = coords[1:]
 
@@ -151,10 +155,11 @@ class ADQLGeometryTranslationVisitor(ADQLParserVisitor):
         self.contexts[ctx] = ctx_text
 
     def visitBox(self, ctx):
-        s = 4
         pars = []
-        for j in range(0, 5, 2):
-            pars.extend(self._convert_values(ctx, s + j))
+        s = 4 if len(ctx.children) > 8 else 2
+        pars.extend(self._convert_values(ctx, s))
+        pars.extend(self._convert_values(ctx, s+2))
+        pars.extend(self._convert_values(ctx, s+4))
 
         try:
             topright_x = float(pars[0]) + float(pars[2])
@@ -174,10 +179,10 @@ class ADQLGeometryTranslationVisitor(ADQLParserVisitor):
         self.contexts[ctx] = ctx_text
 
     def visitCircle(self, ctx):
-        s = 4
         pars = []
-        for j in range(0, 3, 2):
-            pars.extend(self._convert_values(ctx, s + j))
+        s = 4 if len(ctx.children) > 6 else 2
+        pars.extend(self._convert_values(ctx, s))
+        pars.extend(self._convert_values(ctx, s+2))
 
         if self.output_sql in ('mysql', 'postgresql'):
             ctx_text = "scircle( spoint(%s(%s), %s(%s)), %s(%s) )" %\
@@ -190,16 +195,16 @@ class ADQLGeometryTranslationVisitor(ADQLParserVisitor):
         self.contexts[ctx] = ctx_text
 
     def visitPolygon(self, ctx):
-        s = 4
-
-        j = 0
         pars = []
-        while True:
-            try:
-                pars.append(self._convert_values(ctx, s + j))
-                s += 2
-            except IndexError:
-                break
+
+        for ch in ctx.children:
+            print(ch.getText())
+        for j in range(2, len(ctx.children), 2):
+            par = self._convert_values(ctx, j)
+            # only append coordinates
+            # (ctx.children[2] can still return coord_sys which is deprecated)
+            if len(par) > 1:
+                pars.append(par)
 
         ustr = ''
         if self.conunits == "RADIANS":
