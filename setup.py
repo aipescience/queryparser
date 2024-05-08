@@ -21,8 +21,8 @@ setup(
     version=metadata['version'],
     author=metadata['author'],
     author_email=metadata['email'],
-    maintainer=metadata['author'],
-    maintainer_email=metadata['email'],
+    maintainer=metadata['maintainer'],
+    maintainer_email=metadata['maintainer_email'],
     license=metadata['license'],
     url='https://github.com/aipescience/queryparser',
     description=u'Parses PostgreSQL/MySQL and translates ADQL to ' +\

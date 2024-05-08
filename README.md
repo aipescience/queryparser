@@ -1,12 +1,14 @@
 queryparser
 ===========
 
-**Tool for parsing and processing of MySQL/PostgreSQL and translation of
+**Tool for parsing and processing of (MySQL\*)/PostgreSQL and translation of
 ADQL SELECT-like queries**
 
 Designed to be used in conjunction with [django-daiquri](https://github.com/django-daiquiri/daiquiri)
 as a query processing backend but it can be easily used as a stand-alone tool
 or integrated into another project.
+
+**\*NOTE: Since version 0.7.0, MySQL is not activelly supported/maintained anymore.**
 
 
 [![pytest Workflow Status](https://github.com/aipescience/queryparser/actions/workflows/pytest.yml/badge.svg)](https://github.com/aipescience/queryparser/actions/workflows/pytest.yml)
@@ -54,8 +56,19 @@ and a `lib` directory will be created. After that, run
 to install the generated parser in your virtual environment.
 
 
+Additional requirements
+-----------------------
+The queryparser assumes that the PostgreSQL database has the extension 
+[pg_sphere](https://github.com/kimakan/pgsphere/tree/aiprdbms16) installed. Although the `pg_sphere` is not required for the 
+python module, the PostgreSQL **queries will not run** without that extension 
+installed on the database.
+
+
 Parsing MySQL and PostgreSQL
 ----------------------------
+
+**Since version 0.7, MySQL part of the parser is not maintained anymore.
+Thus, the MySQL related functionality cannot be guaranteed!**
 
 Parsing and processing of MySQL queries can be done by creating an instance
 of the `MySQLQueryProcessor` class
@@ -110,13 +123,12 @@ the `ADQLQueryTranslator` class
 and calling
 
 ```python
-    adt.to_mysql()
+    adt.to_postgresql()
 ```
 
 which returns a translated string representing a valid MySQL query if
-the ADQL query had no errors. The MySQL query can then be parsed with the
-`MySQLQueryProcessor` in the same way as shown above.
-
+the ADQL query had no errors. The PostgreSQL query can then be parsed with the
+`PostgreSQLQueryProcessor` in the same way as shown above.
 
 Testing
 -------

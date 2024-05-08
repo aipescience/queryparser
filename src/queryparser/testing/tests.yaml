@@ -622,7 +622,6 @@ mysql_tests:
 
 
 postgresql_tests:
-
     -
         - SELECT pdist(1000, 10, 11, 12, 11, 11, 12)
         - 
@@ -781,7 +780,7 @@ postgresql_tests:
 # - dictionary of indexed objects to be replaced and their specifications
 
 indexed_adql_postgres_tests:
-    -  
+    -
         - SELECT ra FROM gdr2.gaia_source AS gaia
           WHERE 1=CONTAINS(POINT('ICRS', gaia.ra, gaia.dec), 
                            CIRCLE('ICRS', 245.8962, -26.5222, 0.5));
@@ -805,20 +804,19 @@ adql_mysql_tests:
 
     -
         - SELECT TOP 10 AREA(CIRCLE('ICRS', "tab".RA, -2.23, 176.98)) FROM db.tab
-        - SELECT sarea(scircle(spoint(RADIANS(`tab`.`RA`), RADIANS(-2.23)), RADIANS(176.98))) FROM `db`.`tab` LIMIT 10;
+        - SELECT sarea(scircle(spoint(RADIANS(`tab`.`RA`), RADIANS(-2.23)), RADIANS(176.98))) AS adql_area FROM `db`.`tab` LIMIT 10;
 
-    - 
+    -
         - SELECT CENTROID(CIRCLE('ICRS', 10.0, -10.5, 2.0)) FROM db.tab;
         - SELECT scenter(scircle(spoint(RADIANS(10.0), RADIANS(-10.5)), RADIANS(2.0))) FROM `db`.`tab`;
 
     -
         - SELECT TOP 10 ra, dec FROM db.tab WHERE 1=CONTAINS(POINT('ICRS', ra, dec), BOX('ICRS', -3.0, 5.0, 4.0, 10.0));
-        - SELECT `ra`, `dec` FROM `db`.`tab` WHERE 1 = srcontainsl(spoint(RADIANS(`ra`), RADIANS(`dec`)), sbox(spoint(RADIANS(-3.0),RADIANS(5.0)),spoint(RADIANS(1.000000000000),RADIANS(15.000000000000)))) LIMIT 10;
+        - SELECT `ra`, `dec` FROM `db`.`tab` WHERE 1 = srcontainsl(spoint(RADIANS(`ra`), RADIANS(`dec`)), sbox(spoint(RADIANS(-5.000000000000),RADIANS(0.000000000000)),spoint(RADIANS(-1.000000000000),RADIANS(10.000000000000)))) LIMIT 10;
 
     -
         - SELECT TOP 10 DISTANCE(POINT('ICRS', ra, dec), POINT('ICRS', 13.66, -58.3)) FROM db.tab;
         - SELECT DEGREES(sdist(spoint(RADIANS(`ra`), RADIANS(`dec`)), spoint(RADIANS(13.66), RADIANS(-58.3)))) FROM `db`.`tab` LIMIT 10;
-
 
 # the coordsys strings are deprecated since adql 2.1. The tests including the
 # coordsys will ensure the backward compatibility for adql2.0 but can be removed
@@ -826,27 +824,55 @@ adql_mysql_tests:
 adql_postgresql_tests:
     -
         - SELECT TOP 10 AREA(CIRCLE('ICRS', "tab".RA, -2.23, 176.98)) FROM db.tab
-        - SELECT area(scircle(spoint(RADIANS("tab".RA), RADIANS(-2.23)), RADIANS(176.98))) FROM db.tab LIMIT 10;
+        - SELECT square_degrees(area(scircle(spoint(RADIANS("tab".RA), RADIANS(-2.23)), RADIANS(176.98)))) AS adql_area FROM db.tab LIMIT 10;
 
     -
         - SELECT TOP 10 AREA(CIRCLE("tab".RA, -2.23, 176.98)) FROM db.tab
-        - SELECT area(scircle(spoint(RADIANS("tab".RA), RADIANS(-2.23)), RADIANS(176.98))) FROM db.tab LIMIT 10;
+        - SELECT square_degrees(area(scircle(spoint(RADIANS("tab".RA), RADIANS(-2.23)), RADIANS(176.98)))) AS adql_area FROM db.tab LIMIT 10;
+
+    -
+        - SELECT TOP 10 AREA(POLYGON(10.0, -10.5, 20.0, 20.5, 30.0, 30.5)) FROM db.tab
+        - SELECT square_degrees(area(spoly('{(10.0d,-10.5d),(20.0d,20.5d),(30.0d,30.5d)}'))) AS adql_area FROM db.tab LIMIT 10;
+
+    -
+        - SELECT TOP 10 area(circle(0.0, 0.0, 1.0)) FROM test.tab;
+        - SELECT square_degrees(area(scircle(spoint(RADIANS(0.0), RADIANS(0.0)), RADIANS(1.0)))) AS adql_area FROM test.tab LIMIT 10;
 
     -
         - SELECT POINT('icrs', 10, 10) AS "p" FROM "db".tab
-        - SELECT spoint(RADIANS(10.0), RADIANS(10.0)) AS "p" FROM "db".tab;
+        - SELECT spoint_to_array_deg(spoint(RADIANS(10.0), RADIANS(10.0))) AS "p" FROM "db".tab;
+
+    -
+        - SELECT POINT('icrs', 10, 10) FROM "db".tab
+        - SELECT spoint_to_array_deg(spoint(RADIANS(10.0), RADIANS(10.0))) AS point FROM "db".tab;
 
     -
         - SELECT POINT(10, 10) AS "p" FROM "db".tab
-        - SELECT spoint(RADIANS(10.0), RADIANS(10.0)) AS "p" FROM "db".tab;
+        - SELECT spoint_to_array_deg(spoint(RADIANS(10.0), RADIANS(10.0))) AS "p" FROM "db".tab;
+
+    -
+        - SELECT CIRCLE(10.0, -10.5, 2.0) FROM db.tab;
+        - SELECT scircle_to_array_deg(scircle(spoint(RADIANS(10.0), RADIANS(-10.5)), RADIANS(2.0))) AS circle FROM db.tab;
+
+    -
+        - SELECT POLYGON('ICRS', 10.0, -10.5, 20.0, 20.5, 30.0, 30.5) FROM db.tab;
+        - SELECT spoly_to_array_deg(spoly('{(10.0d,-10.5d),(20.0d,20.5d),(30.0d,30.5d)}')) AS polygon FROM db.tab;
+
+    -
+        - SELECT CIRCLE(POINT(10.0, -10.5), 2.0) FROM db.tab;
+        - SELECT scircle_to_array_deg(scircle(spoint(RADIANS(10.0), RADIANS(-10.5)), RADIANS(2.0))) AS circle FROM db.tab;
+
+    -
+        - SELECT CENTROID(CIRCLE('ICRS', 10.0, -10.5, 2.0)) FROM db.tab;
+        - SELECT @@ scircle(spoint(RADIANS(10.0), RADIANS(-10.5)), RADIANS(2.0)) FROM db.tab;
 
     -
         - SELECT TOP 10 ra, dec FROM db.tab WHERE 1=CONTAINS(POINT('ICRS', ra, dec), BOX('ICRS', -3.0, 5.0, 4.0, 10.0));
-        - SELECT ra, dec FROM db.tab WHERE spoint(RADIANS(ra), RADIANS(dec)) @ sbox(spoint(RADIANS(-3.0),RADIANS(5.0)),spoint(RADIANS(1.000000000000),RADIANS(15.000000000000))) LIMIT 10;
+        - SELECT ra, dec FROM db.tab WHERE spoint(RADIANS(ra), RADIANS(dec)) @ sbox(spoint(RADIANS(-5.000000000000),RADIANS(0.000000000000)),spoint(RADIANS(-1.000000000000),RADIANS(10.000000000000))) LIMIT 10;
 
     -
         - SELECT TOP 10 ra, dec FROM db.tab WHERE 1=CONTAINS(POINT(ra, dec), BOX(-3.0, 5.0, 4.0, 10.0));
-        - SELECT ra, dec FROM db.tab WHERE spoint(RADIANS(ra), RADIANS(dec)) @ sbox(spoint(RADIANS(-3.0),RADIANS(5.0)),spoint(RADIANS(1.000000000000),RADIANS(15.000000000000))) LIMIT 10;
+        - SELECT ra, dec FROM db.tab WHERE spoint(RADIANS(ra), RADIANS(dec)) @ sbox(spoint(RADIANS(-5.000000000000),RADIANS(0.000000000000)),spoint(RADIANS(-1.000000000000),RADIANS(10.000000000000))) LIMIT 10;
 
     -
         - SELECT TOP 10 LOG10(ra), LOG(dec) FROM db.tab WHERE 1=CONTAINS(POINT('ICRS', ra, dec), POLYGON('ICRS', 10.0, -10.5, 20.0, 20.5, 30.0, 30.5));
@@ -857,16 +883,16 @@ adql_postgresql_tests:
         - SELECT LOG(ra), LN(dec) FROM db.tab WHERE spoint(RADIANS(ra), RADIANS(dec)) @ spoly('{(10.0d,-10.5d),(20.0d,20.5d),(30.0d,30.5d)}') LIMIT 10;
 
     -
-        - SELECT CENTROID(CIRCLE('ICRS', 10.0, -10.5, 2.0)) FROM db.tab;
-        - SELECT center(scircle(spoint(RADIANS(10.0), RADIANS(-10.5)), RADIANS(2.0))) FROM db.tab;
+        - SELECT TOP 10 DISTANCE(POINT(ra, dec), POINT(13.66, -58.3)) FROM db.tab;
+        - SELECT DEGREES(spoint(RADIANS(ra), RADIANS(dec)) <-> spoint(RADIANS(13.66), RADIANS(-58.3))) AS distance FROM db.tab LIMIT 10;
 
     -
-        - SELECT TOP 10 DISTANCE(POINT('ICRS', ra, dec), POINT('ICRS', 13.66, -58.3)) FROM db.tab;
-        - SELECT DEGREES(spoint(RADIANS(ra), RADIANS(dec)) <-> spoint(RADIANS(13.66), RADIANS(-58.3))) FROM db.tab LIMIT 10;
+        - SELECT TOP 10 DISTANCE(ra, dec, 13.66, -58.3) FROM db.tab;
+        - SELECT DEGREES(spoint(RADIANS(ra), RADIANS(dec)) <-> spoint(RADIANS(13.66), RADIANS(-58.3))) AS distance FROM db.tab LIMIT 10;
 
-    - 
-        - SELECT INTERSECTS(CIRCLE('ICRS', 0, 0, 10), BOX('ICRS', -2, -4, 5, 5)) FROM db.tab;
-        - SELECT scircle(spoint(RADIANS(0.0), RADIANS(0.0)), RADIANS(10.0)) && sbox(spoint(RADIANS(-2.0),RADIANS(-4.0)),spoint(RADIANS(3.000000000000),RADIANS(1.000000000000))) FROM db.tab;
+    -
+        - SELECT INTERSECTS(CIRCLE('ICRS', 0, 0, 10), BOX('ICRS', 2, -3, 4, 4)) FROM db.tab;
+        - SELECT scircle(spoint(RADIANS(0.0), RADIANS(0.0)), RADIANS(10.0)) && sbox(spoint(RADIANS(0.000000000000),RADIANS(-5.000000000000)),spoint(RADIANS(4.000000000000),RADIANS(-1.000000000000))) FROM db.tab;
 
 
 # Each test below consists of:

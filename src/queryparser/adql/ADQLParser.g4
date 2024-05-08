@@ -25,14 +25,15 @@ box:
           RPAREN ;
 catalog_name:                   ID ;
 centroid:                       CENTROID LPAREN geometry_value_expression RPAREN ;
-//character_representation:       nonquote_character ;// | SQ SQ ;
+// character_representation:       nonquote_character ;// | SQ SQ ;
 char_function:                  LOWER LPAREN character_string_literal RPAREN ;
 character_string_literal:       CSL ; //SQ ( SL )* SQ ; //SQ ( character_representation )* SQ ;
 character_value_expression:
           character_value_expression concatenation_operator ( value_expression_primary | string_value_function )
         | value_expression_primary
         | string_value_function ;
-circle:                         CIRCLE LPAREN ( coord_sys COMMA )? coordinates COMMA radius RPAREN ;
+circle:                         CIRCLE LPAREN (( coord_sys COMMA )? circle_center ) COMMA radius RPAREN ;
+circle_center:                  coordinates | coord_value ;
 column_name:                    identifier ;
 column_name_list:               column_name ( COMMA column_name )* ;
 column_reference:               ( qualifier DOT )? column_name ;
@@ -41,7 +42,7 @@ comparison_predicate:           value_expression comp_op value_expression ;
 concatenation_operator:         CONCAT ;
 contains:                       CONTAINS LPAREN geometry_value_expression COMMA geometry_value_expression RPAREN ;
 coord_sys:                      string_value_expression ;
-coord_value:                    point | column_reference | centroid ;
+coord_value:                    point_value | column_reference ;
 coord1:                         COORD1 LPAREN coord_value RPAREN ;
 coord2:                         COORD2 LPAREN coord_value RPAREN ;
 coordinate1:                    numeric_value_expression ;
@@ -68,7 +69,7 @@ factor:                         ( sign )? numeric_primary ;
 from_clause:                    FROM table_reference ( COMMA table_reference )* ;
 general_literal:                character_string_literal ;
 general_set_function:           set_function_type LPAREN ( set_quantifier )? value_expression RPAREN ;
-geometry_value_expression:      box | centroid | circle | point | polygon | region | user_defined_function ;
+geometry_value_expression:      box | circle | centroid | point | polygon | region | user_defined_function ;
 group_by_clause:                GROUP BY grouping_column_reference_list ;
 grouping_column_reference:      column_reference ;
 grouping_column_reference_list: grouping_column_reference ( COMMA grouping_column_reference )* ;
@@ -129,6 +130,7 @@ ordering_specification:         ASC | DESC ;
 outer_join_type:                LEFT | RIGHT | FULL ;
 pattern:                        character_value_expression ;
 point:                          POINT LPAREN ( coord_sys COMMA )? coordinates RPAREN ;
+point_value:                    point | centroid | user_defined_function ;
 polygon:                        POLYGON LPAREN
                                 ( coord_sys COMMA )?
                                 coordinates COMMA

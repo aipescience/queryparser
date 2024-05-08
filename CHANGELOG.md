@@ -1,3 +1,14 @@
+## 0.7.0 (XXXX-XX-XX)
+
+major overhaul for ADQL 2.1 recommendation 2023-12-15
+ - COOSYS is not required for the geometry constructors
+ - the geometry constructors return the correct datatype (doube precission[]) 
+ and correct units (degrees)
+ - drop the maintenance/support for the translation from ADQL to MySQL. 
+ - fix `BOX` constructor
+ - new requirements for the `pg_sphere` and postgreSQL
+ - ...
+
 ## 0.6.1 (2022-11-17)
 
 - fixed the `ORDER BY` clause for the dot-separated column references
