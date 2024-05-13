@@ -41,6 +41,7 @@ comp_op:                        EQ | NOT_EQ | LTH | GTH | GRET | LEET ;
 comparison_predicate:           value_expression comp_op value_expression ;
 concatenation_operator:         CONCAT ;
 contains:                       CONTAINS LPAREN geometry_value_expression COMMA geometry_value_expression RPAREN ;
+contains_predicate:             INT EQ contains;
 coord_sys:                      string_value_expression ;
 coord_value:                    point_value | column_reference ;
 coord1:                         COORD1 LPAREN coord_value RPAREN ;
@@ -136,7 +137,8 @@ polygon:                        POLYGON LPAREN
                                 coordinates COMMA
                                 coordinates ( COMMA coordinates )+ RPAREN ;
 predicate:
-          comparison_predicate
+          contains_predicate
+        | comparison_predicate
         | between_predicate
         | in_predicate
         | like_predicate

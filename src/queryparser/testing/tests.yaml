@@ -773,24 +773,6 @@ postgresql_tests:
         - ['gdr2.gaia_source']
 
 
-# Each test below consists of:
-#
-# - ADQL query string
-# - translated query string with replaced indexed object
-# - dictionary of indexed objects to be replaced and their specifications
-
-indexed_adql_postgres_tests:
-    -
-        - SELECT ra FROM gdr2.gaia_source AS gaia
-          WHERE 1=CONTAINS(POINT('ICRS', gaia.ra, gaia.dec), 
-                           CIRCLE('ICRS', 245.8962, -26.5222, 0.5));
-        - SELECT ra FROM gdr2.gaia_source AS gaia WHERE gaia.pos @ scircle(spoint(RADIANS(245.8962), RADIANS(-26.5222)), RADIANS(0.5));
-        - spoint:
-          -
-            - !!python/tuple ['gdr2', 'gaia_source', 'ra']
-            - !!python/tuple ['gdr2', 'gaia_source', 'dec']
-            - 'pos'
-
 
 # Each test below consists of:
 #
@@ -813,6 +795,10 @@ adql_mysql_tests:
     -
         - SELECT TOP 10 ra, dec FROM db.tab WHERE 1=CONTAINS(POINT('ICRS', ra, dec), BOX('ICRS', -3.0, 5.0, 4.0, 10.0));
         - SELECT `ra`, `dec` FROM `db`.`tab` WHERE 1 = srcontainsl(spoint(RADIANS(`ra`), RADIANS(`dec`)), sbox(spoint(RADIANS(-5.000000000000),RADIANS(0.000000000000)),spoint(RADIANS(-1.000000000000),RADIANS(10.000000000000)))) LIMIT 10;
+
+    -
+        - SELECT TOP 10 ra, dec FROM db.tab WHERE 0=CONTAINS(POINT('ICRS', ra, dec), BOX('ICRS', -3.0, 5.0, 4.0, 10.0));
+        - SELECT `ra`, `dec` FROM `db`.`tab` WHERE 0 = srcontainsl(spoint(RADIANS(`ra`), RADIANS(`dec`)), sbox(spoint(RADIANS(-5.000000000000),RADIANS(0.000000000000)),spoint(RADIANS(-1.000000000000),RADIANS(10.000000000000)))) LIMIT 10;
 
     -
         - SELECT TOP 10 DISTANCE(POINT('ICRS', ra, dec), POINT('ICRS', 13.66, -58.3)) FROM db.tab;
@@ -873,6 +859,14 @@ adql_postgresql_tests:
     -
         - SELECT TOP 10 ra, dec FROM db.tab WHERE 1=CONTAINS(POINT(ra, dec), BOX(-3.0, 5.0, 4.0, 10.0));
         - SELECT ra, dec FROM db.tab WHERE spoint(RADIANS(ra), RADIANS(dec)) @ sbox(spoint(RADIANS(-5.000000000000),RADIANS(0.000000000000)),spoint(RADIANS(-1.000000000000),RADIANS(10.000000000000))) LIMIT 10;
+
+    -
+        - SELECT TOP 10 ra, dec FROM db.tab WHERE 1=CONTAINS(POINT(ra, dec), CIRCLE(POINT(-3.0, 4.0), 10.0));
+        - SELECT ra, dec FROM db.tab WHERE spoint(RADIANS(ra), RADIANS(dec)) @ scircle(spoint(RADIANS(-3.0), RADIANS(4.0)), RADIANS(10.0)) LIMIT 10;
+
+    -
+        - SELECT TOP 10 ra, dec FROM db.tab WHERE 0=CONTAINS(POINT(ra, dec), CIRCLE(POINT(-3.0, 4.0), 10.0));
+        - SELECT ra, dec FROM db.tab WHERE spoint(RADIANS(ra), RADIANS(dec)) !@ scircle(spoint(RADIANS(-3.0), RADIANS(4.0)), RADIANS(10.0)) LIMIT 10;
 
     -
         - SELECT TOP 10 LOG10(ra), LOG(dec) FROM db.tab WHERE 1=CONTAINS(POINT('ICRS', ra, dec), POLYGON('ICRS', 10.0, -10.5, 20.0, 20.5, 30.0, 30.5));

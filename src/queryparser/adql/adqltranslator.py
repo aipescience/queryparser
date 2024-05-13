@@ -299,29 +299,6 @@ class ADQLGeometryTranslationVisitor(ADQLParserVisitor):
         self.contexts[ctx] = ctx_text
 
 
-class ADQLContainsVisitor(ADQLParserVisitor):
-    def __init__(self):
-        self.contains = []
-
-    def visitContains(self, ctx):
-        if ctx.getText().lower()[:8] == 'contains':
-            self.contains.append(ctx)
-
-
-class ADQLComparisonPredicateVisitor(ADQLParserVisitor):
-    # Get rid of "1=" in 1=CONTAINS() statement
-    def visitComparison_predicate(self, ctx):
-        contains_visitor = ADQLContainsVisitor()
-        contains_visitor.visit(ctx)
-        if len(contains_visitor.contains):
-            if ctx.children[0].getText().lower()[:8] == 'contains':
-                ctx.children[1].removeLastChild()
-                ctx.children[2].removeLastChild()
-            elif ctx.children[2].getText().lower()[:8] == 'contains':
-                ctx.children[0].removeLastChild()
-                ctx.children[1].removeLastChild()
-
-
 class ADQLFunctionsTranslationVisitor(ADQLParserVisitor):
     """
     Run this visitor after the geometry has already been processed.
@@ -370,6 +347,23 @@ class ADQLFunctionsTranslationVisitor(ADQLParserVisitor):
 
         _remove_children(ctx)
         self.contexts[ctx] = ctx_text
+
+
+    def visitContains_predicate(self, ctx):
+        comp_value = ctx.children[0].getText()
+        if comp_value == '1' or comp_value == '0':
+            self.visitContains(ctx.children[2])
+            ctx_text = self.contexts[ctx.children[2]]
+            if self.output_sql == 'mysql':
+                ctx_text = f"{comp_value} = {ctx_text}"
+            elif self.output_sql == 'postgresql' and comp_value == '0':
+                ctx_text = ctx_text.replace('@', '!@')
+        else:
+            raise QueryError('The function CONTAINS allows comparison to 1 or 0 only.')
+
+        _remove_children(ctx)
+        self.contexts[ctx] = ctx_text
+
 
     def visitContains(self, ctx):
         arg = (self.contexts[ctx.children[2].children[0]],
@@ -645,9 +639,6 @@ class ADQLQueryTranslator(object):
             raise QueryError('No query given.')
 
         self.parse()
-
-        comp_visitor = ADQLComparisonPredicateVisitor()
-        comp_visitor.visit(self.tree)
 
         translator_visitor = ADQLGeometryTranslationVisitor(
                 output_sql='postgresql')

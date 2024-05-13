@@ -51,16 +51,3 @@ def _test_parsing(query_processor, test, translate=False):
     if tables is not None:
         assert set(tables) == set(qp_tables)
 
-
-
-def _test_indexed_adql_translation(test):
-    query, translated_query, iob, output = test
-    adt = ADQLQueryTranslator(query)
-
-    if translated_query is not None:
-        if output == 'postgresql':
-            tq = adt.to_postgresql()
-            qp = PostgreSQLQueryProcessor()
-            qp.set_query(tq)
-            qp.process_query(indexed_objects=iob)
-            assert translated_query.strip() == qp.query

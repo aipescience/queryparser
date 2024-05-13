@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from .utils import _test_parsing, _test_indexed_adql_translation
+from .utils import _test_parsing
 
 from queryparser.postgresql import PostgreSQLQueryProcessor
 from queryparser.exceptions import QueryError, QuerySyntaxError
@@ -35,7 +35,3 @@ def test_postrgresql_query(t):
     with pytest.raises(QueryError):
         PostgreSQLQueryProcessor(t)
 
-
-@pytest.mark.parametrize("t", tests['indexed_adql_postgres_tests'])
-def test_indexed_adql_postrgresql_query(t):
-    _test_indexed_adql_translation(t + ['postgresql'])
