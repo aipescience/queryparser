@@ -7,7 +7,6 @@
 # - display columns in form col_name: db.tab.col 
 # - tables accessed by the query
 # - schema replacement name (optional)
-# - indexed objects (optional)
 
 common_tests:
     -
@@ -164,7 +163,7 @@ common_tests:
         - ['foo.tab']
         - 'd': 'foo'
 
-    -   
+    -
         - SELECT DISTINCT t.table_name
           FROM tap_schema.tabs AS t
           JOIN tap_schema.cols AS c USING (table_name)
@@ -197,12 +196,12 @@ common_tests:
         - ['MDR1.FOF.x', 'MDR1.FOF.y', 'MDR1.FOF.z', 'MDR1.FOF.mass',
            'MDR1.FOF.snapnum']
         - ['limit', 'order by', 'group by']
-        - 
+        -
         - ['x: MDR1.FOF.x', 'y: MDR1.FOF.y', 'z: MDR1.FOF.z',
            'mass: MDR1.FOF.mass']
         - ['MDR1.FOF']
 
-    -   
+    -
         - SELECT h.Mvir, h.spin, g.diskMassStellar,
                  g.diskMassStellar/h.Mvir AS mass_ratio
           FROM MDPL2.Rockstar AS h, MDPL2.Galacticus AS g
@@ -380,16 +379,16 @@ common_tests:
         -
         -
         - ['db.tab', 'db.blem']
-        
+
     -
         - SELECT t1.a, t2.b, t3.c, t4.z
           FROM d.tab t1, db2.tab t2, foo.tab t3, x.y t4
         - ['foo.tab.a', 'bar.tab.b', 'bas.tab.c', 'x.y.z']
-        - 
+        -
         -
         - ['a: foo.tab.a', 'b: bar.tab.b', 'c: bas.tab.c', 'z: x.y.z']
         - ['foo.tab', 'bas.tab', 'bar.tab', 'x.y']
-        - 
+        -
           'd': 'foo'
           'db2': 'bar'
           'foo': 'bas'
@@ -495,7 +494,7 @@ common_translation_tests:
         -
         -
 
-        
+
 mysql_tests:
     -
         - SELECT `fi@1`, fi2
@@ -624,20 +623,20 @@ mysql_tests:
 postgresql_tests:
     -
         - SELECT pdist(1000, 10, 11, 12, 11, 11, 12)
-        - 
-        - 
+        -
+        -
         - ['pdist']
-        - 
-        - 
+        -
+        -
 
     -
         - SELECT DISTINCT ON ("source"."tycho2_id") "tycho2_id", "source"."tycho2_dist"
           FROM "applause_dr3"."source_calib" AS "source"
         - ['applause_dr3.source_calib.tycho2_id', 'applause_dr3.source_calib.tycho2_dist']
-        - 
-        - 
-        - 
-        - 
+        -
+        -
+        -
+        -
 
     -
         - SELECT ra, dec FROM gdr1.gaia_source
