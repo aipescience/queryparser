@@ -330,7 +330,7 @@ class ADQLFunctionsTranslationVisitor(ADQLParserVisitor):
             ctx.removeLastChild()
         self.contexts[ctx] = ctx_text
 
-
+    '''
     def visitCentroid(self, ctx):
         """
         Works only for circles.
@@ -348,6 +348,7 @@ class ADQLFunctionsTranslationVisitor(ADQLParserVisitor):
 
         _remove_children(ctx)
         self.contexts[ctx] = ctx_text
+    '''
 
     def visitContains_predicate(self, ctx):
         comp_value = ctx.children[0].getText()

@@ -788,10 +788,6 @@ adql_mysql_tests:
         - SELECT sarea(scircle(spoint(RADIANS(`tab`.`RA`), RADIANS(-2.23)), RADIANS(176.98))) AS adql_area FROM `db`.`tab` LIMIT 10;
 
     -
-        - SELECT CENTROID(CIRCLE('ICRS', 10.0, -10.5, 2.0)) FROM db.tab;
-        - SELECT scenter(scircle(spoint(RADIANS(10.0), RADIANS(-10.5)), RADIANS(2.0))) FROM `db`.`tab`;
-
-    -
         - SELECT TOP 10 ra, dec FROM db.tab WHERE 1=CONTAINS(POINT('ICRS', ra, dec), BOX('ICRS', -3.0, 5.0, 4.0, 10.0));
         - SELECT `ra`, `dec` FROM `db`.`tab` WHERE 1 = srcontainsl(spoint(RADIANS(`ra`), RADIANS(`dec`)), sbox(spoint(RADIANS(-5.000000000000),RADIANS(0.000000000000)),spoint(RADIANS(-1.000000000000),RADIANS(10.000000000000)))) LIMIT 10;
 
@@ -846,10 +842,6 @@ adql_postgresql_tests:
     -
         - SELECT CIRCLE(POINT(10.0, -10.5), 2.0) FROM db.tab;
         - SELECT scircle_to_array_deg(scircle(spoint(RADIANS(10.0), RADIANS(-10.5)), RADIANS(2.0))) AS circle FROM db.tab;
-
-    -
-        - SELECT CENTROID(CIRCLE('ICRS', 10.0, -10.5, 2.0)) FROM db.tab;
-        - SELECT @@ scircle(spoint(RADIANS(10.0), RADIANS(-10.5)), RADIANS(2.0)) FROM db.tab;
 
     -
         - SELECT TOP 10 ra, dec FROM db.tab WHERE 1=CONTAINS(POINT('ICRS', ra, dec), BOX('ICRS', -3.0, 5.0, 4.0, 10.0));
