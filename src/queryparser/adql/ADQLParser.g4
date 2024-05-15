@@ -80,6 +80,7 @@ in_predicate:                   value_expression ( NOT )? IN in_predicate_value 
 in_predicate_value:             table_subquery | LPAREN in_value_list RPAREN ;
 in_value_list:                  value_expression ( COMMA value_expression )* ;
 intersects:                     INTERSECTS LPAREN geometry_value_expression COMMA geometry_value_expression RPAREN ;
+intersects_predicate:           INT EQ intersects;
 join_column_list:               column_name_list ;
 join_condition:                 ON search_condition ;
 join_specification:             join_condition  | named_columns_join ;
@@ -138,6 +139,7 @@ polygon:                        POLYGON LPAREN
                                 coordinates ( COMMA coordinates )+ RPAREN ;
 predicate:
           contains_predicate
+        | intersects_predicate
         | comparison_predicate
         | between_predicate
         | in_predicate

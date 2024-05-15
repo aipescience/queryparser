@@ -330,6 +330,7 @@ class ADQLFunctionsTranslationVisitor(ADQLParserVisitor):
             ctx.removeLastChild()
         self.contexts[ctx] = ctx_text
 
+
     def visitCentroid(self, ctx):
         """
         Works only for circles.
@@ -347,7 +348,6 @@ class ADQLFunctionsTranslationVisitor(ADQLParserVisitor):
 
         _remove_children(ctx)
         self.contexts[ctx] = ctx_text
-
 
     def visitContains_predicate(self, ctx):
         comp_value = ctx.children[0].getText()
@@ -412,6 +412,21 @@ class ADQLFunctionsTranslationVisitor(ADQLParserVisitor):
 
         for _ in range(ctx.getChildCount() - 1):
             ctx.removeLastChild()
+        self.contexts[ctx] = ctx_text
+
+    def visitIntersects_predicate(self, ctx):
+        comp_value = ctx.children[0].getText()
+        if comp_value == '1' or comp_value == '0':
+            self.visitIntersects(ctx.children[2])
+            ctx_text = self.contexts[ctx.children[2]]
+            if self.output_sql == 'mysql':
+                ctx_text = f"{comp_value} = {ctx_text}"
+            elif self.output_sql == 'postgresql' and comp_value == '0':
+                ctx_text = ctx_text.replace('&&', '!&&')
+        else:
+            raise QueryError('The function INTERSECTS allows comparison to 1 or 0 only.')
+
+        _remove_children(ctx)
         self.contexts[ctx] = ctx_text
 
     def visitIntersects(self, ctx):

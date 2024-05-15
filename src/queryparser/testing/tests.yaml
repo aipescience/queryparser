@@ -887,6 +887,11 @@ adql_postgresql_tests:
         - SELECT INTERSECTS(CIRCLE('ICRS', 0, 0, 10), BOX('ICRS', 2, -3, 4, 4)) FROM db.tab;
         - SELECT scircle(spoint(RADIANS(0.0), RADIANS(0.0)), RADIANS(10.0)) && sbox(spoint(RADIANS(0.000000000000),RADIANS(-5.000000000000)),spoint(RADIANS(4.000000000000),RADIANS(-1.000000000000))) FROM db.tab;
 
+    -
+        - SELECT TOP 10 LOG10(ra), LOG(dec) FROM db.tab WHERE 0=INTERSECTS(POINT('ICRS', ra, dec), POLYGON('ICRS', 10.0, -10.5, 20.0, 20.5, 30.0, 30.5));
+        - SELECT LOG(ra), LN(dec) FROM db.tab WHERE spoint(RADIANS(ra), RADIANS(dec)) !&& spoly('{(10.0d,-10.5d),(20.0d,20.5d),(30.0d,30.5d)}') LIMIT 10;
+
+
 
 # Each test below consists of:
 #
