@@ -207,7 +207,6 @@ simple_expr:
     | expression_list
     | column_spec
     | function_call
-    //| USER_VAR
     | (ROW_SYM expression_list)
     | subquery
     | EXISTS subquery
