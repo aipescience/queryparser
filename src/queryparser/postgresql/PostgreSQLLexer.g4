@@ -154,10 +154,12 @@ SIGN				: S_ I_ G_ N_  ;
 SIGNED_SYM			: S_ I_ G_ N_ E_ D_  ;
 SIN				    : S_ I_ N_  ;
 SOUNDS_SYM          : S_ O_ U_ N_ D_ S_ ;
+SQUARE_DEGREES      : S_ Q_ U_ A_ R_ E_ '_' D_ E_ G_ R_ E_ E_ S_ ;
 SQRT				: S_ Q_ R_ T_  ;
 STDDEV				: S_ T_ D_ D_ E_ V_  ;
 STDDEV_POP			: S_ T_ D_ D_ E_ V_ '_' P_ O_ P_  ;
 STDDEV_SAMP			: S_ T_ D_ D_ E_ V_ '_' S_ A_ M_ P_  ;
+STERADIANS          : S_ T_ E_ R_ A_ D_ I_ A_ N_ S_ ;
 STRAIGHT_JOIN		: S_ T_ R_ A_ I_ G_ H_ T_  '_' J_ O_ I_ N_  ;
 SUBSTRING			: (S_ U_ B_ S_ T_ R_ I_ N_ G_) | (S_ U_ B_ S_ T_ R_) ;
 SUM				    : S_ U_ M_  ;
@@ -203,6 +205,14 @@ STRANS              : S_ T_ R_ A_ N_ S_ ;
 AREA                : A_ R_ E_ A_ ;
 
 ARRAY_LENGTH        : A_ R_ R_ A_ Y_ '_' L_ E_ N_ G_ T_ H_ ;
+SPOINT_TO_ARRAY     : S_ P_ O_ I_ N_ T_ '_' T_ O_ '_' A_ R_ R_ A_ Y_ ;
+SBOX_TO_ARRAY       : S_ B_ O_ X_ '_' T_ O_ '_' A_ R_ R_ A_ Y_ ;
+SCIRCLE_TO_ARRAY    : S_ C_ I_ R_ C_ L_ E_ '_' T_ O_ '_' A_ R_ R_ A_ Y_ ;
+SPOLY_TO_ARRAY      : S_ P_ O_ L_ Y_ '_' T_ O_ '_' A_ R_ R_ A_ Y_ ;
+SPOINT_TO_ARRAY_DEG : S_ P_ O_ I_ N_ T_ '_' T_ O_ '_' A_ R_ R_ A_ Y_ '_' D_ E_ G_ ;
+SBOX_TO_ARRAY_DEG   : S_ B_ O_ X_ '_' T_ O_ '_' A_ R_ R_ A_ Y_ '_' D_ E_ G_ ;
+SCIRCLE_TO_ARRAY_DEG : S_ C_ I_ R_ C_ L_ E_ '_' T_ O_ '_' A_ R_ R_ A_ Y_ '_' D_ E_ G_ ;
+SPOLY_TO_ARRAY_DEG  : S_ P_ O_ L_ Y_ '_' T_ O_ '_' A_ R_ R_ A_ Y_ '_' D_ E_ G_ ;
 
 // basic token definition -----------------------------------------------------
 

@@ -20,18 +20,20 @@ boolean_value_expression:       boolean_literal | user_defined_function ; //| bo
 box:
           BOX
           LPAREN
-          coord_sys COMMA coordinates COMMA numeric_value_expression COMMA numeric_value_expression
+          ( coord_sys COMMA )?
+          coordinates COMMA numeric_value_expression COMMA numeric_value_expression
           RPAREN ;
 catalog_name:                   ID ;
-centroid:                       CENTROID LPAREN geometry_value_expression RPAREN ;
-//character_representation:       nonquote_character ;// | SQ SQ ;
+// centroid:                       CENTROID LPAREN geometry_value_expression RPAREN ;
+// character_representation:       nonquote_character ;// | SQ SQ ;
 char_function:                  LOWER LPAREN character_string_literal RPAREN ;
 character_string_literal:       CSL ; //SQ ( SL )* SQ ; //SQ ( character_representation )* SQ ;
 character_value_expression:
           character_value_expression concatenation_operator ( value_expression_primary | string_value_function )
         | value_expression_primary
         | string_value_function ;
-circle:                         CIRCLE LPAREN coord_sys COMMA coordinates COMMA radius RPAREN ;
+circle:                         CIRCLE LPAREN (( coord_sys COMMA )? circle_center ) COMMA radius RPAREN ;
+circle_center:                  coordinates | coord_value ;
 column_name:                    identifier ;
 column_name_list:               column_name ( COMMA column_name )* ;
 column_reference:               ( qualifier DOT )? column_name ;
@@ -39,10 +41,11 @@ comp_op:                        EQ | NOT_EQ | LTH | GTH | GRET | LEET ;
 comparison_predicate:           value_expression comp_op value_expression ;
 concatenation_operator:         CONCAT ;
 contains:                       CONTAINS LPAREN geometry_value_expression COMMA geometry_value_expression RPAREN ;
+contains_predicate:             INT EQ contains;
 coord_sys:                      string_value_expression ;
-coord_value:                    point | column_reference | centroid ;
-coord1:                         COORD1 LPAREN coord_value RPAREN ;
-coord2:                         COORD2 LPAREN coord_value RPAREN ;
+coord_value:                    point_value | column_reference ;
+//coord1:                         COORD1 LPAREN coord_value RPAREN ;
+//coord2:                         COORD2 LPAREN coord_value RPAREN ;
 coordinate1:                    numeric_value_expression ;
 coordinate2:                    numeric_value_expression ;
 coordinates:                    coordinate1 COMMA coordinate2 ;
@@ -62,12 +65,12 @@ distance:
 //double_quote_symbol:            DQ DQ ;
 exact_numeric_literal:          unsigned_decimal ( DOT ( unsigned_decimal )? )? | DOT unsigned_decimal;
 exists_predicate:               EXISTS table_subquery ;
-extract_coordsys:               COORDSYS LPAREN geometry_value_expression RPAREN ;
+// extract_coordsys:               COORDSYS LPAREN geometry_value_expression RPAREN ;
 factor:                         ( sign )? numeric_primary ;
 from_clause:                    FROM table_reference ( COMMA table_reference )* ;
 general_literal:                character_string_literal ;
 general_set_function:           set_function_type LPAREN ( set_quantifier )? value_expression RPAREN ;
-geometry_value_expression:      box | centroid | circle | point | polygon | region | user_defined_function ;
+geometry_value_expression:      box | circle | point | polygon | user_defined_function ; //| centroid | region
 group_by_clause:                GROUP BY grouping_column_reference_list ;
 grouping_column_reference:      column_reference ;
 grouping_column_reference_list: grouping_column_reference ( COMMA grouping_column_reference )* ;
@@ -77,6 +80,7 @@ in_predicate:                   value_expression ( NOT )? IN in_predicate_value 
 in_predicate_value:             table_subquery | LPAREN in_value_list RPAREN ;
 in_value_list:                  value_expression ( COMMA value_expression )* ;
 intersects:                     INTERSECTS LPAREN geometry_value_expression COMMA geometry_value_expression RPAREN ;
+intersects_predicate:           INT EQ intersects;
 join_column_list:               column_name_list ;
 join_condition:                 ON search_condition ;
 join_specification:             join_condition  | named_columns_join ;
@@ -107,7 +111,7 @@ non_join_query_expression:      non_join_query_term | query_expression UNION ( A
         | query_expression EXCEPT ( ALL )? query_term ;
 non_join_query_primary:         query_specification | LPAREN non_join_query_expression RPAREN ;
 non_join_query_term:            non_join_query_primary | query_term INTERSECT ( ALL )? query_expression ;
-non_predicate_geometry_function:area | coord1 | coord2 | distance ;
+non_predicate_geometry_function:area | distance ; //coord1 | coord2 |
 //nondoublequote_character:       NDQC ;
 //nonquote_character:             NQC ;
 null_predicate:                 column_reference IS ( NOT )? NULL ;
@@ -127,11 +131,16 @@ order_by_clause:                ORDER BY sort_specification_list ;
 ordering_specification:         ASC | DESC ;
 outer_join_type:                LEFT | RIGHT | FULL ;
 pattern:                        character_value_expression ;
-point:                          POINT LPAREN coord_sys COMMA coordinates RPAREN ;
-polygon:                        POLYGON LPAREN coord_sys COMMA coordinates COMMA
-          coordinates ( COMMA coordinates )+ RPAREN ;
+point:                          POINT LPAREN ( coord_sys COMMA )? coordinates RPAREN ;
+point_value:                    point | user_defined_function ;//| centroid
+polygon:                        POLYGON LPAREN
+                                ( coord_sys COMMA )?
+                                coordinates COMMA
+                                coordinates ( COMMA coordinates )+ RPAREN ;
 predicate:
-          comparison_predicate
+          contains_predicate
+        | intersects_predicate
+        | comparison_predicate
         | between_predicate
         | in_predicate
         | like_predicate
@@ -149,7 +158,7 @@ query:                          query_expression SEMI;
 query_specification:            ( WITH with_query )? select_query ;
 query_term:                     non_join_query_primary | query_term INTERSECT ( ALL )? query_expression | joined_table ;
 radius:                         numeric_value_expression ;
-region:                         REGION LPAREN string_value_expression RPAREN ;
+//region:                         REGION LPAREN string_value_expression RPAREN ;
 regular_identifier:             ID ;
 schema_name:                    ID ; //( catalog_name DOT )? unqualified_schema_name ;
 search_condition:               boolean_term | search_condition OR boolean_term ;
@@ -165,9 +174,9 @@ signed_integer:                 ( sign )? unsigned_decimal ;
 sort_key:                       value_expression| column_reference | unsigned_decimal ;
 sort_specification:             sort_key (ordering_specification )? ;
 sort_specification_list:        sort_specification ( COMMA sort_specification )* ;
-string_geometry_function:       extract_coordsys ;
+//string_geometry_function:       extract_coordsys ;
 string_value_expression:        character_value_expression ;
-string_value_function:          string_geometry_function | user_defined_function | char_function;
+string_value_function:          user_defined_function | char_function; //string_geometry_function |
 subquery:                       LPAREN query_expression RPAREN ;
 table_expression:
           from_clause

@@ -734,15 +734,7 @@ class SQLQueryProcessor(object):
         :param replace_schema_name:
             A new schema name to be put in place of the original.
 
-        :param indexed_objects:
-            A dictionary defining pgsphere objects to be replaced with 
-            precomputed (on the database level) columns. For example,
-
-            iob = {'spoint': ((('gdr2', 'gaia_source', 'ra'),
-                               ('gdr2', 'gaia_source', 'dec'), 'pos'),)}
-
-            will replace 'spoint(RADIANS(ra), RADIANS(dec))' with a 'pos'
-            column.
+        :param indexed_objects: Deprecated
 
         """
         # Antlr objects
@@ -893,14 +885,6 @@ class SQLQueryProcessor(object):
                                          for i in mc])
                 raise QueryError("Unreferenced column(s): '%s'." % unref_cols)
 
-        # If we have indexed_objects, we are also accessing those. We
-        # need to add them into the columns stack:
-        if indexed_objects is not None:
-            for k, v in indexed_objects.items():
-                for vals in v:
-                    touched_columns.append([[vals[0][0], vals[0][1], vals[2],
-                                           None], None])
-
         touched_columns = set([tuple(i[0]) for i in touched_columns])
 
         # extract display_columns
@@ -941,25 +925,6 @@ class SQLQueryProcessor(object):
                                       i[0][1].lstrip('"').rstrip('"')
                                       if i[0][1] is not None else i[0][1]])
                                 for i in tables]))
-
-        # If there are any sphere-like objects (pgsphere...) that are indexed
-        # we need to replace the ADQL translated query parts with the indexed
-        # column names
-        if indexed_objects is not None and self.sphere_listener is not None:
-            # we need to correctly alias 'pos' columns
-            for k, v in indexed_objects.items():
-                indexed_objects[k] = list([list(i) for i in v])
-                for i, vals in enumerate(v):
-                    for t in tables:
-                        if vals[0][0] == t[0][0] and vals[0][1] == t[0][1] and\
-                                t[1] is not None:
-                            indexed_objects[k][i][2] = t[1] + '.' +\
-                                    indexed_objects[k][i][2]
-
-            sphere_listener = self.sphere_listener(columns, indexed_objects)
-            self.walker.walk(sphere_listener, tree)
-            for k, v in sphere_listener.replace_dict.items():
-                self._query = self._query.replace(k, v)
 
     @property
     def query(self):

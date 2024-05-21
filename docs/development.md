@@ -26,14 +26,15 @@ package) and activate it:
 
 ```bash
 python -m venv qpenv
-source qpenv /bin/activate
+source qpenv/bin/activate
 ```
 
-After the virtual environment has been activated we can install the package
-from the root directory of the package with
+After the virtual environment has been activated we can build and install 
+the package from the root directory of the package with
 
 ```bash
-pip install -r requirements.txt .
+make
+python -m pip install .
 ```
 
 ## Testing
@@ -41,7 +42,7 @@ pip install -r requirements.txt .
 All tests from the test suite can be executed with 
 
 ```bash
-pytest lib
+pytest lib/
 ```
 
 Individual dialect functionality (MySQL in this case) with increased verbosity
@@ -65,9 +66,9 @@ can be generated with
 pytest --cov=queryparser --cov-report html lib
 ```
 
-Continuous integration is enabled through Travis CI. The configuration is 
-specified inside of `.travis.yml` file. Edit as necessary. Coverage exclusions
-are defined within  `.coveragerc`.
+Continuous integration is enabled through GitHub Actions. The configuration is 
+specified inside of `.github/workflows/pytest.yml` file. Edit as necessary.
+Coverage exclusions are defined within  `.coveragerc`.
 
 ### Writing new tests
 
@@ -148,53 +149,28 @@ The main queryparser class that includes this antlr functionality is called
 `process_query()` that binds the processing together. MySQL and PostgreSQL
 processors inherit from this class and extend it with their own listeners.
 
-### Indexed objects
-
-The need for indexed objects is easiest to explain through an example. Let us
-consider the following fairly typical ADQL query,
-
-```SQL
-SELECT ra, dec FROM gdr2.gaia_source
-WHERE 1=CONTAINS(POINT('ICRS', ra, dec), CIRCLE('ICRS', 31, -19, 0.5));
-```
-
-Translating it to PostgreSQL and using pgsphere functions yields
-
-```SQL
-SELECT * FROM gdr2.gaia_source
-WHERE spoint(RADIANS(ra), RADIANS(dec)) @ scircle(spoint(RADIANS(31.0), RADIANS(-19.0)), RADIANS(0.5));
-```
-
-While the translated query is syntactically fine, it would take a very long time
-to run since the first `spoint` in the translated query needs to be computed
-for the whole catalog every time the query is executed. To avoid this drawback
-we pre-compute its value across
-the whole catalog (let us name it `pos`) and index it. Since we know the value
-of the column `pos` was computed from columns `ra` and `dec` of the catalog,
-we can pass this information to the PostgreSQL processor and it will replace
-its part in the query:
-
-```python
-adt = ADQLQueryTranslator(query)
-pgq = adt.to_postgresql()
-
-iob = {'spoint': ((('gdr2', 'gaia_source', 'ra'),
-                   ('gdr2', 'gaia_source', 'dec'), 'pos'),)}
-
-qp = PostgreSQLQueryProcessor()
-qp.set_query(pgq)
-qp.process_query(indexed_objects=iob)
-```
-
-In the indexed object dictionary `iob` we define which columns in the database
-should be replaced with which indexed column for each type of pgsphere object
-functions (spoint, scircle, sbox...).
 
 ## New releases
 
+### Requirements
+Install `build` and `twine` with
+```bash
+pip install twine
+pip install build
+```
+Make sure you have accounts on `https://pypi.org/` and `https://test.pypi.org/`,
+and you are `Maintainer` of the `queryparser-python3` project.
+
+ - https://pypi.org/project/queryparser-python3/
+ - https://test.pypi.org/project/queryparser-python3/
+
+### Publishing
+
 1. Change the version number in `src/queryparser/__init__.py`
-2. `python setup.py sdist bdist_wheel`
+2. `python -m build .`
 3. `twine check dist/*`
 4. `twine upload --repository-url https://test.pypi.org/legacy/ dist/*`
-5. `twine upload dist/*`
-6. Create a new release on github.
+5. Check whether the project was correctly uploaded on `test.pypi.org` by executing
+`python3 -m pip install --index-url https://test.pypi.org/simple/ queryparser-python3`
+6. `twine upload dist/*`
+7. Create a new release on github.

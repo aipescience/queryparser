@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from . import _test_parsing, _test_syntax, _test_query
+from .utils import _test_parsing
 
+from queryparser.exceptions import QueryError, QuerySyntaxError
 from queryparser.mysql import MySQLQueryProcessor
 
 import os
@@ -25,9 +26,10 @@ def test_mysql_parsing(t):
 
 @pytest.mark.parametrize("t", tests['common_syntax_tests'])
 def test_mysql_syntax(t):
-    _test_syntax(MySQLQueryProcessor, t)
-
+    with pytest.raises(QuerySyntaxError):
+        MySQLQueryProcessor(t)
 
 @pytest.mark.parametrize("t", tests['common_query_tests'])
 def test_mysql_query(t):
-    _test_query(MySQLQueryProcessor, t)
+    with pytest.raises(QueryError):
+        MySQLQueryProcessor(t)
