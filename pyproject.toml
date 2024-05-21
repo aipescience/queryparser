@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "queryparser-python3"
-description = "Parses PostgreSQL/MySQL and translates ADQL to PostgreSQL/MySQL."
+description = "Package for parsing PostgreSQL/MySQL and translating ADQL to PostgreSQL/MySQL."
 readme = "README.md"
 dynamic = ["version"]
 license = {text = "Apache-2.0"}
