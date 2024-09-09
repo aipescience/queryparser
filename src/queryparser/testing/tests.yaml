@@ -803,6 +803,12 @@ adql_mysql_tests:
 # coordsys will ensure the backward compatibility for adql2.0 but can be removed
 # later.
 adql_postgresql_tests:
+    -   - SELECT TRUNCATE(LOG10(a)) from db.tab
+        - SELECT TRUNC(CAST(LOG(a) AS numeric)) from db.tab;
+
+    -   - SELECT TRUNCATE(LOG(a), 5) from db.tab
+        - SELECT TRUNC(CAST(LN(a) AS numeric), 5) from db.tab;
+
     -
         - SELECT TOP 10 AREA(CIRCLE('ICRS', "tab".RA, -2.23, 176.98)) FROM db.tab
         - SELECT square_degrees(area(scircle(spoint(RADIANS("tab".RA), RADIANS(-2.23)), RADIANS(176.98)))) AS adql_area FROM db.tab LIMIT 10;

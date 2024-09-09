@@ -13,7 +13,7 @@ from .ADQLParserListener import ADQLParserListener
 from ..exceptions import QueryError, QuerySyntaxError
 
 
-# Function names need to be trecognized because there whitespace
+# Function names need to be recognized because there whitespace
 # between the name and left parenthesis is not allowed and needs to be
 # deleted.
 adql_function_names = ('ABS', 'ACOS', 'ASIN', 'ATAN', 'ATAN2', 'CEILING',
@@ -25,7 +25,6 @@ adql_function_names = ('ABS', 'ACOS', 'ASIN', 'ATAN', 'ATAN2', 'CEILING',
 def _remove_children(ctx):
     for _ in range(ctx.getChildCount() - 1):
         ctx.removeLastChild()
-
 
 def _convert_values(ctx, cidx, output_sql):
     """
@@ -152,11 +151,11 @@ class ADQLGeometryTranslationVisitor(ADQLParserVisitor):
                       ADQLParser.User_defined_function_nameContext):
             return
         ri = _process_regular_identifier(ctx.getText(), self.output_sql)
-        self.contexts[ctx] = ri
+        self.contexts[ctx.children[0]] = ri
 
     def visitSchema_name(self, ctx):
         ri = _process_regular_identifier(ctx.getText(), self.output_sql)
-        self.contexts[ctx] = ri
+        self.contexts[ctx.children[0]] = ri
 
     def visitAs_clause(self, ctx):
         # We need to visit the AS clause to avoid aliases being treated same
@@ -173,8 +172,8 @@ class ADQLGeometryTranslationVisitor(ADQLParserVisitor):
         if ctx.children[alidx].getText()[0] != '"':
             if self.output_sql == 'mysql':
                 ri = ri.replace('`', '')
+        self.contexts[ctx.children[0]] = 'AS ' + ri
         _remove_children(ctx)
-        self.contexts[ctx] = 'AS ' + ri
 
     def visitPoint(self, ctx):
         coords = []
@@ -193,16 +192,21 @@ class ADQLGeometryTranslationVisitor(ADQLParserVisitor):
         elif self.output_sql == 'postgresql':
             ctx_text = "spoint( %s(%s), %s(%s) )" % (self.conunits, coords[0],
                                                      self.conunits, coords[1])
-            derived_column = _get_ancestor_class_node(ctx, ADQLParser.Derived_columnContext, depth=3)
+            derived_column = _get_ancestor_class_node(
+                ctx,
+                ADQLParser.Derived_columnContext,
+                depth=3
+            )
             if derived_column is not None:
                 ctx_text = f"spoint_to_array_deg({ctx_text})"
-                if not (any([isinstance(child, ADQLParser.As_clauseContext) for child in derived_column.children])):
+                if not (any([isinstance(child, ADQLParser.As_clauseContext) \
+                        for child in derived_column.children])):
                     ctx_text = f"{ctx_text} AS point"
         else:
             ctx_text = ''
-
+        self.contexts[ctx.children[0]] = ctx_text
         _remove_children(ctx)
-        self.contexts[ctx] = ctx_text
+
 
     def visitBox(self, ctx):
         pars = []
@@ -229,8 +233,8 @@ class ADQLGeometryTranslationVisitor(ADQLParserVisitor):
         else:
             ctx_text = ''
 
+        self.contexts[ctx.children[0]] = ctx_text
         _remove_children(ctx)
-        self.contexts[ctx] = ctx_text
 
     def visitCircle(self, ctx):
         ctx_text = ''
@@ -247,7 +251,7 @@ class ADQLGeometryTranslationVisitor(ADQLParserVisitor):
                 point_ctx = circle_center.children[0].children[0].children[0]
                 if isinstance(point_ctx, ADQLParser.PointContext):
                     self.visitPoint(point_ctx)
-                    point_ctx_text = self.contexts[point_ctx]
+                    point_ctx_text = self.contexts[point_ctx.children[0]]
                 else:
                     raise QueryError('In the current implementation, circle ' +
                                      'allows only explicitly defined point as ' +
@@ -257,23 +261,25 @@ class ADQLGeometryTranslationVisitor(ADQLParserVisitor):
             ctx_text = "scircle( %s, %s(%s) )" %\
                 (point_ctx_text, self.conunits, radius)
             if self.output_sql == 'postgresql':
-                derived_column = _get_ancestor_class_node(ctx, ADQLParser.Derived_columnContext, depth=3)
+                derived_column = _get_ancestor_class_node(
+                    ctx,
+                    ADQLParser.Derived_columnContext,
+                    depth=3
+                )
                 if derived_column is not None:
                     ctx_text = f"scircle_to_array_deg({ctx_text})"
-                    if not (any([isinstance(child, ADQLParser.As_clauseContext) for child in derived_column.children])):
+                    if not (any([isinstance(child, ADQLParser.As_clauseContext) \
+                            for child in derived_column.children])):
                         ctx_text = f"{ctx_text} AS circle"
+        self.contexts[ctx.children[0]] = ctx_text
         _remove_children(ctx)
-        self.contexts[ctx] = ctx_text
+
 
     def visitPolygon(self, ctx):
         pars = []
 
-        for ch in ctx.children:
-            print(ch.getText())
         for j in range(2, len(ctx.children), 2):
             par = self._convert_values(ctx, j)
-            # only append coordinates
-            # (ctx.children[2] can still return coord_sys which is deprecated)
             if len(par) > 1:
                 pars.append(par)
 
@@ -287,16 +293,21 @@ class ADQLGeometryTranslationVisitor(ADQLParserVisitor):
                 ctx_text += '(%s%s,%s%s),' % (str(p[0]), ustr, str(p[1]), ustr)
             ctx_text = ctx_text[:-1] + "}')"
             if self.output_sql == 'postgresql':
-                derived_column = _get_ancestor_class_node(ctx, ADQLParser.Derived_columnContext, depth=3)
+                derived_column = _get_ancestor_class_node(
+                    ctx,
+                    ADQLParser.Derived_columnContext,
+                    depth=3
+                )
                 if derived_column is not None:
                     ctx_text = f"spoly_to_array_deg({ctx_text})"
-                    if not (any([isinstance(child, ADQLParser.As_clauseContext) for child in derived_column.children])):
+                    if not (any([isinstance(child, ADQLParser.As_clauseContext) \
+                            for child in derived_column.children])):
                         ctx_text = f"{ctx_text} AS polygon"
         else:
             ctx_text = ''
 
+        self.contexts[ctx.children[0]] = ctx_text
         _remove_children(ctx)
-        self.contexts[ctx] = ctx_text
 
 
 class ADQLFunctionsTranslationVisitor(ADQLParserVisitor):
@@ -314,144 +325,161 @@ class ADQLFunctionsTranslationVisitor(ADQLParserVisitor):
         self.conunits = conunits
 
     def visitArea(self, ctx):
-        arg = self.contexts[ctx.children[2].children[0]]
+        func_name_nd = ctx.children[0]
+        closing_bracket = ctx.children[-1]
         if self.output_sql == 'mysql':
-            ctx_text = 'sarea(%s)' % arg
+            self.contexts[func_name_nd] = "sarea_"
+            self.contexts[closing_bracket] = ")"
         elif self.output_sql == 'postgresql':
-            ctx_text = 'square_degrees(area(%s))' % arg
-        else:
-            ctx_text = ''
-        derived_column = _get_ancestor_class_node(ctx, ADQLParser.Derived_columnContext, depth=9)
+            self.contexts[func_name_nd] = "square_degrees(area_"
+            self.contexts[closing_bracket] = "))"
+        derived_column = _get_ancestor_class_node(
+            ctx,
+            ADQLParser.Derived_columnContext,
+            depth=9
+        )
         if derived_column is not None:
-            if not (any([isinstance(child, ADQLParser.As_clauseContext) for child in derived_column.children])):
-                ctx_text = f"{ctx_text} AS adql_area"
+            if not (any([isinstance(child, ADQLParser.As_clauseContext) \
+                    for child in derived_column.children])):
+                self.contexts[closing_bracket] += " AS adql_area"
 
-        for _ in range(ctx.getChildCount() - 1):
-            ctx.removeLastChild()
-        self.contexts[ctx] = ctx_text
-
-    '''
-    def visitCentroid(self, ctx):
-        """
-        Works only for circles.
-
-        """
-        #  arg = self.contexts[ctx.children[2].children[0].children[0]]
-        arg = self.contexts[ctx.children[2].children[0]]
-
-        if self.output_sql == 'mysql':
-            ctx_text = 'scenter(%s)' % arg
-        elif self.output_sql == 'postgresql':
-            ctx_text = '@@ %s' % arg
-        else:
-            ctx_text = ''
-
-        _remove_children(ctx)
-        self.contexts[ctx] = ctx_text
-    '''
 
     def visitContains_predicate(self, ctx):
         comp_value = ctx.children[0].getText()
         if comp_value == '1' or comp_value == '0':
-            self.visitContains(ctx.children[2])
-            ctx_text = self.contexts[ctx.children[2]]
-            if self.output_sql == 'mysql':
-                ctx_text = f"{comp_value} = {ctx_text}"
-            elif self.output_sql == 'postgresql' and comp_value == '0':
-                ctx_text = ctx_text.replace('@', '!@')
+            if comp_value == '0':
+                self.visitContains(ctx.children[2], negate=True)
+            else:
+                self.visitContains(ctx.children[2])
+            if self.output_sql == 'postgresql':
+                self.contexts[ctx.children[0]] = '_'
+                self.contexts[ctx.children[1]] = '_'
         else:
-            raise QueryError('The function CONTAINS allows comparison to 1 or 0 only.')
+            raise QueryError(
+                'The function CONTAINS allows comparison to 1 or 0 only.'
+            )
 
-        _remove_children(ctx)
-        self.contexts[ctx] = ctx_text
 
-
-    def visitContains(self, ctx):
-        arg = (self.contexts[ctx.children[2].children[0]],
-               self.contexts[ctx.children[4].children[0]])
+    def visitContains(self, ctx, negate=False):
+        func_name_nd = ctx.children[0]
+        lparen_nd = ctx.children[1]
+        comma_nd = ctx.children[3]
+        rparen_nd = ctx.children[5]
 
         if self.output_sql == 'mysql':
-            ctx_text = 'srcontainsl(%s, %s)' % arg
+            self.contexts[func_name_nd] = 'srcontainsl_'
         elif self.output_sql == 'postgresql':
-            ctx_text = '%s @ %s' % arg
-        else:
-            ctx_text = ''
+            self.contexts[func_name_nd] = '_'
+            self.contexts[lparen_nd] = '_'
+            if negate:
+                self.contexts[comma_nd] = '!@'
+            else:
+                self.contexts[comma_nd] = '@'
+                pass
+            self.contexts[rparen_nd] = '_'
 
-        _remove_children(ctx)
-        self.contexts[ctx] = ctx_text
 
     def visitDistance(self, ctx):
-        arg = ('', '')
+        # case for the two parameter version (two points as parameters)
         if isinstance(ctx.children[2],ADQLParser.Coord_valueContext):
-            if isinstance(ctx.children[2].children[0].children[0], ADQLParser.PointContext):
-                point_ctx1 = ctx.children[2].children[0].children[0]
-                point_ctx2 = ctx.children[4].children[0].children[0]
-                arg = (self.contexts[point_ctx1],
-                       self.contexts[point_ctx2])
-            else:
-                raise QueryError('Distance in the current implementation is ' +
-                                 'possible only between two explicitly ' +
-                                 'defined points. For instance, ' +
-                                 'DISTANCE(POINT(t.ra, r.dec), POINT(0.0, 0.0)) ' +
-                                 'or DISTANCE(t.ra, r.dec, 0.0, 0.0)')
+            func_name_nd = ctx.children[0]
+            comma_nd = ctx.children[3]
+            rparen_nd = ctx.children[5]
+            if self.output_sql == 'mysql':
+                self.contexts[func_name_nd] = 'DEGREES(sdist_'
+                self.contexts[rparen_nd] = '))'
+            elif self.output_sql == 'postgresql':
+                self.contexts[func_name_nd] = 'DEGREES_'
+                self.contexts[comma_nd] = '<->'
+                derived_column = _get_ancestor_class_node(
+                    ctx,
+                    ADQLParser.Derived_columnContext,
+                    depth=9
+                )
+                if derived_column is not None:
+                    if not (any([isinstance(child, ADQLParser.As_clauseContext) \
+                            for child in derived_column.children])):
+                        self.contexts[rparen_nd] = ') AS distance'
+
+        # case for the four parameter version (two coord pairs as parameters)
         else:
             arg = (f"spoint(RADIANS({_convert_values(ctx, 2, self.output_sql)[0]}), " +
                           f"RADIANS({_convert_values(ctx, 4, self.output_sql)[0]}))",
                    f"spoint(RADIANS({_convert_values(ctx, 6, self.output_sql)[0]}), " +
                           f"RADIANS({_convert_values(ctx, 8, self.output_sql)[0]}))")
 
-        if self.output_sql == 'mysql':
-            ctx_text = '%s(sdist(%s, %s))' % ((self.conunits, ) + arg)
-        elif self.output_sql == 'postgresql':
-            ctx_text = '%s(%s <-> %s)' % ((self.conunits, ) + arg)
-            derived_column = _get_ancestor_class_node(ctx, ADQLParser.Derived_columnContext, depth=9)
-            if derived_column is not None:
-                if not (any([isinstance(child, ADQLParser.As_clauseContext) for child in derived_column.children])):
-                    ctx_text = f"{ctx_text} AS distance"
-        else:
-            ctx_text = ''
+            if self.output_sql == 'mysql':
+                ctx_text = 'DEGREES(sdist(%s, %s))' % arg
+            elif self.output_sql == 'postgresql':
+                ctx_text = 'DEGREES(%s <-> %s)' % arg
+                derived_column = _get_ancestor_class_node(
+                    ctx,
+                    ADQLParser.Derived_columnContext,
+                    depth=9
+                )
+                if derived_column is not None:
+                    if not (any([isinstance(child, ADQLParser.As_clauseContext) \
+                            for child in derived_column.children])):
+                        ctx_text = f"{ctx_text} AS distance"
+            else:
+                ctx_text = ''
 
-        for _ in range(ctx.getChildCount() - 1):
-            ctx.removeLastChild()
-        self.contexts[ctx] = ctx_text
+            self.contexts[ctx.children[0]] = ctx_text
+            _remove_children(ctx)
+
 
     def visitIntersects_predicate(self, ctx):
         comp_value = ctx.children[0].getText()
         if comp_value == '1' or comp_value == '0':
-            self.visitIntersects(ctx.children[2])
-            ctx_text = self.contexts[ctx.children[2]]
-            if self.output_sql == 'mysql':
-                ctx_text = f"{comp_value} = {ctx_text}"
-            elif self.output_sql == 'postgresql' and comp_value == '0':
-                ctx_text = ctx_text.replace('&&', '!&&')
+            if comp_value == '0':
+                self.visitIntersects(ctx.children[2], negate=True)
+            else:
+                self.visitIntersects(ctx.children[2])
+            if self.output_sql == 'postgresql':
+                self.contexts[ctx.children[0]] = '_'
+                self.contexts[ctx.children[1]] = '_'
         else:
-            raise QueryError('The function INTERSECTS allows comparison to 1 or 0 only.')
+            raise QueryError(
+                'The function INTERSECTS allows comparison to 1 or 0 only.'
+            )
 
-        _remove_children(ctx)
-        self.contexts[ctx] = ctx_text
 
-    def visitIntersects(self, ctx):
-        arg = (self.contexts[ctx.children[2].children[0]],
-               self.contexts[ctx.children[4].children[0]])
+    def visitIntersects(self, ctx, negate=False):
+        func_name_nd = ctx.children[0]
+        lparen_nd = ctx.children[1]
+        comma_nd = ctx.children[3]
+        rparen_nd = ctx.children[5]
 
         if self.output_sql == 'mysql':
-            ctx_text = 'soverlaps(%s, %s)' % arg
+            self.contexts[func_name_nd] = 'soverlaps_'
         elif self.output_sql == 'postgresql':
-            ctx_text = '%s && %s' % arg
-        else:
-            ctx_text = ''
+            self.contexts[func_name_nd] = '_'
+            self.contexts[lparen_nd] = '_'
+            if negate:
+                self.contexts[comma_nd] = '!&&'
+            else:
+                self.contexts[comma_nd] = '&&'
+            self.contexts[rparen_nd] = '_'
 
-        _remove_children(ctx)
-        self.contexts[ctx] = ctx_text
 
     def visitMath_function(self, ctx):
-        ctx_text = ctx.getText()
-        if self.output_sql == 'postgresql' and ctx_text[:5].lower() == 'log10':
-            _remove_children(ctx)
-            self.contexts[ctx] = 'LOG' + ctx_text[5:]
-        elif self.output_sql == 'postgresql' and ctx_text[:3].lower() == 'log':
-            _remove_children(ctx)
-            self.contexts[ctx] = 'LN' + ctx_text[3:]
+        # visiting required since the math functions allowed to be nested
+        self.visitChildren(ctx)
+        if self.output_sql == 'postgresql':
+            func_name_nd = ctx.children[0]
+            lparen = ctx.children[1]
+            rparen_or_comma = ctx.children[3]
+            func_name = func_name_nd.getText().lower()
+            if func_name == 'log10':
+                self.contexts[func_name_nd] = 'LOG_'
+            elif func_name == 'log':
+                self.contexts[func_name_nd] = 'LN_'
+            elif func_name == 'truncate':
+                self.contexts[func_name_nd] = 'TRUNC_'
+                # first type cast as numeric to make it compatible with trunc()
+                self.contexts[lparen] = "(CAST("
+                self.contexts[rparen_or_comma] = "AS numeric)" + \
+                                                 rparen_or_comma.getText()
 
 
 class SelectQueryListener(ADQLParserListener):
@@ -524,7 +552,7 @@ class FormatListener(ADQLParserListener):
             pass
 
         try:
-            nd = self.contexts[node.parentCtx]
+            nd = self.contexts[node]
         except KeyError:
             nd = node.getText()
             if isinstance(node.parentCtx,
@@ -554,6 +582,7 @@ class FormatListener(ADQLParserListener):
         query = query.replace(' , ', ', ')
         query = query.replace('( ', '(')
         query = query.replace(' )', ')')
+        query = query.replace(' ::', '::')
         query = query.rstrip()
         return '%s;' % query.rstrip()
 
