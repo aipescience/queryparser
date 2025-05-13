@@ -22,9 +22,17 @@ adql_function_names = ('ABS', 'ACOS', 'ASIN', 'ATAN', 'ATAN2', 'CEILING',
                        'SQRT', 'TAN', 'TRUNCATE')
 
 
-def _remove_children(ctx):
+def _removeFirstChild(ctx):
+    if ctx.children is not None:
+        del ctx.children[0]
+
+
+def _remove_children(ctx, reverse=False):
     for _ in range(ctx.getChildCount() - 1):
-        ctx.removeLastChild()
+        if reverse:
+            _removeFirstChild(ctx)
+        else:
+            ctx.removeLastChild()
 
 
 def _convert_values(ctx, cidx, output_sql):
@@ -268,8 +276,6 @@ class ADQLGeometryTranslationVisitor(ADQLParserVisitor):
     def visitPolygon(self, ctx):
         pars = []
 
-        for ch in ctx.children:
-            print(ch.getText())
         for j in range(2, len(ctx.children), 2):
             par = self._convert_values(ctx, j)
             # only append coordinates
@@ -351,18 +357,27 @@ class ADQLFunctionsTranslationVisitor(ADQLParserVisitor):
     '''
 
     def visitContains_predicate(self, ctx):
-        comp_value = ctx.children[0].getText()
-        if comp_value == '1' or comp_value == '0':
+        comp_value_l = ctx.children[0].getText()
+        comp_value_r = ctx.children[2].getText()
+        if comp_value_l == '1' or comp_value_l == '0':
             self.visitContains(ctx.children[2])
             ctx_text = self.contexts[ctx.children[2]]
             if self.output_sql == 'mysql':
-                ctx_text = f"{comp_value} = {ctx_text}"
-            elif self.output_sql == 'postgresql' and comp_value == '0':
+                ctx_text = f"{comp_value_l} = {ctx_text}"
+            elif self.output_sql == 'postgresql' and comp_value_l == '0':
                 ctx_text = ctx_text.replace('@', '!@')
+            _remove_children(ctx)
+        elif comp_value_r == '1' or comp_value_r == '0':
+            self.visitContains(ctx.children[0])
+            ctx_text = self.contexts[ctx.children[0]]
+            if self.output_sql == 'mysql':
+                ctx_text = f"{comp_value_r} = {ctx_text}"
+            elif self.output_sql == 'postgresql' and comp_value_r == '0':
+                ctx_text = ctx_text.replace('@', '!@')
+            _remove_children(ctx, reverse=True)
         else:
             raise QueryError('The function CONTAINS allows comparison to 1 or 0 only.')
 
-        _remove_children(ctx)
         self.contexts[ctx] = ctx_text
 
 
@@ -415,20 +430,31 @@ class ADQLFunctionsTranslationVisitor(ADQLParserVisitor):
             ctx.removeLastChild()
         self.contexts[ctx] = ctx_text
 
+
     def visitIntersects_predicate(self, ctx):
-        comp_value = ctx.children[0].getText()
-        if comp_value == '1' or comp_value == '0':
+        comp_value_l = ctx.children[0].getText()
+        comp_value_r = ctx.children[2].getText()
+        if comp_value_l == '1' or comp_value_l == '0':
             self.visitIntersects(ctx.children[2])
             ctx_text = self.contexts[ctx.children[2]]
             if self.output_sql == 'mysql':
-                ctx_text = f"{comp_value} = {ctx_text}"
-            elif self.output_sql == 'postgresql' and comp_value == '0':
+                ctx_text = f"{comp_value_l} = {ctx_text}"
+            elif self.output_sql == 'postgresql' and comp_value_l == '0':
                 ctx_text = ctx_text.replace('&&', '!&&')
+            _remove_children(ctx)
+        elif comp_value_r == '1' or comp_value_r == '0':
+            self.visitIntersects(ctx.children[0])
+            ctx_text = self.contexts[ctx.children[0]]
+            if self.output_sql == 'mysql':
+                ctx_text = f"{comp_value_r} = {ctx_text}"
+            elif self.output_sql == 'postgresql' and comp_value_r == '0':
+                ctx_text = ctx_text.replace('&&', '!&&')
+            _remove_children(ctx, reverse=True)
         else:
             raise QueryError('The function INTERSECTS allows comparison to 1 or 0 only.')
 
-        _remove_children(ctx)
         self.contexts[ctx] = ctx_text
+
 
     def visitIntersects(self, ctx):
         arg = (self.contexts[ctx.children[2].children[0]],
