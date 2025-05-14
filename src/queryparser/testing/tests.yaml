@@ -848,12 +848,20 @@ adql_postgresql_tests:
         - SELECT ra, dec FROM db.tab WHERE spoint(RADIANS(ra), RADIANS(dec)) @ sbox(spoint(RADIANS(-5.000000000000),RADIANS(0.000000000000)),spoint(RADIANS(-1.000000000000),RADIANS(10.000000000000))) LIMIT 10;
 
     -
+        - SELECT TOP 10 ra, dec FROM db.tab WHERE CONTAINS(POINT('ICRS', ra, dec), BOX('ICRS', -3.0, 5.0, 4.0, 10.0)) =  1;
+        - SELECT ra, dec FROM db.tab WHERE spoint(RADIANS(ra), RADIANS(dec)) @ sbox(spoint(RADIANS(-5.000000000000),RADIANS(0.000000000000)),spoint(RADIANS(-1.000000000000),RADIANS(10.000000000000))) LIMIT 10;
+
+    -
         - SELECT TOP 10 ra, dec FROM db.tab WHERE 1=CONTAINS(POINT(ra, dec), BOX(-3.0, 5.0, 4.0, 10.0));
         - SELECT ra, dec FROM db.tab WHERE spoint(RADIANS(ra), RADIANS(dec)) @ sbox(spoint(RADIANS(-5.000000000000),RADIANS(0.000000000000)),spoint(RADIANS(-1.000000000000),RADIANS(10.000000000000))) LIMIT 10;
 
     -
         - SELECT TOP 10 ra, dec FROM db.tab WHERE 1=CONTAINS(POINT(ra, dec), CIRCLE(POINT(-3.0, 4.0), 10.0));
         - SELECT ra, dec FROM db.tab WHERE spoint(RADIANS(ra), RADIANS(dec)) @ scircle(spoint(RADIANS(-3.0), RADIANS(4.0)), RADIANS(10.0)) LIMIT 10;
+
+    -
+        - SELECT TOP 10 ra, dec FROM db.tab WHERE CONTAINS(POINT(ra, dec), CIRCLE(POINT(-3.0, 4.0), 10.0))=0;
+        - SELECT ra, dec FROM db.tab WHERE spoint(RADIANS(ra), RADIANS(dec)) !@ scircle(spoint(RADIANS(-3.0), RADIANS(4.0)), RADIANS(10.0)) LIMIT 10;
 
     -
         - SELECT TOP 10 ra, dec FROM db.tab WHERE 0=CONTAINS(POINT(ra, dec), CIRCLE(POINT(-3.0, 4.0), 10.0));
@@ -864,7 +872,7 @@ adql_postgresql_tests:
         - SELECT LOG(ra), LN(dec) FROM db.tab WHERE spoint(RADIANS(ra), RADIANS(dec)) @ spoly('{(10.0d,-10.5d),(20.0d,20.5d),(30.0d,30.5d)}') LIMIT 10;
 
     -
-        - SELECT TOP 10 LOG10(ra), LOG(dec) FROM db.tab WHERE 1=CONTAINS(POINT(ra, dec), POLYGON(10.0, -10.5, 20.0, 20.5, 30.0, 30.5));
+        - SELECT TOP 10 LOG10(ra), LOG(dec) FROM db.tab WHERE CONTAINS(POINT(ra, dec), POLYGON(10.0, -10.5, 20.0, 20.5, 30.0, 30.5))=1;
         - SELECT LOG(ra), LN(dec) FROM db.tab WHERE spoint(RADIANS(ra), RADIANS(dec)) @ spoly('{(10.0d,-10.5d),(20.0d,20.5d),(30.0d,30.5d)}') LIMIT 10;
 
     -
@@ -883,6 +891,9 @@ adql_postgresql_tests:
         - SELECT TOP 10 LOG10(ra), LOG(dec) FROM db.tab WHERE 0=INTERSECTS(POINT('ICRS', ra, dec), POLYGON('ICRS', 10.0, -10.5, 20.0, 20.5, 30.0, 30.5));
         - SELECT LOG(ra), LN(dec) FROM db.tab WHERE spoint(RADIANS(ra), RADIANS(dec)) !&& spoly('{(10.0d,-10.5d),(20.0d,20.5d),(30.0d,30.5d)}') LIMIT 10;
 
+    -
+        - SELECT TOP 10 LOG10(ra), LOG(dec) FROM db.tab WHERE INTERSECTS(POINT('ICRS', ra, dec), POLYGON('ICRS', 10.0, -10.5, 20.0, 20.5, 30.0, 30.5)) = 0;
+        - SELECT LOG(ra), LN(dec) FROM db.tab WHERE spoint(RADIANS(ra), RADIANS(dec)) !&& spoly('{(10.0d,-10.5d),(20.0d,20.5d),(30.0d,30.5d)}') LIMIT 10;
 
 
 # Each test below consists of:
