@@ -16,6 +16,7 @@ common_tests:
         -
         - ['col1: db.tab.a']
         - ['db.tab']
+        - 
 
     -
         - SELECT t.a FROM db.tab1 as t, db.tab2;
@@ -24,6 +25,7 @@ common_tests:
         -
         - ['a: db.tab1.a']
         - ['db.tab1', 'db.tab2']
+        - 
 
     -
         - SELECT COUNT(*), a*2, b, 100 FROM db.tab;
@@ -32,6 +34,7 @@ common_tests:
         - ['COUNT']
         - ['a: db.tab.a', 'b: db.tab.b']
         - ['db.tab']
+        - 
 
     -
         - SELECT (((((((1+2)*3)/4)^5)%6)&7)>>8) FROM db.tab;
@@ -40,6 +43,7 @@ common_tests:
         -
         -
         - ['db.tab']
+        - 
 
     -
         - SELECT ABS(a),AVG(b) FROM db.tab;
@@ -48,6 +52,7 @@ common_tests:
         - ['AVG', 'ABS']
         - ['a: db.tab.a', 'b: db.tab.b']
         - ['db.tab']
+        - 
 
     -
         - SELECT AVG(((((b & a) << 1) + 1) / a) ^ 4.5) FROM db.tab;
@@ -56,6 +61,7 @@ common_tests:
         - ['AVG']
         -
         - ['db.tab']
+        - 
 
     -
         - SELECT A.a,B.* FROM db.tab1 A,db.tab2 AS B LIMIT 10;
@@ -64,6 +70,7 @@ common_tests:
         -
         - ['a: db.tab1.a', '*: db.tab2.*']
         - ['db.tab1', 'db.tab2']
+        - 
 
     -
         - SELECT fofid, x, y, z, vx, vy, vz
@@ -76,6 +83,7 @@ common_tests:
         -
         - ['fofid: MDR1.FOF.fofid', 'x: MDR1.FOF.x', 'y: MDR1.FOF.y', 'z: MDR1.FOF.z', 'vx: MDR1.FOF.vx', 'vy: MDR1.FOF.vy', 'vz: MDR1.FOF.vz']
         - ['MDR1.FOF']
+        - 
 
     -
         - SELECT article, dealer, price
@@ -86,6 +94,7 @@ common_tests:
         - ['MAX']
         - ['article: world.shop.article', 'dealer: world.shop.dealer', 'price: world.shop.price']
         - ['world.shop', 'universe.shop']
+        - 
 
     -
         - SELECT dealer, price
@@ -99,6 +108,7 @@ common_tests:
         - ['MAX']
         - ['price: db.shop.price', 'dealer: db.shop.dealer']
         - ['db.shop', 'db.warehouse']
+        - 
 
     -
         - SELECT A.*, B.*
@@ -110,6 +120,7 @@ common_tests:
         -
         - ['*: db1.table1.*', '*: db2.table1.*']
         - ['db1.table1', 'db2.table1']
+        - 
 
     -
         - SELECT * FROM mmm.products
@@ -120,6 +131,7 @@ common_tests:
         -
         - ['*: mmm.products.*']
         - ['mmm.products']
+        - 
 
     -
         - SELECT t.table_name AS tname, t.description AS tdesc,
@@ -153,6 +165,7 @@ common_tests:
          'jcol: tap_schema.cols.column_name',
          'kcol: tap_schema.cols.column_name']
         - ['tap_schema.tabs', 'tap_schema.cols']
+        - 
 
     -
         - SELECT t1.a FROM d.tab t1
@@ -162,6 +175,7 @@ common_tests:
         - ['a: foo.tab.a'] 
         - ['foo.tab']
         - 'd': 'foo'
+        - 
 
     -
         - SELECT DISTINCT t.table_name
@@ -175,6 +189,7 @@ common_tests:
         -
         - ['table_name: tap_schema.tabs.table_name']
         - ['tap_schema.tabs', 'tap_schema.cols']
+        - 
 
     -
         - SELECT s.* FROM db.person p INNER JOIN db.shirt s
@@ -186,6 +201,7 @@ common_tests:
         -
         - ['*: db.shirt.*']
         - ['db.shirt', 'db.person']
+        - 
 
     -
         - SELECT x, y, z, mass
@@ -200,6 +216,7 @@ common_tests:
         - ['x: MDR1.FOF.x', 'y: MDR1.FOF.y', 'z: MDR1.FOF.z',
            'mass: MDR1.FOF.mass']
         - ['MDR1.FOF']
+        - 
 
     -
         - SELECT h.Mvir, h.spin, g.diskMassStellar,
@@ -219,6 +236,7 @@ common_tests:
            'diskMassStellar: MDPL2.Galacticus.diskMassStellar',
            'spin: MDPL2.Rockstar.spin']
         - ['MDPL2.Rockstar', 'MDPL2.Galacticus']
+        - 
 
     -
         - SELECT bdmId, Rbin, mass, dens
@@ -247,6 +265,7 @@ common_tests:
         - ['bdmId: Bolshoi.BDMVProf.bdmId', 'Rbin: Bolshoi.BDMVProf.Rbin',
            'mass: Bolshoi.BDMVProf.mass', 'dens: Bolshoi.BDMVProf.dens']
         - ['Bolshoi.BDMVProf', 'Bolshoi.BDMV']
+        - 
 
     -
         - SELECT t.RAVE_OBS_ID AS c1, t.HEALPix AS c2,
@@ -274,6 +293,7 @@ common_tests:
              'c4: RAVEPUB_DR5.RAVE_ON.TEFF']
         - ['RAVEPUB_DR5.RAVE_DR5', 'RAVEPUB_DR5.RAVE_Gravity_SC',
              'RAVEPUB_DR5.RAVE_ON']
+        - 
 
     -
         - SELECT db.tab.a FROM db.tab;
@@ -282,6 +302,7 @@ common_tests:
         -
         - ['a: db.tab.a']
         - ['db.tab']
+        - 
 
     -
         - SELECT COUNT(*) AS n, id, mra, mlem AS qqq, blem
@@ -316,6 +337,7 @@ common_tests:
         - ['n: None.None.None', 'id: db.bar.id', 'mra: db.tab.ra',
            'qqq: db.bar.mlem', 'blem: None.None.blem']
         - ['db.tab', 'db.bar', 'db.gaia']
+        - 
 
     -
         - SELECT
@@ -361,6 +383,7 @@ common_tests:
            'n: None.None.None']
         - ['gaiadr1.tgas_source', 'gaiadr1.tmass_best_neighbour',
            'gaiadr1.tmass_original_valid']
+        - 
 
     -
         - SELECT ra, sub.qqq, t1.bar
@@ -379,6 +402,7 @@ common_tests:
         -
         -
         - ['db.tab', 'db.blem']
+        - 
 
     -
         - SELECT t1.a, t2.b, t3.c, t4.z
@@ -392,6 +416,7 @@ common_tests:
           'd': 'foo'
           'db2': 'bar'
           'foo': 'bas'
+        - 
 
     -
         -  SELECT *, AVG(par) as apar FROM db.tab;
@@ -400,6 +425,7 @@ common_tests:
         - ['AVG']
         - ['*: db.tab.*', 'apar: db.tab.par']
         - ['db.tab']
+        -   
 
     -
         - SELECT q.ra, q.de, tab2.par
@@ -414,6 +440,7 @@ common_tests:
         - ['MAX']
         - ['ra: db.tab.ra', 'de: db.tab.de', 'par: db.tab2.par']
         - ['db.tab', 'db.tab2', 'db.undef']
+        - 
 
     -
         - SELECT a, b
@@ -427,6 +454,7 @@ common_tests:
         -
         - ['a: db.tab1.a', 'b: db.tab1.b']
         - ['db.tab1', 'db.tab2']
+        - 
 
     -
         - SELECT a FROM db.tab HAVING b > 0
@@ -435,6 +463,7 @@ common_tests:
         -
         - ['a: db.tab.a']
         - ['db.tab']
+        - 
 
     -
         - SELECT a FROM db.tab WHERE EXISTS (
@@ -445,7 +474,8 @@ common_tests:
         -
         - ['a: db.tab.a']
         - ['db.tab', 'db.foo']
- 
+        - 
+
     -
         - SELECT *
           FROM (
@@ -458,6 +488,7 @@ common_tests:
         -
         -
         - ['db.a', 'db.b', 'db.c', 'db.d', 'db.x', 'db.y']
+        - 
 
     -
         - SELECT *
@@ -471,6 +502,7 @@ common_tests:
         -
         -
         - ['db.a', 'db.b', 'db.c', 'db.d', 'db.x', 'db.y']
+        - 
 
     -
         - SELECT A.*, B.*
@@ -482,6 +514,7 @@ common_tests:
         -
         - ['*: db1.table1.*', '*: db2.table1.*']
         - ['db1.table1', 'db2.table1']
+        - 
 
 
 common_translation_tests:
@@ -490,6 +523,7 @@ common_translation_tests:
         - ['db.tab.ra', 'db.tab.de']
         -
         - ['spoint', 'RADIANS']
+        -
         -
         -
         -
@@ -508,6 +542,7 @@ mysql_tests:
         -
         - ['fi@1: db.test_table.fi@1', 'fi2: db.test_table.fi2']
         - ['db.test_table', 'bd.test_table']
+        -
 
     -
         - SELECT `fi@1`, fi2
@@ -521,6 +556,7 @@ mysql_tests:
         - 
         - ['fi@1: db.test_table.fi@1', 'fi2: db.test_table.fi2']
         - ['db.test_table', 'bd.test_table']
+        - 
 
     -
         - SELECT log10(mass)/sqrt(x) AS logM
@@ -530,6 +566,7 @@ mysql_tests:
         - ['log10', 'sqrt']
         - 
         - ['MDR1.FOF']
+        - 
 
     -
         - SELECT log10(ABS(x)) AS log_x
@@ -539,6 +576,7 @@ mysql_tests:
         - ['log10', 'ABS']
         - ['log_x: MDR1.FOF.x']
         - ['MDR1.FOF']
+        -    
 
     -
         - SELECT DEGREES(sdist(spoint(RADIANS(0.0), RADIANS(0.0)),
@@ -550,6 +588,7 @@ mysql_tests:
         - ['DEGREES', 'RADIANS', 'sdist', 'spoint']
         - 
         - ['db.VII/233/xsc']
+        - 
 
     -
         - SELECT Data FROM db.Users
@@ -559,6 +598,7 @@ mysql_tests:
         -
         - ['Data: db.Users.Data']
         - ['db.Users']
+        - 
 
     -
         - SELECT CONVERT(ra, DECIMAL(12,9)) as ra2, ra as ra1
@@ -570,6 +610,7 @@ mysql_tests:
         -
         - ['ra1: GDR1.gaia_source.ra', 'ra2: GDR1.gaia_source.ra']
         - ['GDR1.gaia_source']
+        - 
 
     -
         - SELECT DEGREES(sdist(spoint(RADIANS(ra), RADIANS(dec)),
@@ -587,6 +628,7 @@ mysql_tests:
            'DEGREES']
         -
         - ['GDR1.gaia_source']
+        - 
 
     -
         - SELECT x, y, z, mass
@@ -598,6 +640,7 @@ mysql_tests:
         - ['x: MDR1.FOF.x', 'y: MDR1.FOF.y', 'z: MDR1.FOF.z',
              'mass: MDR1.FOF.mass']
         - ['MDR1.FOF']
+        - 
 
     -
         - SELECT bdmId, Rbin, mass, dens FROM Bolshoi.BDMVProf
@@ -618,6 +661,7 @@ mysql_tests:
         - ['bdmId: Bolshoi.BDMVProf.bdmId', 'Rbin: Bolshoi.BDMVProf.Rbin',
            'mass: Bolshoi.BDMVProf.mass', 'dens: Bolshoi.BDMVProf.dens']
         - ['Bolshoi.BDMVProf', 'Bolshoi.BDMV']
+        - 
 
 
 postgresql_tests:
@@ -628,6 +672,7 @@ postgresql_tests:
         - ['pdist']
         -
         -
+        - 
 
     -
         - SELECT DISTINCT ON ("source"."tycho2_id") "tycho2_id", "source"."tycho2_dist"
@@ -637,6 +682,7 @@ postgresql_tests:
         -
         -
         -
+        - 
 
     -
         - SELECT ra, dec FROM gdr1.gaia_source
@@ -647,6 +693,7 @@ postgresql_tests:
         - ['scircle', 'spoint']
         - ['ra: gdr1.gaia_source.ra', 'dec: gdr1.gaia_source.dec']
         - ['gdr1.gaia_source']
+        - 
 
     -
         -   SELECT ra, dec FROM gdr1.gaia_source
@@ -657,6 +704,7 @@ postgresql_tests:
         - ['scircle', 'spoint']
         - ['ra: gdr1.gaia_source.ra', 'dec: gdr1.gaia_source.dec']
         - ['gdr1.gaia_source']
+        - 
 
     -
         - SELECT * FROM gdr2.vari_cepheid AS v
@@ -668,6 +716,7 @@ postgresql_tests:
         - ['scircle', 'spoint']
         - ['*: gdr2.vari_cepheid.*']
         - ['gdr2.gaia_source', 'gdr2.vari_cepheid']
+        - 
 
     -
         - SELECT curves.observation_time,
@@ -696,6 +745,7 @@ postgresql_tests:
            'observation_time: gdr1.phot_variable_time_series_gfov.observation_time',
            'phase: gdr1.rrlyrae.p1']
         - ['gdr1.phot_variable_time_series_gfov', 'gdr1.rrlyrae']
+        - 
 
     -
         - SELECT a
@@ -706,6 +756,7 @@ postgresql_tests:
         -
         - ['a: db.tab.a']
         - ['db.tab']
+        - 
 
     -
         - SELECT arr[1:3] FROM db.phot;
@@ -714,6 +765,7 @@ postgresql_tests:
         -
         - ['arr: db.phot.arr']
         - ['db.phot']
+        - 
 
     -
         - SELECT arr[1:3][1][2][3][4] FROM db.phot;
@@ -722,6 +774,7 @@ postgresql_tests:
         -
         - ['arr: db.phot.arr']
         - ['db.phot']
+        - 
 
     -
         - SELECT ra, dec FROM gdr1.gaia_source
@@ -732,6 +785,7 @@ postgresql_tests:
         - ['scircle', 'spoint']
         - ['ra: gdr1.gaia_source.ra', 'dec: gdr1.gaia_source.dec']
         - ['gdr1.gaia_source']
+        - 
 
     -
         - SELECT q2.c / q1.c FROM (
@@ -749,6 +803,7 @@ postgresql_tests:
         - ['COUNT']
         -
         - ['gdr1.tgas_source']
+        - 
 
     -
         - SELECT * FROM gdr2.vari_cepheid AS v
@@ -760,6 +815,7 @@ postgresql_tests:
         - ['scircle', 'spoint']
         - ['*: gdr2.vari_cepheid.*']
         - ['gdr2.gaia_source', 'gdr2.vari_cepheid']
+        - 
 
     -
         - SELECT ra FROM gdr2.gaia_source AS gaia
@@ -770,13 +826,18 @@ postgresql_tests:
         - ['RADIANS', 'spoint', 'scircle']
         - ['ra: gdr2.gaia_source.ra']
         - ['gdr2.gaia_source']
+        - 
 
+    -
+        - "SELECT specuid, ra, dec FROM dr1.spectrum WHERE QMOST_SPEC_IS_IN_SURVEY(specuid, '04');"
+        - ['dr1.spectrum.specuid', 'dr1.spectrum.ra', 'dr1.spectrum.dec']
+        - ["where"]
+        - ["QMOST_SPEC_IS_IN_SURVEY"]
+        - ["specuid: dr1.spectrum.specuid", "ra: dr1.spectrum.ra", "dec: dr1.spectrum.dec"]
+        - ["dr1.spectrum"]
+        - 
+        - ["QMOST_SPEC_IS_IN_SURVEY"]
 
-
-# Each test below consists of:
-#
-# - ADQL query string
-# - translated query string
 
 adql_mysql_tests:
     -
