@@ -812,6 +812,21 @@ class SQLQueryProcessor(object):
         columns.extend(extra_columns)
         return missing_columns
 
+    @staticmethod
+    def _match_and_replace_function_name(query, function_name, i):
+        """
+        This very roughly checks if the function name is present in the query.
+        We check for a space, the function name, and an opening parenthesis.
+        """
+        pattern = r"\s" + re.escape(function_name) + r"\("
+        match = re.search(pattern, query)
+        if match:
+            start, end = match.span()
+            # Replace the matched function name with UDF_{i}
+            query = query[: start + 1] + f"UDF_{i}" + query[end - 1 :]
+
+        return match, query
+
     def process_query(
         self,
         replace_schema_name=None,
@@ -828,13 +843,16 @@ class SQLQueryProcessor(object):
         :param indexed_objects: Deprecated
 
         """
-        self.replaced_functions = []
-        print(f"replace_function_names: {replace_function_names}")
+        self.replaced_functions = {}
+
         if replace_function_names:
             for i, function_name in enumerate(replace_function_names):
-                if function_name in self.query:
-                    self.replaced_functions.append(function_name)
-                    self.set_query(self.query.replace(function_name, f"UDF_{i}"))
+                match, query = self._match_and_replace_function_name(
+                    self.query, function_name, i
+                )
+                if match:
+                    self.replaced_functions[i] = function_name
+                    self.set_query(query)
 
         # Antlr objects
         inpt = antlr4.InputStream(self.query)
@@ -1069,10 +1087,11 @@ class SQLQueryProcessor(object):
             )
         )
 
-        print(f"replaced_functions: {self.replaced_functions}")
-        if self.replaced_functions:
-            for i, function_name in enumerate(self.replaced_functions):
-                self.set_query(self.query.replace(f"UDF_{i}", function_name))
+        if len(self.replaced_functions) > 0:
+            for i, function_name in self.replaced_functions.items():
+                self._query = self.query.replace(f"UDF_{i}", function_name)
+                self.functions.remove(f"UDF_{i}")
+                self.functions.append(function_name)
 
     @property
     def query(self):
