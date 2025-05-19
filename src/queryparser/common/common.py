@@ -60,21 +60,21 @@ def process_column_name(column_name_listener, walker, ctx, quote_char):
         for i in column_name_listener.column_name:
             cni = [None, None, None, i]
             if i.schema_name():
-                cni[0] = i.schema_name().getText().replace(quote_char, "")
+                cni[0] = i.schema_name().getText().replace(quote_char, '')
             if i.table_name():
-                cni[1] = i.table_name().getText().replace(quote_char, "")
+                cni[1] = i.table_name().getText().replace(quote_char, '')
             if i.column_name():
-                cni[2] = i.column_name().getText().replace(quote_char, "")
+                cni[2] = i.column_name().getText().replace(quote_char, '')
             cn.append(cni)
     else:
         try:
             ctx.ASTERISK()
             ts = ctx.table_spec()
-            cn = [[None, None, "*", None]]
+            cn = [[None, None, '*', None]]
             if ts.schema_name():
-                cn[0][0] = ts.schema_name().getText().replace(quote_char, "")
+                cn[0][0] = ts.schema_name().getText().replace(quote_char, '')
             if ts.table_name():
-                cn[0][1] = ts.table_name().getText().replace(quote_char, "")
+                cn[0][1] = ts.table_name().getText().replace(quote_char, '')
         except AttributeError:
             cn = [[None, None, None, None]]
     return cn
@@ -134,16 +134,16 @@ def get_schema_name_listener(base, quote_char):
             ttype = ctx.start.type
             sn = ctx.getTokens(ttype)[0].getSymbol().text
             try:
-                nsn = self.replace_schema_name[sn.replace(quote_char, "")]
+                nsn = self.replace_schema_name[sn.replace(quote_char, '')]
                 try:
-                    nsn = unicode(nsn, "utf-8")
+                    nsn = unicode(nsn, 'utf-8')
                 except NameError:
                     pass
                 nsn = re.sub(
-                    r"(|{})(?!{})[\S]*[^{}](|{})".format(
+                    r'(|{})(?!{})[\S]*[^{}](|{})'.format(
                         quote_char, quote_char, quote_char, quote_char
                     ),
-                    r"\1{}\2".format(nsn),
+                    r'\1{}\2'.format(nsn),
                     sn,
                 )
                 ctx.getTokens(ttype)[0].getSymbol().text = nsn
@@ -202,7 +202,7 @@ def get_query_listener(base, base_parser, quote_char):
 
         def enterSelect_statement(self, ctx):
             if ctx.UNION_SYM():
-                self.keywords.append("union")
+                self.keywords.append('union')
 
         def enterSelect_expression(self, ctx):
             # we need to keep track of unions as they act as subqueries
@@ -294,9 +294,9 @@ def get_column_keyword_function_listener(base, quote_char):
             if ts:
                 tn = [None, None]
                 if ts.schema_name():
-                    tn[0] = ts.schema_name().getText().replace(quote_char, "")
+                    tn[0] = ts.schema_name().getText().replace(quote_char, '')
                 if ts.table_name():
-                    tn[1] = ts.table_name().getText().replace(quote_char, "")
+                    tn[1] = ts.table_name().getText().replace(quote_char, '')
                 self.tables.append((alias, tn, ctx.depth()))
 
                 logging.info((ctx.depth(), ctx.__class__.__name__, [tn, alias]))
@@ -315,7 +315,7 @@ def get_column_keyword_function_listener(base, quote_char):
             )
             self._extract_column(ctx)
             if ctx.ASTERISK():
-                self.keywords.append("*")
+                self.keywords.append('*')
 
         def enterSelect_expression(self, ctx):
             logging.info((ctx.depth(), ctx.__class__.__name__))
@@ -324,11 +324,11 @@ def get_column_keyword_function_listener(base, quote_char):
         def enterSelect_list(self, ctx):
             if ctx.ASTERISK():
                 logging.info(
-                    (ctx.depth(), ctx.__class__.__name__, [[None, None, "*"], None])
+                    (ctx.depth(), ctx.__class__.__name__, [[None, None, '*'], None])
                 )
-                self.data.append([ctx.depth(), ctx, [[[None, None, "*"], None]]])
-                self.columns.append(("*", None))
-                self.keywords.append("*")
+                self.data.append([ctx.depth(), ctx, [[[None, None, '*'], None]]])
+                self.columns.append(('*', None))
+                self.keywords.append('*')
 
         def enterFunctionList(self, ctx):
             self.functions.append(ctx.getText())
@@ -337,7 +337,7 @@ def get_column_keyword_function_listener(base, quote_char):
             self.functions.append(ctx.getText())
 
         def enterGroupby_clause(self, ctx):
-            self.keywords.append("group by")
+            self.keywords.append('group by')
             col = self._extract_column(ctx, append=False)
             if col[1][0][0][2] not in self.column_aliases:
                 self._extract_column(ctx)
@@ -353,7 +353,7 @@ def get_column_keyword_function_listener(base, quote_char):
             )
 
         def enterWhere_clause(self, ctx):
-            self.keywords.append("where")
+            self.keywords.append('where')
             self._extract_column(ctx)
             logging.info(
                 (
@@ -367,7 +367,7 @@ def get_column_keyword_function_listener(base, quote_char):
             )
 
         def enterHaving_clause(self, ctx):
-            self.keywords.append("having")
+            self.keywords.append('having')
             self._extract_column(ctx)
             logging.info(
                 (
@@ -381,7 +381,7 @@ def get_column_keyword_function_listener(base, quote_char):
             )
 
         def enterOrderby_clause(self, ctx):
-            self.keywords.append("order by")
+            self.keywords.append('order by')
             col = self._extract_column(ctx, append=False)
             if col[1][0][0][2] not in self.column_aliases:
                 self._extract_column(ctx)
@@ -397,10 +397,10 @@ def get_column_keyword_function_listener(base, quote_char):
             )
 
         def enterLimit_clause(self, ctx):
-            self.keywords.append("limit")
+            self.keywords.append('limit')
 
         def enterJoin_condition(self, ctx):
-            self.keywords.append("join")
+            self.keywords.append('join')
             self._extract_column(ctx, join_columns=ctx)
             logging.info(
                 (
@@ -414,28 +414,28 @@ def get_column_keyword_function_listener(base, quote_char):
             )
 
         def enterSpoint(self, ctx):
-            self.functions.append("spoint")
+            self.functions.append('spoint')
 
         def enterScircle(self, ctx):
-            self.functions.append("scircle")
+            self.functions.append('scircle')
 
         def enterSline(self, ctx):
-            self.functions.append("sline")
+            self.functions.append('sline')
 
         def enterSellipse(self, ctx):
-            self.functions.append("sellipse")
+            self.functions.append('sellipse')
 
         def enterSbox(self, ctx):
-            self.functions.append("sbox")
+            self.functions.append('sbox')
 
         def enterSpoly(self, ctx):
-            self.functions.append("spoly")
+            self.functions.append('spoly')
 
         def enterSpath(self, ctx):
-            self.functions.append("spath")
+            self.functions.append('spath')
 
         def enterStrans(self, ctx):
-            self.functions.append("strans")
+            self.functions.append('strans')
 
     return ColumnKeywordFunctionListener
 
@@ -623,19 +623,19 @@ class SQLQueryProcessor(object):
         column_found = False
 
         for bc in ref:
-            if bc[0][2] == "*":
-                t = [[bc[0][0], bc[0][1]], "None"]
+            if bc[0][2] == '*':
+                t = [[bc[0][0], bc[0][1]], 'None']
                 column_found = True
                 break
             elif bc[1] and c[0][2] == bc[1]:
-                t = [[bc[0][0], bc[0][1]], "None"]
+                t = [[bc[0][0], bc[0][1]], 'None']
                 cname = bc[0][2]
                 if c[1] is None:
                     calias = c[0][2]
                 column_found = True
                 break
             elif c[0][2] == bc[0][2] and bc[1] is None:
-                t = [[bc[0][0], bc[0][1]], "None"]
+                t = [[bc[0][0], bc[0][1]], 'None']
                 column_found = True
                 break
 
@@ -666,7 +666,7 @@ class SQLQueryProcessor(object):
             calias = c[1]
 
             # if * is selected we don't care too much
-            if c[0][0] is None and c[0][1] is None and c[0][2] == "*" and not join:
+            if c[0][0] is None and c[0][1] is None and c[0][2] == '*' and not join:
                 for slt in select_list_tables:
                     extra_columns.append(
                         [[slt[0][0][0], slt[0][0][1], cname, c[0][3]], calias]
@@ -683,13 +683,13 @@ class SQLQueryProcessor(object):
             try:
                 tab = select_list_tables[0][0]
                 if tab[0][0] is None:
-                    raise QueryError("Missing schema specification.")
+                    raise QueryError('Missing schema specification.')
 
                 # We have to check if we also have a join on the same level
                 # and we are actually touching a column from the joined table
                 if (
                     join
-                    and c[0][2] != "*"
+                    and c[0][2] != '*'
                     and (tab[1] != c[0][1] or (tab[1] is None and c[0][1] is None))
                 ):
                     cname, cctx, calias, column_found, tab = self._get_budget_column(
@@ -718,7 +718,7 @@ class SQLQueryProcessor(object):
                         not column_found
                         and c[0][1] is not None
                         and c[0][1] != tab[0][1]
-                        and "*" not in ref_cols
+                        and '*' not in ref_cols
                     ):
                         raise QueryError("Unknown column '%s.%s'." % (c[0][1], c[0][2]))
 
@@ -776,7 +776,7 @@ class SQLQueryProcessor(object):
 
                 elif (
                     c[0][2] is not None
-                    and c[0][2] != "*"
+                    and c[0][2] != '*'
                     and c[0][1] is None
                     and len(ref_dict.keys()) > 1
                     and not join
@@ -818,12 +818,12 @@ class SQLQueryProcessor(object):
         This very roughly checks if the function name is present in the query.
         We check for a space, the function name, and an opening parenthesis.
         """
-        pattern = r"\s" + re.escape(function_name) + r"\("
+        pattern = r'\s' + re.escape(function_name) + r'\('
         match = re.search(pattern, query)
         if match:
             start, end = match.span()
             # Replace the matched function name with UDF_{i}
-            query = query[: start + 1] + f"UDF_{i}" + query[end - 1 :]
+            query = query[: start + 1] + f'UDF_{i}' + query[end - 1 :]
 
         return match, query
 
@@ -1025,7 +1025,7 @@ class SQLQueryProcessor(object):
             )
             if len(mc):
                 unref_cols = "', '".join(
-                    [".".join([j for j in i[0][:3] if j]) for i in mc]
+                    ['.'.join([j for j in i[0][:3] if j]) for i in mc]
                 )
                 raise QueryError("Unreferenced column(s): '%s'." % unref_cols)
 
@@ -1052,7 +1052,7 @@ class SQLQueryProcessor(object):
         asterisk_columns = []
         del_columns = []
         for col in touched_columns:
-            if col[2] == "*":
+            if col[2] == '*':
                 asterisk_columns.append(col)
 
         for acol in asterisk_columns:
@@ -1089,8 +1089,8 @@ class SQLQueryProcessor(object):
 
         if len(self.replaced_functions) > 0:
             for i, function_name in self.replaced_functions.items():
-                self._query = self.query.replace(f"UDF_{i}", function_name)
-                self.functions.remove(f"UDF_{i}")
+                self._query = self.query.replace(f'UDF_{i}', function_name)
+                self.functions.remove(f'UDF_{i}')
                 self.functions.append(function_name)
 
     @property
@@ -1102,7 +1102,7 @@ class SQLQueryProcessor(object):
         return self._query
 
     def _strip_query(self, query):
-        return query.lstrip("\n").rstrip().rstrip(";") + ";"
+        return query.lstrip('\n').rstrip().rstrip(';') + ';'
 
     def _strip_column(self, col):
         scol = [None, None, None]
