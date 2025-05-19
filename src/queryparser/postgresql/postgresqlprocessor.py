@@ -6,18 +6,18 @@ used in a query.
 
 """
 
-from __future__ import (absolute_import, print_function)
+from __future__ import absolute_import, print_function
 
 __all__ = ["PostgreSQLQueryProcessor"]
 
+from ..common import SQLQueryProcessor
 from .PostgreSQLLexer import PostgreSQLLexer
 from .PostgreSQLParser import PostgreSQLParser
 from .PostgreSQLParserListener import PostgreSQLParserListener
 
-from ..common import SQLQueryProcessor
-
 
 class PostgreSQLQueryProcessor(SQLQueryProcessor):
     def __init__(self, query=None):
-        super().__init__(PostgreSQLLexer, PostgreSQLParser,
-                         PostgreSQLParserListener, '"', query)
+        super().__init__(
+            PostgreSQLLexer, PostgreSQLParser, PostgreSQLParserListener, '"', query
+        )

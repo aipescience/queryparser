@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # All listeners that are with minor modifications shared between PostgreSQL
 # and MySQL.
-from __future__ import (absolute_import, print_function)
+from __future__ import absolute_import, print_function
 
 import logging
 import re
@@ -31,7 +31,7 @@ def parse_alias(alias, quote_char):
 
 
 def process_column_name(column_name_listener, walker, ctx, quote_char):
-    '''
+    """
     A helper function that strips the quote characters from the column
     names. The returned list includes:
 
@@ -44,7 +44,7 @@ def process_column_name(column_name_listener, walker, ctx, quote_char):
         column_name_listener object
 
     :param walker:
-        antlr walker object 
+        antlr walker object
 
     :param ctx:
         antlr context to walk through
@@ -52,7 +52,7 @@ def process_column_name(column_name_listener, walker, ctx, quote_char):
     :param quote_char:
         which quote character are we expecting?
 
-    '''
+    """
     cn = []
     column_name_listener.column_name = []
     walker.walk(column_name_listener, ctx)
@@ -81,12 +81,12 @@ def process_column_name(column_name_listener, walker, ctx, quote_char):
 
 
 def get_column_name_listener(base):
-
     class ColumnNameListener(base):
         """
         Get all column names.
 
         """
+
         def __init__(self):
             self.column_name = []
             self.column_as_array = []
@@ -105,12 +105,12 @@ def get_column_name_listener(base):
 
 
 def get_table_name_listener(base, quote_char):
-
     class TableNameListener(base):
         """
         Get table names.
 
         """
+
         def __init__(self):
             self.table_names = []
             self.table_aliases = []
@@ -126,9 +126,7 @@ def get_table_name_listener(base, quote_char):
 
 
 def get_schema_name_listener(base, quote_char):
-
     class SchemaNameListener(base):
-
         def __init__(self, replace_schema_name):
             self.replace_schema_name = replace_schema_name
 
@@ -141,9 +139,13 @@ def get_schema_name_listener(base, quote_char):
                     nsn = unicode(nsn, 'utf-8')
                 except NameError:
                     pass
-                nsn = re.sub(r'(|{})(?!{})[\S]*[^{}](|{})'.format(
-                    quote_char, quote_char, quote_char, quote_char),
-                    r'\1{}\2'.format(nsn), sn)
+                nsn = re.sub(
+                    r'(|{})(?!{})[\S]*[^{}](|{})'.format(
+                        quote_char, quote_char, quote_char, quote_char
+                    ),
+                    r'\1{}\2'.format(nsn),
+                    sn,
+                )
                 ctx.getTokens(ttype)[0].getSymbol().text = nsn
             except KeyError:
                 pass
@@ -152,42 +154,46 @@ def get_schema_name_listener(base, quote_char):
 
 
 def get_remove_subqueries_listener(base, base_parser):
-
     class RemoveSubqueriesListener(base):
         """
         Remove nested select_expressions.
 
         """
+
         def __init__(self, depth):
             self.depth = depth
 
         def enterSelect_expression(self, ctx):
             parent = ctx.parentCtx.parentCtx
 
-            if isinstance(parent, base_parser.SubqueryContext) and \
-               ctx.depth() > self.depth:
+            if (
+                isinstance(parent, base_parser.SubqueryContext)
+                and ctx.depth() > self.depth
+            ):
                 # we need to remove all Select_expression instances, not
                 # just the last one so we loop over until we get all of them
                 # out
-                seinstances = [isinstance(i,
-                               base_parser.Select_expressionContext)
-                               for i in ctx.parentCtx.children]
+                seinstances = [
+                    isinstance(i, base_parser.Select_expressionContext)
+                    for i in ctx.parentCtx.children
+                ]
                 while True in seinstances:
                     ctx.parentCtx.removeLastChild()
-                    seinstances = [isinstance(i,
-                                   base_parser.Select_expressionContext)
-                                   for i in ctx.parentCtx.children]
+                    seinstances = [
+                        isinstance(i, base_parser.Select_expressionContext)
+                        for i in ctx.parentCtx.children
+                    ]
 
     return RemoveSubqueriesListener
 
 
 def get_query_listener(base, base_parser, quote_char):
-
     class QueryListener(base):
         """
         Extract all select_expressions.
 
         """
+
         def __init__(self):
             self.select_expressions = []
             self.select_list = None
@@ -219,12 +225,12 @@ def get_query_listener(base, base_parser, quote_char):
 
 
 def get_column_keyword_function_listener(base, quote_char):
-
     class ColumnKeywordFunctionListener(base):
         """
         Extract columns, keywords and functions.
 
         """
+
         def __init__(self):
             self.tables = []
             self.columns = []
@@ -232,8 +238,7 @@ def get_column_keyword_function_listener(base, quote_char):
             self.keywords = []
             self.functions = []
             self.column_name_listener = get_column_name_listener(base)()
-            self.table_name_listener = get_table_name_listener(
-                    base, quote_char)()
+            self.table_name_listener = get_table_name_listener(base, quote_char)()
             self.walker = antlr4.ParseTreeWalker()
 
             self.data = []
@@ -247,8 +252,9 @@ def get_column_keyword_function_listener(base, quote_char):
             return alias
 
         def _extract_column(self, ctx, append=True, join_columns=False):
-            cn = process_column_name(self.column_name_listener, self.walker,
-                                     ctx, quote_char)
+            cn = process_column_name(
+                self.column_name_listener, self.walker, ctx, quote_char
+            )
             alias = self._process_alias(ctx)
 
             if len(cn) > 1:
@@ -293,15 +299,20 @@ def get_column_keyword_function_listener(base, quote_char):
                     tn[1] = ts.table_name().getText().replace(quote_char, '')
                 self.tables.append((alias, tn, ctx.depth()))
 
-                logging.info((ctx.depth(), ctx.__class__.__name__,
-                             [tn, alias]))
+                logging.info((ctx.depth(), ctx.__class__.__name__, [tn, alias]))
                 self.data.append([ctx.depth(), ctx, [tn, alias]])
 
         def enterDisplayed_column(self, ctx):
-            logging.info((ctx.depth(), ctx.__class__.__name__,
-                         self._extract_column(ctx, append=False)[1]))
-            self.data.append([ctx.depth(), ctx,
-                              self._extract_column(ctx, append=False)[1]])
+            logging.info(
+                (
+                    ctx.depth(),
+                    ctx.__class__.__name__,
+                    self._extract_column(ctx, append=False)[1],
+                )
+            )
+            self.data.append(
+                [ctx.depth(), ctx, self._extract_column(ctx, append=False)[1]]
+            )
             self._extract_column(ctx)
             if ctx.ASTERISK():
                 self.keywords.append('*')
@@ -312,10 +323,10 @@ def get_column_keyword_function_listener(base, quote_char):
 
         def enterSelect_list(self, ctx):
             if ctx.ASTERISK():
-                logging.info((ctx.depth(), ctx.__class__.__name__,
-                             [[None, None, '*'], None]))
-                self.data.append([ctx.depth(), ctx, [[[None, None, '*'],
-                                 None]]])
+                logging.info(
+                    (ctx.depth(), ctx.__class__.__name__, [[None, None, '*'], None])
+                )
+                self.data.append([ctx.depth(), ctx, [[[None, None, '*'], None]]])
                 self.columns.append(('*', None))
                 self.keywords.append('*')
 
@@ -330,36 +341,60 @@ def get_column_keyword_function_listener(base, quote_char):
             col = self._extract_column(ctx, append=False)
             if col[1][0][0][2] not in self.column_aliases:
                 self._extract_column(ctx)
-            logging.info((ctx.depth(), ctx.__class__.__name__,
-                         self._extract_column(ctx, append=False)[1]))
-            self.data.append([ctx.depth(), ctx,
-                              self._extract_column(ctx, append=False)[1]])
+            logging.info(
+                (
+                    ctx.depth(),
+                    ctx.__class__.__name__,
+                    self._extract_column(ctx, append=False)[1],
+                )
+            )
+            self.data.append(
+                [ctx.depth(), ctx, self._extract_column(ctx, append=False)[1]]
+            )
 
         def enterWhere_clause(self, ctx):
             self.keywords.append('where')
             self._extract_column(ctx)
-            logging.info((ctx.depth(), ctx.__class__.__name__,
-                         self._extract_column(ctx, append=False)[1]))
-            self.data.append([ctx.depth(), ctx,
-                              self._extract_column(ctx, append=False)[1]])
+            logging.info(
+                (
+                    ctx.depth(),
+                    ctx.__class__.__name__,
+                    self._extract_column(ctx, append=False)[1],
+                )
+            )
+            self.data.append(
+                [ctx.depth(), ctx, self._extract_column(ctx, append=False)[1]]
+            )
 
         def enterHaving_clause(self, ctx):
             self.keywords.append('having')
             self._extract_column(ctx)
-            logging.info((ctx.depth(), ctx.__class__.__name__,
-                         self._extract_column(ctx, append=False)[1]))
-            self.data.append([ctx.depth(), ctx,
-                              self._extract_column(ctx, append=False)[1]])
+            logging.info(
+                (
+                    ctx.depth(),
+                    ctx.__class__.__name__,
+                    self._extract_column(ctx, append=False)[1],
+                )
+            )
+            self.data.append(
+                [ctx.depth(), ctx, self._extract_column(ctx, append=False)[1]]
+            )
 
         def enterOrderby_clause(self, ctx):
             self.keywords.append('order by')
             col = self._extract_column(ctx, append=False)
             if col[1][0][0][2] not in self.column_aliases:
                 self._extract_column(ctx)
-            logging.info((ctx.depth(), ctx.__class__.__name__,
-                         self._extract_column(ctx, append=False)[1]))
-            self.data.append([ctx.depth(), ctx,
-                              self._extract_column(ctx, append=False)[1]])
+            logging.info(
+                (
+                    ctx.depth(),
+                    ctx.__class__.__name__,
+                    self._extract_column(ctx, append=False)[1],
+                )
+            )
+            self.data.append(
+                [ctx.depth(), ctx, self._extract_column(ctx, append=False)[1]]
+            )
 
         def enterLimit_clause(self, ctx):
             self.keywords.append('limit')
@@ -367,10 +402,16 @@ def get_column_keyword_function_listener(base, quote_char):
         def enterJoin_condition(self, ctx):
             self.keywords.append('join')
             self._extract_column(ctx, join_columns=ctx)
-            logging.info((ctx.depth(), ctx.__class__.__name__,
-                         self._extract_column(ctx, append=False)[1]))
-            self.data.append([ctx.depth(), ctx,
-                              self._extract_column(ctx, append=False)[1]])
+            logging.info(
+                (
+                    ctx.depth(),
+                    ctx.__class__.__name__,
+                    self._extract_column(ctx, append=False)[1],
+                )
+            )
+            self.data.append(
+                [ctx.depth(), ctx, self._extract_column(ctx, append=False)[1]]
+            )
 
         def enterSpoint(self, ctx):
             self.functions.append('spoint')
@@ -437,8 +478,16 @@ class SQLQueryProcessor(object):
         other types of listeners can be added.
 
     """
-    def __init__(self, base_lexer, base_parser, base_parser_listener,
-                 quote_char, query=None, base_sphere_listener=None):
+
+    def __init__(
+        self,
+        base_lexer,
+        base_parser,
+        base_parser_listener,
+        quote_char,
+        query=None,
+        base_sphere_listener=None,
+    ):
         self.lexer = base_lexer
         self.parser = base_parser
         self.parser_listener = base_parser_listener
@@ -495,12 +544,12 @@ class SQLQueryProcessor(object):
 
             if isinstance(i[1], self.parser.Select_listContext):
                 if len(i) == 3:
-                    select_list_columns.append([[i[2][0][0] + [i[1]],
-                                                i[2][0][1]]])
+                    select_list_columns.append([[i[2][0][0] + [i[1]], i[2][0][1]]])
                     ctx_stack.append(i)
 
-            if isinstance(i[1], self.parser.Where_clauseContext) or\
-               isinstance(i[1], self.parser.Having_clauseContext):
+            if isinstance(i[1], self.parser.Where_clauseContext) or isinstance(
+                i[1], self.parser.Having_clauseContext
+            ):
                 if len(i[2]) > 1:
                     for j in i[2]:
                         other_columns.append([j])
@@ -514,15 +563,23 @@ class SQLQueryProcessor(object):
 
                 if i[1].USING_SYM():
                     for ctx in ctx_stack[::-1]:
-                        if not isinstance(ctx[1],
-                                          self.parser.Table_atomContext):
+                        if not isinstance(ctx[1], self.parser.Table_atomContext):
                             break
                         for ju in join_using:
                             if ju[0][1] is None:
-                                other_columns.append([[[ctx[2][0][0],
-                                                        ctx[2][0][1],
-                                                        ju[0][2],
-                                                        ctx[1]], None]])
+                                other_columns.append(
+                                    [
+                                        [
+                                            [
+                                                ctx[2][0][0],
+                                                ctx[2][0][1],
+                                                ju[0][2],
+                                                ctx[1],
+                                            ],
+                                            None,
+                                        ]
+                                    ]
+                                )
                 elif i[1].ON():
                     if len(i[2]) > 1:
                         for j in i[2]:
@@ -546,9 +603,16 @@ class SQLQueryProcessor(object):
                     go_columns.append(i[2])
                 ctx_stack.append(i)
 
-        return select_list_columns, select_list_tables,\
-            select_list_table_references, other_columns, go_columns, join,\
-            join_using, column_aliases
+        return (
+            select_list_columns,
+            select_list_tables,
+            select_list_table_references,
+            other_columns,
+            go_columns,
+            join,
+            join_using,
+            column_aliases,
+        )
 
     def _get_budget_column(self, c, tab, ref):
         cname = c[0][2]
@@ -577,10 +641,17 @@ class SQLQueryProcessor(object):
 
         return cname, cctx, calias, column_found, t
 
-    def _extract_columns(self, columns, select_list_tables, ref_dict, join,
-                         budget, column_aliases, touched_columns=None,
-                         subquery_contents=None):
-
+    def _extract_columns(
+        self,
+        columns,
+        select_list_tables,
+        ref_dict,
+        join,
+        budget,
+        column_aliases,
+        touched_columns=None,
+        subquery_contents=None,
+    ):
         # Here we store all columns that might have references somewhere
         # higher up in the tree structure. We'll revisit them later.
         missing_columns = []
@@ -595,11 +666,11 @@ class SQLQueryProcessor(object):
             calias = c[1]
 
             # if * is selected we don't care too much
-            if c[0][0] is None and c[0][1] is None and c[0][2] == '*'\
-                    and not join:
+            if c[0][0] is None and c[0][1] is None and c[0][2] == '*' and not join:
                 for slt in select_list_tables:
-                    extra_columns.append([[slt[0][0][0], slt[0][0][1], cname,
-                                         c[0][3]], calias])
+                    extra_columns.append(
+                        [[slt[0][0][0], slt[0][0][1], cname, c[0][3]], calias]
+                    )
                 remove_column_idxs.append(i)
                 continue
 
@@ -616,15 +687,17 @@ class SQLQueryProcessor(object):
 
                 # We have to check if we also have a join on the same level
                 # and we are actually touching a column from the joined table
-                if join and c[0][2] != '*' and\
-                        (tab[1] != c[0][1] or
-                         (tab[1] is None and c[0][1] is None)):
-                    cname, cctx, calias, column_found, tab =\
-                            self._get_budget_column(c, tab, budget[-1][2])
+                if (
+                    join
+                    and c[0][2] != '*'
+                    and (tab[1] != c[0][1] or (tab[1] is None and c[0][1] is None))
+                ):
+                    cname, cctx, calias, column_found, tab = self._get_budget_column(
+                        c, tab, budget[-1][2]
+                    )
                     # raise an ambiguous column
                     if column_found and c[0][1] is None:
-                        raise QueryError("Column '%s' is possibly ambiguous."
-                                         % c[0][2])
+                        raise QueryError("Column '%s' is possibly ambiguous." % c[0][2])
 
             except IndexError:
                 pass
@@ -636,14 +709,18 @@ class SQLQueryProcessor(object):
 
                 if isinstance(ref[0], int):
                     # ref is a budget column
-                    cname, cctx, calias, column_found, tab =\
-                            self._get_budget_column(c, tab, ref[2])
+                    cname, cctx, calias, column_found, tab = self._get_budget_column(
+                        c, tab, ref[2]
+                    )
 
                     ref_cols = [j[0][2] for j in ref[2]]
-                    if not column_found and c[0][1] is not None\
-                            and c[0][1] != tab[0][1] and '*' not in ref_cols:
-                        raise QueryError("Unknown column '%s.%s'." % (c[0][1],
-                                                                      c[0][2]))
+                    if (
+                        not column_found
+                        and c[0][1] is not None
+                        and c[0][1] != tab[0][1]
+                        and '*' not in ref_cols
+                    ):
+                        raise QueryError("Unknown column '%s.%s'." % (c[0][1], c[0][2]))
 
                 else:
                     # ref is a table
@@ -662,12 +739,12 @@ class SQLQueryProcessor(object):
                     if subquery_contents is not None:
                         try:
                             contents = subquery_contents[c[0][1]]
-                            cname, cctx, calias, column_found, tab =\
+                            cname, cctx, calias, column_found, tab = (
                                 self._get_budget_column(c, tab, contents)
+                            )
 
                         except KeyError:
-                            tabs = [j[0][0][:2] for j in
-                                    subquery_contents.values()]
+                            tabs = [j[0][0][:2] for j in subquery_contents.values()]
                             tabs += [j[0][0] for j in select_list_tables]
                             column_found = False
                             for t in tabs:
@@ -686,18 +763,24 @@ class SQLQueryProcessor(object):
                                 continue
                     else:
                         if tab[0][1] == c[0][1]:
-                            columns[i] = [[tab[0][0], tab[0][1],
-                                          c[0][2], c[0][3]], c[1]]
+                            columns[i] = [
+                                [tab[0][0], tab[0][1], c[0][2], c[0][3]],
+                                c[1],
+                            ]
                         else:
-
                             missing_columns.append(c)
                             columns[i] = c
                             if touched_columns is not None:
                                 touched_columns.append(c)
                         continue
 
-                elif c[0][2] is not None and c[0][2] != '*' and c[0][1] is \
-                        None and len(ref_dict.keys()) > 1 and not join:
+                elif (
+                    c[0][2] is not None
+                    and c[0][2] != '*'
+                    and c[0][1] is None
+                    and len(ref_dict.keys()) > 1
+                    and not join
+                ):
                     raise QueryError("Column '%s' is ambiguous." % c[0][2])
 
                 elif len(budget) and tab[0][0] is None and tab[0][1] is None:
@@ -705,18 +788,21 @@ class SQLQueryProcessor(object):
                     column_found = False
 
                     if isinstance(ref[0], int):
-                        cname, cctx, calias, column_found, tab =\
-                                self._get_budget_column(c, tab, ref[2])
+                        cname, cctx, calias, column_found, tab = (
+                            self._get_budget_column(c, tab, ref[2])
+                        )
 
                         # We allow None.None columns because they are produced
                         # by count(*)
-                        if not column_found and c[0][2] is not None\
-                                and c[0][2] not in column_aliases:
+                        if (
+                            not column_found
+                            and c[0][2] is not None
+                            and c[0][2] not in column_aliases
+                        ):
                             raise QueryError("Unknown column '%s'." % c[0][2])
 
             if touched_columns is not None:
-                touched_columns.append([[tab[0][0], tab[0][1], cname, cctx],
-                                        calias])
+                touched_columns.append([[tab[0][0], tab[0][1], cname, cctx], calias])
             else:
                 columns[i] = [[tab[0][0], tab[0][1], cname, c[0][3]], calias]
 
@@ -726,7 +812,27 @@ class SQLQueryProcessor(object):
         columns.extend(extra_columns)
         return missing_columns
 
-    def process_query(self, replace_schema_name=None, indexed_objects=None):
+    @staticmethod
+    def _match_and_replace_function_name(query, function_name, i):
+        """
+        This very roughly checks if the function name is present in the query.
+        We check for a space, the function name, and an opening parenthesis.
+        """
+        pattern = r'\s' + re.escape(function_name) + r'\('
+        match = re.search(pattern, query)
+        if match:
+            start, end = match.span()
+            # Replace the matched function name with UDF_{i}
+            query = query[: start + 1] + f'UDF_{i}' + query[end - 1 :]
+
+        return match, query
+
+    def process_query(
+        self,
+        replace_schema_name=None,
+        replace_function_names=None,
+        indexed_objects=None,
+    ):
         """
         Parses and processes the query. After a successful run it fills up
         columns, keywords, functions and syntax_errors lists.
@@ -737,6 +843,21 @@ class SQLQueryProcessor(object):
         :param indexed_objects: Deprecated
 
         """
+        self.replaced_functions = {}
+
+        if replace_function_names:
+            if (n := len(replace_function_names)) > 10:
+                raise ValueError(
+                    f'Too many function names to replace (you passed {n}). Maximum: 10'
+                )
+            for i, function_name in enumerate(replace_function_names):
+                match, query = self._match_and_replace_function_name(
+                    self.query, function_name, i
+                )
+                if match:
+                    self.replaced_functions[i] = function_name
+                    self.set_query(query)
+
         # Antlr objects
         inpt = antlr4.InputStream(self.query)
         lexer = self.lexer(inpt)
@@ -752,12 +873,14 @@ class SQLQueryProcessor(object):
 
         if replace_schema_name is not None:
             schema_name_listener = get_schema_name_listener(
-                    self.parser_listener, self.quote_char)(replace_schema_name)
+                self.parser_listener, self.quote_char
+            )(replace_schema_name)
             self.walker.walk(schema_name_listener, tree)
             self._query = stream.getText()
 
-        query_listener = get_query_listener(self.parser_listener,
-                                            self.parser, self.quote_char)()
+        query_listener = get_query_listener(
+            self.parser_listener, self.parser, self.quote_char
+        )()
         subquery_aliases = [None]
         keywords = []
         functions = []
@@ -784,10 +907,11 @@ class SQLQueryProcessor(object):
         # Iterate through subqueries starting with the lowest level
         for ccc, ctx in enumerate(query_listener.select_expressions[::-1]):
             remove_subquieries_listener = get_remove_subqueries_listener(
-                    self.parser_listener, self.parser)(ctx.depth())
-            column_keyword_function_listener = \
-                get_column_keyword_function_listener(
-                    self.parser_listener, self.quote_char)()
+                self.parser_listener, self.parser
+            )(ctx.depth())
+            column_keyword_function_listener = get_column_keyword_function_listener(
+                self.parser_listener, self.quote_char
+            )()
 
             # Remove nested subqueries from select_expressions
             self.walker.walk(remove_subquieries_listener, ctx)
@@ -809,10 +933,16 @@ class SQLQueryProcessor(object):
             # We get the columns from the select list along with all
             # other touched columns and any possible join conditions
             column_aliases_from_previous = [i for i in column_aliases]
-            select_list_columns, select_list_tables,\
-                select_list_table_references, other_columns, go_columns, join,\
-                join_using, column_aliases =\
-                self._extract_instances(column_keyword_function_listener)
+            (
+                select_list_columns,
+                select_list_tables,
+                select_list_table_references,
+                other_columns,
+                go_columns,
+                join,
+                join_using,
+                column_aliases,
+            ) = self._extract_instances(column_keyword_function_listener)
 
             tables.extend([i[0] for i in select_list_tables])
 
@@ -837,9 +967,14 @@ class SQLQueryProcessor(object):
                 for table in select_list_tables:
                     ref_dict[table[0][0][1]] = table
 
-            mc = self._extract_columns(select_list_columns, select_list_tables,
-                                       ref_dict, join, budget,
-                                       column_aliases_from_previous)
+            mc = self._extract_columns(
+                select_list_columns,
+                select_list_tables,
+                ref_dict,
+                join,
+                budget,
+                column_aliases_from_previous,
+            )
             missing_columns.extend([[i] for i in mc])
 
             touched_columns.extend(select_list_columns)
@@ -851,10 +986,15 @@ class SQLQueryProcessor(object):
                 if col[0][0][2] not in aliases:
                     other_columns.append(col)
 
-            mc = self._extract_columns(other_columns, select_list_tables,
-                                       ref_dict, join, budget,
-                                       column_aliases_from_previous,
-                                       touched_columns)
+            mc = self._extract_columns(
+                other_columns,
+                select_list_tables,
+                ref_dict,
+                join,
+                budget,
+                column_aliases_from_previous,
+                touched_columns,
+            )
 
             missing_columns.extend([[i] for i in mc])
 
@@ -863,8 +1003,9 @@ class SQLQueryProcessor(object):
                 join_columns.append(budget.pop(-1))
                 if len(join_using) == 1:
                     for tab in select_list_tables:
-                        touched_columns.append([[tab[0][0][0], tab[0][0][1],
-                                                 join_using[0][0][2]], None])
+                        touched_columns.append(
+                            [[tab[0][0][0], tab[0][0][1], join_using[0][0][2]], None]
+                        )
                 bp = []
                 for b in budget[::-1]:
                     if b[0] > current_depth:
@@ -876,26 +1017,38 @@ class SQLQueryProcessor(object):
                 subquery_contents[subquery_alias] = current_columns
 
         if len(missing_columns):
-            mc = self._extract_columns(missing_columns, select_list_tables,
-                                       ref_dict, join, budget,
-                                       column_aliases_from_previous,
-                                       touched_columns, subquery_contents)
+            mc = self._extract_columns(
+                missing_columns,
+                select_list_tables,
+                ref_dict,
+                join,
+                budget,
+                column_aliases_from_previous,
+                touched_columns,
+                subquery_contents,
+            )
             if len(mc):
-                unref_cols = "', '".join(['.'.join([j for j in i[0][:3] if j])
-                                         for i in mc])
+                unref_cols = "', '".join(
+                    ['.'.join([j for j in i[0][:3] if j]) for i in mc]
+                )
                 raise QueryError("Unreferenced column(s): '%s'." % unref_cols)
 
         touched_columns = set([tuple(i[0]) for i in touched_columns])
 
         # extract display_columns
         display_columns = []
-        mc = self._extract_columns([[i] for i in budget[-1][2]],
-                                   select_list_tables, ref_dict, join, budget,
-                                   column_aliases_from_previous,
-                                   display_columns, subquery_contents)
+        mc = self._extract_columns(
+            [[i] for i in budget[-1][2]],
+            select_list_tables,
+            ref_dict,
+            join,
+            budget,
+            column_aliases_from_previous,
+            display_columns,
+            subquery_contents,
+        )
 
-        display_columns = [[i[1] if i[1] else i[0][2], i[0]]
-                           for i in display_columns]
+        display_columns = [[i[1] if i[1] else i[0][2], i[0]] for i in display_columns]
 
         # Let's get rid of all columns that are already covered by
         # db.tab.*. Figure out a better way to do it and replace the code
@@ -908,23 +1061,41 @@ class SQLQueryProcessor(object):
 
         for acol in asterisk_columns:
             for col in touched_columns:
-                if acol[0] == col[0] and acol[1] == col[1] and \
-                        acol[2] != col[2]:
+                if acol[0] == col[0] and acol[1] == col[1] and acol[2] != col[2]:
                     del_columns.append(col)
 
         columns = list(set(touched_columns).difference(del_columns))
         self.columns = list(set([self._strip_column(i) for i in columns]))
         self.keywords = list(set(keywords))
         self.functions = list(set(functions))
-        self.display_columns = [(i[0].lstrip('"').rstrip('"'),
-                                list(self._strip_column(i[1])))
-                                for i in display_columns]
+        self.display_columns = [
+            (i[0].lstrip('"').rstrip('"'), list(self._strip_column(i[1])))
+            for i in display_columns
+        ]
 
-        self.tables = list(set([tuple([i[0][0].lstrip('"').rstrip('"')
-                                      if i[0][0] is not None else i[0][0],
-                                      i[0][1].lstrip('"').rstrip('"')
-                                      if i[0][1] is not None else i[0][1]])
-                                for i in tables]))
+        self.tables = list(
+            set(
+                [
+                    tuple(
+                        [
+                            i[0][0].lstrip('"').rstrip('"')
+                            if i[0][0] is not None
+                            else i[0][0],
+                            i[0][1].lstrip('"').rstrip('"')
+                            if i[0][1] is not None
+                            else i[0][1],
+                        ]
+                    )
+                    for i in tables
+                ]
+            )
+        )
+
+        if len(self.replaced_functions) > 0:
+            for i, function_name in self.replaced_functions.items():
+                self._query = self.query.replace(f'UDF_{i}', function_name)
+                self.functions.remove(f'UDF_{i}')
+                self.functions.append(function_name)
 
     @property
     def query(self):
