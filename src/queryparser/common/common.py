@@ -846,6 +846,10 @@ class SQLQueryProcessor(object):
         self.replaced_functions = {}
 
         if replace_function_names:
+            if (n := len(replace_function_names)) > 10:
+                raise ValueError(
+                    f'Too many function names to replace (you passed {n}). Maximum: 10'
+                )
             for i, function_name in enumerate(replace_function_names):
                 match, query = self._match_and_replace_function_name(
                     self.query, function_name, i
