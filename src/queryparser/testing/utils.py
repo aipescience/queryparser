@@ -87,6 +87,8 @@ def _test_failure_parsing(query_processor, test, translate=False):
         e = QuerySyntaxError
     elif errortype == 'value':
         e = ValueError
+    else:
+        raise ValueError('Invalid error type')
 
     if translate:
         adt = ADQLQueryTranslator()
