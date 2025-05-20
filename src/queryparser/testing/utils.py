@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
+import pytest
 
 from queryparser.adql import ADQLQueryTranslator
+from queryparser.exceptions import QuerySyntaxError
 from queryparser.mysql import MySQLQueryProcessor
 from queryparser.postgresql import PostgreSQLQueryProcessor
 
@@ -76,3 +78,24 @@ def _test_parsing(query_processor, test, translate=False):
 
     if tables is not None:
         assert set(tables) == set(qp_tables)
+
+
+def _test_failure_parsing(query_processor, test, translate=False):
+    query, replace_schema_name, replace_function_names = test
+
+    if translate:
+        adt = ADQLQueryTranslator()
+        adt.set_query(query)
+        if query_processor == MySQLQueryProcessor:
+            query = adt.to_mysql()
+        elif query_processor == PostgreSQLQueryProcessor:
+            query = adt.to_postgresql()
+
+    qp = query_processor()
+    qp.set_query(query)
+
+    with pytest.raises(QuerySyntaxError):
+        qp.process_query(
+            replace_schema_name=replace_schema_name,
+            replace_function_names=replace_function_names,
+        )

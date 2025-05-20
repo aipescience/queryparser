@@ -838,6 +838,22 @@ postgresql_tests:
         - 
         - ["QMOST_SPEC_IS_IN_SURVEY"]
 
+postgresql_failure_tests:
+    -
+        - SELECT specuid, ra, dec FROM dr1.spectrum WHERE QMOST_SPEC_IS_IN_SURVEY(specuid, '04');
+        - 
+        - []
+
+    -
+        - SELECT specuid, ra, dec FROM dr1.spectrum WHERE BLA(specuid, '04');
+        - 
+        - [QMOST_SPEC_IS_IN_SURVEY]
+
+    -
+        - SELECT specuid, ra, dec FROM dr1.spectrum WHERE QMOST_SPEC_IS_IN_SURVEY[specuid, '04'];
+        - 
+        - [QMOST_SPEC_IS_IN_SURVEY]
+
 
 adql_mysql_tests:
     -
