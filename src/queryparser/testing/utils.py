@@ -81,7 +81,12 @@ def _test_parsing(query_processor, test, translate=False):
 
 
 def _test_failure_parsing(query_processor, test, translate=False):
-    query, replace_schema_name, replace_function_names = test
+    query, errortype, replace_schema_name, replace_function_names = test
+
+    if errortype == 'syntax':
+        e = QuerySyntaxError
+    elif errortype == 'value':
+        e = ValueError
 
     if translate:
         adt = ADQLQueryTranslator()
@@ -94,7 +99,7 @@ def _test_failure_parsing(query_processor, test, translate=False):
     qp = query_processor()
     qp.set_query(query)
 
-    with pytest.raises(QuerySyntaxError):
+    with pytest.raises(e):
         qp.process_query(
             replace_schema_name=replace_schema_name,
             replace_function_names=replace_function_names,
