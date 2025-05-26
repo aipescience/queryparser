@@ -130,6 +130,8 @@ OUTER				: O_ U_ T_ E_ R_  ;
 PARTITION_SYM		: P_ A_ R_ T_ I_ T_ I_ O_ N_  ;
 PDIST               : P_ D_ I_ S_ T_ ;
 PI				    : P_ I_  ;
+POINT				  : P_ O_ I_ N_ T_ ;
+POLYGON				: P_ O_ L_ Y_ G_ O_ N_ ;
 POSITION_SYM        : P_ O_ S_ I_ T_ I_ O_ N_ ;
 POW				    : P_ O_ W_  ;
 POWER				: P_ O_ W_ E_ R_  ;
