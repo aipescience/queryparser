@@ -829,14 +829,39 @@ postgresql_tests:
         - 
 
     -
-        - "SELECT specuid, ra, dec FROM dr1.spectrum WHERE QMOST_SPEC_IS_IN_SURVEY(specuid, '04');"
+        - SELECT specuid, ra, dec FROM dr1.spectrum WHERE QMOST_SPEC_IS_IN_SURVEY(specuid, '04');
         - ['dr1.spectrum.specuid', 'dr1.spectrum.ra', 'dr1.spectrum.dec']
-        - ["where"]
-        - ["QMOST_SPEC_IS_IN_SURVEY"]
-        - ["specuid: dr1.spectrum.specuid", "ra: dr1.spectrum.ra", "dec: dr1.spectrum.dec"]
-        - ["dr1.spectrum"]
+        - [where]
+        - [QMOST_SPEC_IS_IN_SURVEY]
+        - ['specuid: dr1.spectrum.specuid', 'ra: dr1.spectrum.ra', 'dec: dr1.spectrum.dec']
+        - [dr1.spectrum]
         - 
-        - ["QMOST_SPEC_IS_IN_SURVEY"]
+        - [QMOST_SPEC_IS_IN_SURVEY]
+
+postgresql_failure_tests:
+    -
+        - SELECT specuid, ra, dec FROM dr1.spectrum WHERE QMOST_SPEC_IS_IN_SURVEY(specuid, '04');
+        - syntax
+        - 
+        - []
+
+    -
+        - SELECT specuid, ra, dec FROM dr1.spectrum WHERE BLA(specuid, '04');
+        - syntax
+        - 
+        - [QMOST_SPEC_IS_IN_SURVEY]
+
+    -
+        - SELECT specuid, ra, dec FROM dr1.spectrum WHERE QMOST_SPEC_IS_IN_SURVEY[specuid, '04'];
+        - syntax
+        - 
+        - [QMOST_SPEC_IS_IN_SURVEY]
+
+    -
+        - SELECT specuid, ra, dec FROM dr1.spectrum WHERE a(specuid, '04');
+        - value
+        - 
+        - [a, b, c, d, e, f, g, h, i, j, k, l]
 
 
 adql_mysql_tests:
