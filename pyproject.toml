@@ -7,12 +7,11 @@ name = "queryparser-python3"
 description = "Package for parsing PostgreSQL/MySQL and translating ADQL to PostgreSQL/MySQL."
 readme = "README.md"
 dynamic = ["version"]
-license = {text = "Apache-2.0"}
-authors = [
-    {name = "Gal Matijevic", email = "gmatijevic@aip.de"},
-]
+license = { text = "Apache-2.0" }
+authors = [{ name = "Gal Matijevic", email = "gmatijevic@aip.de" }]
 maintainers = [
-    {name = "Kirill Makan", email = "kmakan@aip.de"},
+  { name = "Kirill Makan", email = "kmakan@aip.de" },
+  { name = "Simeon Reusch", email = "sreusch@aip.de" },
 ]
 requires-python = ">=3.9"
 classifiers = [
@@ -26,32 +25,34 @@ classifiers = [
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
 ]
-dependencies = [
-    "antlr4-python3-runtime==4.13.1",
-]
+dependencies = ["antlr4-python3-runtime==4.13.1"]
 
 [project.optional-dependencies]
-test = [
-    "pytest~=8.2.0",
-    "PyYAML~=6.0",
-]
+test = ["pytest~=8.2.0", "PyYAML~=6.0"]
+dev = ["build", "ruff", "twine"]
 
 [project.urls]
 Repository = "https://github.com/aipescience/queryparser.git"
 Issues = "https://github.com/aipescience/queryparser/issues"
 Changelog = "https://github.com/aipescience/queryparser/blob/master/CHANGELOG.md"
 
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.format]
+quote-style = "single"
+
 [tool.setuptools.dynamic]
-version = {attr = "queryparser.__version__"}
+version = { attr = "queryparser.__version__" }
 
 [tool.setuptools]
 packages = [
-    "queryparser",
-    "queryparser.adql",
-    "queryparser.common",
-    "queryparser.mysql",
-    "queryparser.postgresql",
-    "queryparser.exceptions"
+  "queryparser",
+  "queryparser.adql",
+  "queryparser.common",
+  "queryparser.mysql",
+  "queryparser.postgresql",
+  "queryparser.exceptions",
 ]
-package-dir = {"" = "lib"}
+package-dir = { "" = "lib" }
 include-package-data = true
