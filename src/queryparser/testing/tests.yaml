@@ -911,7 +911,7 @@ adql_postgresql_tests:
 
     -
         - SELECT POINT('icrs', 10, 10) FROM "db".tab
-        - SELECT spoint_to_array_deg(spoint(RADIANS(10.0), RADIANS(10.0))) AS point FROM "db".tab;
+        - SELECT spoint_to_array_deg(spoint(RADIANS(10.0), RADIANS(10.0))) AS adql_point FROM "db".tab;
 
     -
         - SELECT POINT(10, 10) AS "p" FROM "db".tab
@@ -923,7 +923,7 @@ adql_postgresql_tests:
 
     -
         - SELECT POLYGON('ICRS', 10.0, -10.5, 20.0, 20.5, 30.0, 30.5) FROM db.tab;
-        - SELECT spoly_to_array_deg(spoly('{(10.0d,-10.5d),(20.0d,20.5d),(30.0d,30.5d)}')) AS polygon FROM db.tab;
+        - SELECT spoly_to_array_deg(spoly('{(10.0d,-10.5d),(20.0d,20.5d),(30.0d,30.5d)}')) AS adql_polygon FROM db.tab;
 
     -
         - SELECT CIRCLE(POINT(10.0, -10.5), 2.0) FROM db.tab;

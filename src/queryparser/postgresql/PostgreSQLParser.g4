@@ -242,8 +242,11 @@ pg_sphere_op:
     | SNOTCONTAINS2 | SLEFTNOTCONTAINS | SLEFTNOTCONTAINS2 | AND_SYM
     | SNOTOVERLAP ;
 
+
 sbit_expr:
-      ( pg_sphere_object | spoint )
+      ( polygon SLEFTCONTAINS2 point )
+    | ( point SCONTAINS2 polygon )
+    | ( pg_sphere_object | spoint )
     | ( ( spoint | simple_expr ) pg_sphere_op pg_sphere_object)
     | ( pg_sphere_object EQ pg_sphere_object )
     | ( pg_sphere_object pg_sphere_op pg_sphere_object )
@@ -255,6 +258,8 @@ sbit_expr:
     | ( ( spoint | scircle | sline | sellipse | spoly | spath | simple_expr ) ( ( PLUS | MINUS )? strans )+ ) ;
 
 
+polygon:                POLYGON string_literal ;
+point:                  POINT LPAREN bit_expr COMMA bit_expr RPAREN ;
 spoint:                 SPOINT LPAREN bit_expr COMMA bit_expr RPAREN ;
 scircle:                SCIRCLE LPAREN spoint COMMA bit_expr RPAREN ;
 sline:                  ( SLINE LPAREN spoint COMMA spoint RPAREN ) | ( SLINE LPAREN strans COMMA bit_expr RPAREN );

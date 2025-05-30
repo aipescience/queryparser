@@ -205,7 +205,7 @@ class ADQLGeometryTranslationVisitor(ADQLParserVisitor):
             if derived_column is not None:
                 ctx_text = f"spoint_to_array_deg({ctx_text})"
                 if not (any([isinstance(child, ADQLParser.As_clauseContext) for child in derived_column.children])):
-                    ctx_text = f"{ctx_text} AS point"
+                    ctx_text = f"{ctx_text} AS adql_point"
         else:
             ctx_text = ''
 
@@ -297,7 +297,7 @@ class ADQLGeometryTranslationVisitor(ADQLParserVisitor):
                 if derived_column is not None:
                     ctx_text = f"spoly_to_array_deg({ctx_text})"
                     if not (any([isinstance(child, ADQLParser.As_clauseContext) for child in derived_column.children])):
-                        ctx_text = f"{ctx_text} AS polygon"
+                        ctx_text = f"{ctx_text} AS adql_polygon"
         else:
             ctx_text = ''
 
