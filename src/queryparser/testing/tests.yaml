@@ -890,6 +890,14 @@ adql_mysql_tests:
 # later.
 adql_postgresql_tests:
     -
+        - SELECT TOP 10 LOG(a) as a FROM db.tab
+        - SELECT LN(a) AS a FROM db.tab LIMIT 10;
+
+    -
+        - SELECT TOP 10 LOG10(a) as a FROM db.tab
+        - SELECT LOG(a) AS a FROM db.tab LIMIT 10;
+
+    -
         - SELECT TOP 10 AREA(CIRCLE('ICRS', "tab".RA, -2.23, 176.98)) FROM db.tab
         - SELECT square_degrees(area(scircle(spoint(RADIANS("tab".RA), RADIANS(-2.23)), RADIANS(176.98)))) AS adql_area FROM db.tab LIMIT 10;
 

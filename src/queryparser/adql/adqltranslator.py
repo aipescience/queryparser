@@ -4,6 +4,7 @@ from __future__ import absolute_import
 
 import antlr4
 from antlr4.error.ErrorListener import ErrorListener
+import re
 
 from .ADQLLexer import ADQLLexer
 from .ADQLParser import ADQLParser
@@ -470,15 +471,6 @@ class ADQLFunctionsTranslationVisitor(ADQLParserVisitor):
         _remove_children(ctx)
         self.contexts[ctx] = ctx_text
 
-    def visitMath_function(self, ctx):
-        ctx_text = ctx.getText()
-        if self.output_sql == 'postgresql' and ctx_text[:5].lower() == 'log10':
-            _remove_children(ctx)
-            self.contexts[ctx] = 'LOG' + ctx_text[5:]
-        elif self.output_sql == 'postgresql' and ctx_text[:3].lower() == 'log':
-            _remove_children(ctx)
-            self.contexts[ctx] = 'LN' + ctx_text[3:]
-
 
 class SelectQueryListener(ADQLParserListener):
     def __init__(self):
@@ -691,4 +683,9 @@ class ADQLQueryTranslator(object):
         translator_visitor.visit(self.tree)
 
         translated_query = self.translate(translator_visitor)
+
+        # Translate LOG10 to LOG and LOG to LN. It's not the most elegant solution but it works.
+        translated_query = re.sub(r'(?<=[\+\-\*/\(\s,])log\(', 'LN(', translated_query, flags=re.IGNORECASE)
+        translated_query = re.sub(r'(?<=[\+\-\*/\(\s,])log10\(', 'LOG(', translated_query, flags=re.IGNORECASE)
+
         return translated_query
