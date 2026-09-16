@@ -204,7 +204,6 @@ class ADQLGeometryTranslationVisitor(ADQLParserVisitor):
                                                      self.conunits, coords[1])
             derived_column = _get_ancestor_class_node(ctx, ADQLParser.Derived_columnContext, depth=3)
             if derived_column is not None:
-                ctx_text = f"spoint_to_array_deg({ctx_text})"
                 if not (any([isinstance(child, ADQLParser.As_clauseContext) for child in derived_column.children])):
                     ctx_text = f"{ctx_text} AS adql_point"
         else:
@@ -268,7 +267,6 @@ class ADQLGeometryTranslationVisitor(ADQLParserVisitor):
             if self.output_sql == 'postgresql':
                 derived_column = _get_ancestor_class_node(ctx, ADQLParser.Derived_columnContext, depth=3)
                 if derived_column is not None:
-                    ctx_text = f"scircle_to_array_deg({ctx_text})"
                     if not (any([isinstance(child, ADQLParser.As_clauseContext) for child in derived_column.children])):
                         ctx_text = f"{ctx_text} AS circle"
         _remove_children(ctx)
@@ -296,7 +294,6 @@ class ADQLGeometryTranslationVisitor(ADQLParserVisitor):
             if self.output_sql == 'postgresql':
                 derived_column = _get_ancestor_class_node(ctx, ADQLParser.Derived_columnContext, depth=3)
                 if derived_column is not None:
-                    ctx_text = f"spoly_to_array_deg({ctx_text})"
                     if not (any([isinstance(child, ADQLParser.As_clauseContext) for child in derived_column.children])):
                         ctx_text = f"{ctx_text} AS adql_polygon"
         else:
@@ -320,8 +317,12 @@ class ADQLFunctionsTranslationVisitor(ADQLParserVisitor):
         self.output_sql = output_sql
         self.conunits = conunits
 
+    def _get_geometry_value(self, ctx, child_index):
+        value = ctx.children[child_index].children[0]
+        return self.contexts.get(value, value.getText())
+
     def visitArea(self, ctx):
-        arg = self.contexts[ctx.children[2].children[0]]
+        arg = self._get_geometry_value(ctx, 2)
         if self.output_sql == 'mysql':
             ctx_text = 'sarea(%s)' % arg
         elif self.output_sql == 'postgresql':
@@ -383,8 +384,7 @@ class ADQLFunctionsTranslationVisitor(ADQLParserVisitor):
 
 
     def visitContains(self, ctx):
-        arg = (self.contexts[ctx.children[2].children[0]],
-               self.contexts[ctx.children[4].children[0]])
+        arg = (self._get_geometry_value(ctx, 2), self._get_geometry_value(ctx, 4))
 
         if self.output_sql == 'mysql':
             ctx_text = 'srcontainsl(%s, %s)' % arg
@@ -458,8 +458,7 @@ class ADQLFunctionsTranslationVisitor(ADQLParserVisitor):
 
 
     def visitIntersects(self, ctx):
-        arg = (self.contexts[ctx.children[2].children[0]],
-               self.contexts[ctx.children[4].children[0]])
+        arg = (self._get_geometry_value(ctx, 2), self._get_geometry_value(ctx, 4))
 
         if self.output_sql == 'mysql':
             ctx_text = 'soverlaps(%s, %s)' % arg
