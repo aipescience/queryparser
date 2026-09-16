@@ -207,6 +207,7 @@ UTF8				: U_ T_ F_ '8'  ;
 
 //pg_sphere
 SPOINT              : S_ P_ O_ I_ N_ T_ ;
+SPOINT_DWITHIN      : S_ P_ O_ I_ N_ T_ '_' D_ W_ I_ T_ H_ I_ N_ ;
 SCIRCLE             : S_ C_ I_ R_ C_ L_ E_ ;
 SLINE               : S_ L_ I_ N_ E_ ;
 SELLIPSE            : S_ E_ L_ L_ I_ P_ S_ E_ ;

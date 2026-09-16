@@ -396,20 +396,52 @@ class ADQLFunctionsTranslationVisitor(ADQLParserVisitor):
         _remove_children(ctx)
         self.contexts[ctx] = ctx_text
 
-    def visitDistance(self, ctx):
+    def visitComparison_predicate(self, ctx):
+        """Rewrite DISTANCE thresholds, which require the comparison's radius.
+
+        visitDistance handles the distance function itself; this method owns
+        the surrounding operator and radius needed for spoint_dwithin.
+        """
+        if self.output_sql != 'postgresql' or ctx.getChildCount() != 3:
+            return self.visitChildren(ctx)
+
+        left, operator, right = ctx.children
+        if operator.getText() not in ('<', '<='):
+            return self.visitChildren(ctx)
+
+        distance = left
+        while distance.getChildCount() == 1:
+            distance = distance.children[0]
+        if not isinstance(distance, ADQLParser.DistanceContext):
+            return self.visitChildren(ctx)
+        if 'DISTANCE' in right.getText().upper():
+            return self.visitChildren(ctx)
+
+        ancestor = ctx.parentCtx
+        while ancestor is not None and not isinstance(
+                ancestor, (ADQLParser.Where_clauseContext,
+                           ADQLParser.Join_conditionContext)):
+            ancestor = ancestor.parentCtx
+        if ancestor is None:
+            return self.visitChildren(ctx)
+
+        _remove_children(ctx)
+        self.visitDistance(distance, right.getText())
+
+    def visitDistance(self, ctx, dwithin_radius=None):
         arg = ('', '')
-        if isinstance(ctx.children[2],ADQLParser.Coord_valueContext):
-            if isinstance(ctx.children[2].children[0].children[0], ADQLParser.PointContext):
-                point_ctx1 = ctx.children[2].children[0].children[0]
-                point_ctx2 = ctx.children[4].children[0].children[0]
-                arg = (self.contexts[point_ctx1],
-                       self.contexts[point_ctx2])
-            else:
+        if isinstance(ctx.children[2], ADQLParser.Coord_valueContext):
+            values = (ctx.children[2].children[0], ctx.children[4].children[0])
+            if self.output_sql != 'postgresql' and not all(
+                    isinstance(value, ADQLParser.Point_valueContext) for value in values):
                 raise QueryError('Distance in the current implementation is ' +
                                  'possible only between two explicitly ' +
                                  'defined points. For instance, ' +
                                  'DISTANCE(POINT(t.ra, r.dec), POINT(0.0, 0.0)) ' +
                                  'or DISTANCE(t.ra, r.dec, 0.0, 0.0)')
+            arg = tuple(self.contexts.get(
+                value.children[0] if isinstance(value, ADQLParser.Point_valueContext) else value,
+                value.getText()) for value in values)
         else:
             arg = (f"spoint(RADIANS({_convert_values(ctx, 2, self.output_sql)[0]}), " +
                           f"RADIANS({_convert_values(ctx, 4, self.output_sql)[0]}))",
@@ -424,6 +456,8 @@ class ADQLFunctionsTranslationVisitor(ADQLParserVisitor):
             if derived_column is not None:
                 if not (any([isinstance(child, ADQLParser.As_clauseContext) for child in derived_column.children])):
                     ctx_text = f"{ctx_text} AS distance"
+            if dwithin_radius is not None:
+                ctx_text = 'spoint_dwithin(%s, %s, RADIANS(%s))' % (arg + (dwithin_radius, ))
         else:
             ctx_text = ''
 

@@ -66,7 +66,7 @@ custom_functions:
       GAIA_HEALPIX_INDEX | PDIST | UDF_0 | UDF_1 | UDF_2 | UDF_3 | UDF_4 | UDF_5 | UDF_6 | UDF_7 | UDF_8 | UDF_9 ;
 
 pg_sphere_functions:
-      AREA ;
+      AREA | SPOINT_DWITHIN ;
 
 functionList:
 	  number_functions | char_functions | time_functions | other_functions

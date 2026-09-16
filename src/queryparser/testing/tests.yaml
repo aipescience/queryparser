@@ -978,6 +978,30 @@ adql_postgresql_tests:
         - SELECT DEGREES(spoint(RADIANS(ra), RADIANS(dec)) <-> spoint(RADIANS(13.66), RADIANS(-58.3))) AS distance FROM db.tab LIMIT 10;
 
     -
+        - SELECT TOP 10 ra, dec FROM db.tab
+          WHERE DISTANCE(POINT(ra, dec), POINT(13.66, -58.3)) <= 2.5;
+        - SELECT ra, dec FROM db.tab
+          WHERE spoint_dwithin(spoint(RADIANS(ra), RADIANS(dec)), spoint(RADIANS(13.66), RADIANS(-58.3)), RADIANS(2.5)) LIMIT 10;
+
+    -
+        - SELECT ra, dec FROM db.tab
+          WHERE DISTANCE(ra, dec, 13.66, -58.3) < 0.00027;
+        - SELECT ra, dec FROM db.tab
+          WHERE spoint_dwithin(spoint(RADIANS(ra), RADIANS(dec)), spoint(RADIANS(13.66), RADIANS(-58.3)), RADIANS(0.00027));
+
+    -
+        - SELECT * FROM db.tab1 t1 JOIN db.tab2 t2
+          ON DISTANCE(t1.ra, t1.dec, t2.ra, t2.dec) < 0.00027;
+        - SELECT * FROM db.tab1 t1 JOIN db.tab2 t2
+          ON spoint_dwithin(spoint(RADIANS(t1.ra), RADIANS(t1.dec)), spoint(RADIANS(t2.ra), RADIANS(t2.dec)), RADIANS(0.00027));
+
+    -
+        - SELECT * FROM db.tab
+          WHERE DISTANCE(pos, POINT(13.66, -58.3)) <= 2.5;
+        - SELECT * FROM db.tab
+          WHERE spoint_dwithin(pos, spoint(RADIANS(13.66), RADIANS(-58.3)), RADIANS(2.5));
+
+    -
         - SELECT INTERSECTS(CIRCLE('ICRS', 0, 0, 10), BOX('ICRS', 2, -3, 4, 4)) FROM db.tab;
         - SELECT scircle(spoint(RADIANS(0.0), RADIANS(0.0)), RADIANS(10.0)) && sbox(spoint(RADIANS(0.000000000000),RADIANS(-5.000000000000)),spoint(RADIANS(4.000000000000),RADIANS(-1.000000000000))) FROM db.tab;
 
