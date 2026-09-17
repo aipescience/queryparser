@@ -23,7 +23,7 @@ box:
           ( coord_sys COMMA )?
           coordinates COMMA numeric_value_expression COMMA numeric_value_expression
           RPAREN ;
-catalog_name:                   ID ;
+catalog_name:                   ID | DELIMITED_ID ;
 // centroid:                       CENTROID LPAREN geometry_value_expression RPAREN ;
 // character_representation:       nonquote_character ;// | SQ SQ ;
 char_function:                  LOWER LPAREN character_string_literal RPAREN ;
@@ -52,7 +52,7 @@ coordinates:                    coordinate1 COMMA coordinate2 ;
 correlation_name:               identifier ;
 correlation_specification:      ( AS )? correlation_name ;
 //default_function_prefix:      // this is empty in the document!
-delimited_identifier:           DQ ID DQ ;
+delimited_identifier:           DELIMITED_ID ;
 derived_column:                 value_expression ( as_clause )? ;
 derived_table:                  table_subquery ;
 distance:
@@ -160,7 +160,7 @@ query_term:                     non_join_query_primary | query_term INTERSECT ( 
 radius:                         numeric_value_expression ;
 //region:                         REGION LPAREN string_value_expression RPAREN ;
 regular_identifier:             ID ;
-schema_name:                    ID ; //( catalog_name DOT )? unqualified_schema_name ;
+schema_name:                    ID | DELIMITED_ID ; //( catalog_name DOT )? unqualified_schema_name ;
 search_condition:               boolean_term | search_condition OR boolean_term ;
 select_list:                    ( select_sublist ( COMMA select_sublist )* ) | ( ASTERISK ( COMMA select_sublist ( COMMA select_sublist )* )? ) ;
 select_query:                   SELECT ( set_quantifier )? ( set_limit )? select_list table_expression ;
@@ -202,7 +202,7 @@ trig_function:                  ACOS LPAREN numeric_value_expression RPAREN
         | COT LPAREN numeric_value_expression RPAREN
         | SIN LPAREN numeric_value_expression RPAREN
         | TAN LPAREN numeric_value_expression RPAREN ;
-unqualified_schema_name:        ID ;
+unqualified_schema_name:        ID | DELIMITED_ID ;
 unsigned_decimal:               INT ;
 unsigned_hexadecimal:           HEX_DIGIT ;
 unsigned_literal:               unsigned_numeric_literal | general_literal ;

@@ -890,6 +890,12 @@ adql_mysql_tests:
 # later.
 adql_postgresql_tests:
     -
+        - SELECT "source"."column" AS "alias"
+          FROM "schema"."table" AS "source"
+        - SELECT "source"."column" AS "alias"
+          FROM "schema"."table" AS "source";
+
+    -
         - SELECT TOP 10 LOG(a) as a FROM db.tab
         - SELECT LN(a) AS a FROM db.tab LIMIT 10;
 

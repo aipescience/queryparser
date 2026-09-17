@@ -163,6 +163,10 @@ class ADQLGeometryTranslationVisitor(ADQLParserVisitor):
         ri = _process_regular_identifier(ctx.getText(), self.output_sql)
         self.contexts[ctx] = ri
 
+    def visitDelimited_identifier(self, ctx):
+        ri = _process_regular_identifier(ctx.getText(), self.output_sql)
+        self.contexts[ctx] = ri
+
     def visitSchema_name(self, ctx):
         ri = _process_regular_identifier(ctx.getText(), self.output_sql)
         self.contexts[ctx] = ri
