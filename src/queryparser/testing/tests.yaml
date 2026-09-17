@@ -890,6 +890,17 @@ adql_mysql_tests:
 # later.
 adql_postgresql_tests:
     -
+        - SELECT NULL AS null_value, a + 1 AS shifted
+          FROM db.tab
+          GROUP BY a + 1
+        - SELECT NULL AS null_value, a + 1 AS shifted FROM db.tab GROUP BY a + 1;
+
+    -
+        - SELECT * FROM db.tab
+          WHERE 1 = CONTAINS((pos), CIRCLE(0.0, 0.0, 1.0))
+        - SELECT * FROM db.tab WHERE (pos) @ scircle(spoint(RADIANS(0.0), RADIANS(0.0)), RADIANS(1.0));
+
+    -
         - SELECT "source"."column" AS "alias"
           FROM "schema"."table" AS "source"
         - SELECT "source"."column" AS "alias"

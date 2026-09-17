@@ -70,9 +70,9 @@ factor:                         ( sign )? numeric_primary ;
 from_clause:                    FROM table_reference ( COMMA table_reference )* ;
 general_literal:                character_string_literal ;
 general_set_function:           set_function_type LPAREN ( set_quantifier )? value_expression RPAREN ;
-geometry_value_expression:      box | circle | point | polygon | column_reference | user_defined_function ; //| centroid | region
+geometry_value_expression:      value_expression_primary | box | circle | point | polygon | user_defined_function ; //| centroid | region
 group_by_clause:                GROUP BY grouping_column_reference_list ;
-grouping_column_reference:      column_reference ;
+grouping_column_reference:      value_expression ;
 grouping_column_reference_list: grouping_column_reference ( COMMA grouping_column_reference )* ;
 having_clause:                  HAVING search_condition ;
 identifier:                     regular_identifier | delimited_identifier ;
@@ -216,7 +216,8 @@ user_defined_function:
 user_defined_function_name:     regular_identifier ; //( default_function_prefix )? regular_identifier ;
 user_defined_function_param:    value_expression ;
 value_expression:
-          numeric_value_expression
+          NULL
+        | numeric_value_expression
         | string_value_expression
         | boolean_value_expression
         | geometry_value_expression ;
