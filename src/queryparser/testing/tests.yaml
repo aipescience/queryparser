@@ -875,11 +875,11 @@ adql_mysql_tests:
 
     -
         - SELECT TOP 10 ra, dec FROM db.tab WHERE 1=CONTAINS(POINT('ICRS', ra, dec), BOX('ICRS', -3.0, 5.0, 4.0, 10.0));
-        - SELECT `ra`, `dec` FROM `db`.`tab` WHERE 1 = srcontainsl(spoint(RADIANS(`ra`), RADIANS(`dec`)), sbox(spoint(RADIANS(-5.000000000000),RADIANS(0.000000000000)),spoint(RADIANS(-1.000000000000),RADIANS(10.000000000000)))) LIMIT 10;
+        - SELECT `ra`, `dec` FROM `db`.`tab` WHERE 1 = srcontainsl(spoint(RADIANS(`ra`), RADIANS(`dec`)), sbox(spoint(RADIANS(-5.0),RADIANS(0.0)),spoint(RADIANS(-1.0),RADIANS(10.0)))) LIMIT 10;
 
     -
         - SELECT TOP 10 ra, dec FROM db.tab WHERE 0=CONTAINS(POINT('ICRS', ra, dec), BOX('ICRS', -3.0, 5.0, 4.0, 10.0));
-        - SELECT `ra`, `dec` FROM `db`.`tab` WHERE 0 = srcontainsl(spoint(RADIANS(`ra`), RADIANS(`dec`)), sbox(spoint(RADIANS(-5.000000000000),RADIANS(0.000000000000)),spoint(RADIANS(-1.000000000000),RADIANS(10.000000000000)))) LIMIT 10;
+        - SELECT `ra`, `dec` FROM `db`.`tab` WHERE 0 = srcontainsl(spoint(RADIANS(`ra`), RADIANS(`dec`)), sbox(spoint(RADIANS(-5.0),RADIANS(0.0)),spoint(RADIANS(-1.0),RADIANS(10.0)))) LIMIT 10;
 
     -
         - SELECT TOP 10 DISTANCE(POINT('ICRS', ra, dec), POINT('ICRS', 13.66, -58.3)) FROM db.tab;
@@ -903,6 +903,11 @@ adql_postgresql_tests:
         - SELECT * FROM db.tab
           WHERE 1 = CONTAINS((pos), CIRCLE(0.0, 0.0, 1.0))
         - SELECT * FROM db.tab WHERE (pos) @ scircle(spoint(RADIANS(0.0), RADIANS(0.0)), RADIANS(1.0));
+
+    -
+        - SELECT * FROM db.tab
+          WHERE 1 = CONTAINS(stored_spoint, CIRCLE(POINT(271.528, -30.171), 0.01))
+        - SELECT * FROM db.tab WHERE stored_spoint @ scircle(spoint(RADIANS(271.528), RADIANS(-30.171)), RADIANS(0.01));
 
     -
         - SELECT "source"."column" AS "alias"
@@ -960,15 +965,15 @@ adql_postgresql_tests:
 
     -
         - SELECT TOP 10 ra, dec FROM db.tab WHERE 1=CONTAINS(POINT('ICRS', ra, dec), BOX('ICRS', -3.0, 5.0, 4.0, 10.0));
-        - SELECT ra, dec FROM db.tab WHERE spoint(RADIANS(ra), RADIANS(dec)) @ sbox(spoint(RADIANS(-5.000000000000),RADIANS(0.000000000000)),spoint(RADIANS(-1.000000000000),RADIANS(10.000000000000))) LIMIT 10;
+        - SELECT ra, dec FROM db.tab WHERE spoint(RADIANS(ra), RADIANS(dec)) @ sbox(spoint(RADIANS(-5.0),RADIANS(0.0)),spoint(RADIANS(-1.0),RADIANS(10.0))) LIMIT 10;
 
     -
         - SELECT TOP 10 ra, dec FROM db.tab WHERE CONTAINS(POINT('ICRS', ra, dec), BOX('ICRS', -3.0, 5.0, 4.0, 10.0)) =  1;
-        - SELECT ra, dec FROM db.tab WHERE spoint(RADIANS(ra), RADIANS(dec)) @ sbox(spoint(RADIANS(-5.000000000000),RADIANS(0.000000000000)),spoint(RADIANS(-1.000000000000),RADIANS(10.000000000000))) LIMIT 10;
+        - SELECT ra, dec FROM db.tab WHERE spoint(RADIANS(ra), RADIANS(dec)) @ sbox(spoint(RADIANS(-5.0),RADIANS(0.0)),spoint(RADIANS(-1.0),RADIANS(10.0))) LIMIT 10;
 
     -
         - SELECT TOP 10 ra, dec FROM db.tab WHERE 1=CONTAINS(POINT(ra, dec), BOX(-3.0, 5.0, 4.0, 10.0));
-        - SELECT ra, dec FROM db.tab WHERE spoint(RADIANS(ra), RADIANS(dec)) @ sbox(spoint(RADIANS(-5.000000000000),RADIANS(0.000000000000)),spoint(RADIANS(-1.000000000000),RADIANS(10.000000000000))) LIMIT 10;
+        - SELECT ra, dec FROM db.tab WHERE spoint(RADIANS(ra), RADIANS(dec)) @ sbox(spoint(RADIANS(-5.0),RADIANS(0.0)),spoint(RADIANS(-1.0),RADIANS(10.0))) LIMIT 10;
 
     -
         - SELECT TOP 10 ra, dec FROM db.tab WHERE 1=CONTAINS(POINT(ra, dec), CIRCLE(POINT(-3.0, 4.0), 10.0));
@@ -1024,7 +1029,7 @@ adql_postgresql_tests:
 
     -
         - SELECT INTERSECTS(CIRCLE('ICRS', 0, 0, 10), BOX('ICRS', 2, -3, 4, 4)) FROM db.tab;
-        - SELECT scircle(spoint(RADIANS(0.0), RADIANS(0.0)), RADIANS(10.0)) && sbox(spoint(RADIANS(0.000000000000),RADIANS(-5.000000000000)),spoint(RADIANS(4.000000000000),RADIANS(-1.000000000000))) FROM db.tab;
+        - SELECT scircle(spoint(RADIANS(0.0), RADIANS(0.0)), RADIANS(10.0)) && sbox(spoint(RADIANS(0.0),RADIANS(-5.0)),spoint(RADIANS(4.0),RADIANS(-1.0))) FROM db.tab;
 
     -
         - SELECT TOP 10 LOG10(ra), LOG(dec) FROM db.tab WHERE 0=INTERSECTS(POINT('ICRS', ra, dec), POLYGON('ICRS', 10.0, -10.5, 20.0, 20.5, 30.0, 30.5));

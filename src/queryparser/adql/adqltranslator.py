@@ -77,6 +77,7 @@ def _process_regular_identifier(ctx_text, sql_output):
     else:
         return ri
 
+
 def _get_ancestor_class_node(ctx, ancestor_class, depth=1):
     """ Returns the ancestor node at 'depth' level above the current node if 
     the node is of type 'ancestor_class'. Otherwise, returns None
@@ -112,15 +113,15 @@ class ADQLGeometryTranslationVisitor(ADQLParserVisitor):
        as a hash. This way we can return the hashed string instead the
        token so we effectively translate the rule.
 
-    :param conunits:
-        What should we be converting the units to. If no conversion is
-        necessary, just pass an empty string.
+    ADQL geometry coordinates and radii are specified in degrees. Native
+    pgSphere constructors use radians, so numeric geometry values are
+    converted when they cross into PostgreSQL. Geometry-valued expressions
+    are passed through unchanged.
 
     """
-    def __init__(self, output_sql, conunits="RADIANS"):
+    def __init__(self, output_sql):
         self.contexts = {}
         self.output_sql = output_sql
-        self.conunits = conunits
 
     def _convert_values(self, ctx, cidx):
         """
@@ -200,11 +201,11 @@ class ADQLGeometryTranslationVisitor(ADQLParserVisitor):
             coords = coords[1:]
 
         if self.output_sql == 'mysql':
-            ctx_text = "spoint( %s(%s), %s(%s) )" % (self.conunits, coords[0],
-                                                     self.conunits, coords[1])
+            ctx_text = "spoint( RADIANS(%s), RADIANS(%s) )" %\
+                (coords[0], coords[1])
         elif self.output_sql == 'postgresql':
-            ctx_text = "spoint( %s(%s), %s(%s) )" % (self.conunits, coords[0],
-                                                     self.conunits, coords[1])
+            ctx_text = "spoint( RADIANS(%s), RADIANS(%s) )" %\
+                (coords[0], coords[1])
             derived_column = _get_ancestor_class_node(ctx, ADQLParser.Derived_columnContext, depth=3)
             if derived_column is not None:
                 if not (any([isinstance(child, ADQLParser.As_clauseContext) for child in derived_column.children])):
@@ -231,11 +232,10 @@ class ADQLGeometryTranslationVisitor(ADQLParserVisitor):
             raise QueryError('sbox values incorrect')
 
         if self.output_sql in ('mysql', 'postgresql'):
-            ctx_text = "sbox( spoint(%s(%s),%s(%s)),spoint(%s(%s),%s(%s)) )" %\
-                (self.conunits, '%.12f' % (pos_cent_ra - dra),
-                 self.conunits, '%.12f' % (pos_cent_dec - ddec),
-                 self.conunits, '%.12f' % (pos_cent_ra + dra),
-                 self.conunits, '%.12f' % (pos_cent_dec + ddec))
+            ctx_text = "sbox( spoint(RADIANS(%r),RADIANS(%r))," \
+                       "spoint(RADIANS(%r),RADIANS(%r)) )" %\
+                (pos_cent_ra - dra, pos_cent_dec - ddec,
+                 pos_cent_ra + dra, pos_cent_dec + ddec)
 
         else:
             ctx_text = ''
@@ -251,9 +251,8 @@ class ADQLGeometryTranslationVisitor(ADQLParserVisitor):
             circle_center = ctx.children[s]
             if isinstance(circle_center.children[0], ADQLParser.CoordinatesContext):
                 point_parameters = self._convert_values(circle_center, 0)
-                point_ctx_text = "spoint(%s(%s), %s(%s))" %\
-                    (self.conunits, point_parameters[0],
-                     self.conunits, point_parameters[1])
+                point_ctx_text = "spoint(RADIANS(%s), RADIANS(%s))" %\
+                    (point_parameters[0], point_parameters[1])
             else:
                 point_ctx = circle_center.children[0].children[0].children[0]
                 if isinstance(point_ctx, ADQLParser.PointContext):
@@ -265,8 +264,8 @@ class ADQLGeometryTranslationVisitor(ADQLParserVisitor):
                                      'the circle center. For instance, ' +
                                      'CIRCLE(POINT(t.ra, r.dec), 0.1)')
 
-            ctx_text = "scircle( %s, %s(%s) )" %\
-                (point_ctx_text, self.conunits, radius)
+            ctx_text = "scircle( %s, RADIANS(%s) )" %\
+                (point_ctx_text, radius)
             if self.output_sql == 'postgresql':
                 derived_column = _get_ancestor_class_node(ctx, ADQLParser.Derived_columnContext, depth=3)
                 if derived_column is not None:
@@ -285,14 +284,11 @@ class ADQLGeometryTranslationVisitor(ADQLParserVisitor):
             if len(par) > 1:
                 pars.append(par)
 
-        ustr = ''
-        if self.conunits == "RADIANS":
-            ustr = 'd'
-
         if self.output_sql in ('mysql', 'postgresql'):
             ctx_text = "spoly('{"
             for p in pars:
-                ctx_text += '(%s%s,%s%s),' % (str(p[0]), ustr, str(p[1]), ustr)
+                # The standard spoly input accepts degree-suffixed values.
+                ctx_text += '(%sd,%sd),' % (str(p[0]), str(p[1]))
             ctx_text = ctx_text[:-1] + "}')"
             if self.output_sql == 'postgresql':
                 derived_column = _get_ancestor_class_node(ctx, ADQLParser.Derived_columnContext, depth=3)
@@ -315,10 +311,9 @@ class ADQLFunctionsTranslationVisitor(ADQLParserVisitor):
         the replaced geometry chunks.
 
     """
-    def __init__(self, contexts, output_sql, conunits="DEGREES"):
+    def __init__(self, contexts, output_sql):
         self.contexts = contexts
         self.output_sql = output_sql
-        self.conunits = conunits
 
     def _get_geometry_value(self, ctx, child_index):
         value = ctx.children[child_index].children[0]
@@ -465,21 +460,26 @@ class ADQLFunctionsTranslationVisitor(ADQLParserVisitor):
                 value.children[0] if isinstance(value, ADQLParser.Point_valueContext) else value,
                 value.getText()) for value in values)
         else:
-            arg = (f"spoint(RADIANS({_convert_values(ctx, 2, self.output_sql)[0]}), " +
-                          f"RADIANS({_convert_values(ctx, 4, self.output_sql)[0]}))",
-                   f"spoint(RADIANS({_convert_values(ctx, 6, self.output_sql)[0]}), " +
-                          f"RADIANS({_convert_values(ctx, 8, self.output_sql)[0]}))")
+            arg = (
+                "spoint(RADIANS(%s), RADIANS(%s))" %
+                (_convert_values(ctx, 2, self.output_sql)[0],
+                 _convert_values(ctx, 4, self.output_sql)[0]),
+                "spoint(RADIANS(%s), RADIANS(%s))" %
+                (_convert_values(ctx, 6, self.output_sql)[0],
+                 _convert_values(ctx, 8, self.output_sql)[0]),
+            )
 
         if self.output_sql == 'mysql':
-            ctx_text = '%s(sdist(%s, %s))' % ((self.conunits, ) + arg)
+            ctx_text = 'DEGREES(sdist(%s, %s))' % arg
         elif self.output_sql == 'postgresql':
-            ctx_text = '%s(%s <-> %s)' % ((self.conunits, ) + arg)
+            ctx_text = 'DEGREES(%s <-> %s)' % arg
             derived_column = _get_ancestor_class_node(ctx, ADQLParser.Derived_columnContext, depth=9)
             if derived_column is not None:
                 if not (any([isinstance(child, ADQLParser.As_clauseContext) for child in derived_column.children])):
                     ctx_text = f"{ctx_text} AS distance"
             if dwithin_radius is not None:
-                ctx_text = 'spoint_dwithin(%s, %s, RADIANS(%s))' % (arg + (dwithin_radius, ))
+                ctx_text = 'spoint_dwithin(%s, %s, %s)' %\
+                    (arg + ('RADIANS(%s)' % dwithin_radius, ))
         else:
             ctx_text = ''
 
