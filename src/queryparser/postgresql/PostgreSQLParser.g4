@@ -50,7 +50,7 @@ number_functions:
 	  ABS | ACOS | ASIN | ATAN2 | ATAN | CBRT | CEIL | CEILING | COS | COT
     | DEGREES | DIV | EXP | FLOOR | LN | LOG | MOD | PI | POW
     | POWER | RADIANS | RANDOM | ROUND | SIGN | SIN | SQUARE_DEGREES | SQRT
-    | STERADIANS | TAN | TRUNCATE ;
+    | STERADIANS | TAN | TRUNC | TRUNCATE ;
 
 other_functions:
       ENCODE | MD5 ;

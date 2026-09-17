@@ -4,7 +4,6 @@ from __future__ import absolute_import
 
 import antlr4
 from antlr4.error.ErrorListener import ErrorListener
-import re
 
 from .ADQLLexer import ADQLLexer
 from .ADQLParser import ADQLParser
@@ -18,9 +17,9 @@ from ..exceptions import QueryError, QuerySyntaxError
 # between the name and left parenthesis is not allowed and needs to be
 # deleted.
 adql_function_names = ('ABS', 'ACOS', 'ASIN', 'ATAN', 'ATAN2', 'CEILING',
-                       'COS', 'DEGREES', 'EXP', 'FLOOR', 'LOG', 'LOG10',
-                       'MOD', 'PI', 'POWER', 'RADIANS', 'RAND', 'SIN',
-                       'SQRT', 'TAN', 'TRUNCATE')
+                       'COS', 'COT', 'DEGREES', 'EXP', 'FLOOR', 'LOG', 'LOG10',
+                       'LN', 'MOD', 'PI', 'POWER', 'RADIANS', 'RAND',
+                       'SIN', 'SQRT', 'TAN', 'TRUNCATE', 'TRUNC')
 
 
 def _removeFirstChild(ctx):
@@ -325,6 +324,25 @@ class ADQLFunctionsTranslationVisitor(ADQLParserVisitor):
         value = ctx.children[child_index].children[0]
         return self.contexts.get(value, value.getText())
 
+    def visitMath_function(self, ctx):
+        self.visitChildren(ctx)
+
+        if self.output_sql != 'postgresql':
+            return
+
+        function_name = ctx.children[0].getText().upper()
+        replacement = {
+            'LOG': 'LN',
+            'LOG10': 'LOG',
+            'TRUNCATE': 'trunc',
+        }.get(function_name)
+
+        if replacement is not None:
+            self.contexts[ctx.children[0]] = replacement
+        elif function_name == 'RAND':
+            self.contexts[ctx] = 'random()'
+            _remove_children(ctx)
+
     def visitArea(self, ctx):
         arg = self._get_geometry_value(ctx, 2)
         if self.output_sql == 'mysql':
@@ -579,13 +597,16 @@ class FormatListener(ADQLParserListener):
             pass
 
         try:
-            nd = self.contexts[node.parentCtx]
+            nd = self.contexts[node]
         except KeyError:
-            nd = node.getText()
-            if isinstance(node.parentCtx,
-                          ADQLParser.Character_string_literalContext):
-                if nd == "'":
-                    nd = None
+            try:
+                nd = self.contexts[node.parentCtx]
+            except KeyError:
+                nd = node.getText()
+                if isinstance(node.parentCtx,
+                              ADQLParser.Character_string_literalContext):
+                    if nd == "'":
+                        nd = None
 
         if nd is not None:
             if isinstance(node.parentCtx, ADQLParser.Set_function_typeContext)\
@@ -720,9 +741,5 @@ class ADQLQueryTranslator(object):
         translator_visitor.visit(self.tree)
 
         translated_query = self.translate(translator_visitor)
-
-        # Translate LOG10 to LOG and LOG to LN. It's not the most elegant solution but it works.
-        translated_query = re.sub(r'(?<=[\+\-\*/\(\s,])log\(', 'LN(', translated_query, flags=re.IGNORECASE)
-        translated_query = re.sub(r'(?<=[\+\-\*/\(\s,])log10\(', 'LOG(', translated_query, flags=re.IGNORECASE)
 
         return translated_query

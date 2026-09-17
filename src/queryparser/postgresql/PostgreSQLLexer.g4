@@ -171,6 +171,7 @@ THEN_SYM			: T_ H_ E_ N_  ;
 TIME_SYM			: T_ I_ M_ E_  ;
 TIMESTAMP			: T_ I_ M_ E_ S_ T_ A_ M_ P_  ;
 TRUE_SYM			: T_ R_ U_ E_ ;
+TRUNC				: T_ R_ U_ N_ C_  ;
 TRUNCATE			: T_ R_ U_ N_ C_ A_ T_ E_  ;
 UDF_0               : U_ D_ F_ '_' '0' ;
 UDF_1               : U_ D_ F_ '_' '1' ;
@@ -325,4 +326,3 @@ WS
    '\u2004' | '\u2005' | '\u2006' | '\u2007' | '\u2008' | '\u2009' | '\u200a' | '\u2028' |
    '\u2029' | '\u202f' | '\u205f' | '\u3000' )+ -> channel(HIDDEN)
 ;
-

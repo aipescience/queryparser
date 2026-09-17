@@ -194,7 +194,6 @@ table_reference:
 table_subquery:                 subquery ;
 term:                           factor | term ASTERISK factor | term SOLIDUS factor | term MOD_SYM factor;
 trig_function:                  ACOS LPAREN numeric_value_expression RPAREN
-        | ACOS LPAREN numeric_value_expression RPAREN
         | ASIN LPAREN numeric_value_expression RPAREN
         | ATAN LPAREN numeric_value_expression RPAREN
         | ATAN2 LPAREN numeric_value_expression COMMA numeric_value_expression RPAREN

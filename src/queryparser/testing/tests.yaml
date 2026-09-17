@@ -890,6 +890,10 @@ adql_mysql_tests:
 # later.
 adql_postgresql_tests:
     -
+        - SELECT RAND(), TRUNCATE(parallax, 2) FROM db.tab
+        - SELECT random(), trunc(parallax, 2) FROM db.tab;
+
+    -
         - SELECT NULL AS null_value, a + 1 AS shifted
           FROM db.tab
           GROUP BY a + 1
