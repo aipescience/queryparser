@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.8.0 (2026-10-01)
+
+- Use pgSphere 1.5.2  and improve ADQL 2.1
+
+## 0.7.4 (2025-08-19)
+
+- Fixed translation from ADQL to PostgreSQL for LOG and LOG10 in the nested math functions
+
 ## 0.7.3 (2025-05-30)
 
 - Add tests for failure
