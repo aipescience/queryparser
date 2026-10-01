@@ -8,7 +8,10 @@ description = "Package for parsing PostgreSQL/MySQL and translating ADQL to Post
 readme = "README.md"
 dynamic = ["version"]
 license = { text = "Apache-2.0" }
-authors = [{ name = "Gal Matijevic", email = "gmatijevic@aip.de" }]
+authors = [
+  { name = "Kirill Makan", email = "kmakan@aip.de" },
+  { name = "Gal Matijevic", email = "gmatijevic@aip.de" }
+]
 maintainers = [
   { name = "Kirill Makan", email = "kmakan@aip.de" },
 ]
@@ -23,8 +26,10 @@ classifiers = [
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
 ]
-dependencies = ["antlr4-python3-runtime==4.13.1"]
+dependencies = ["antlr4-python3-runtime==4.13.2"]
 
 [project.optional-dependencies]
 test = ["pytest~=8.2.0", "PyYAML~=6.0"]

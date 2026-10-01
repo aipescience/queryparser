@@ -42,7 +42,7 @@ To generate the parsers you need `python3` , `java` above version
 The current version of `antlr-4.*-complete.jar` can be downloaded via
 
 ```bash
-wget http://www.antlr.org/download/antlr-4.13.1-complete.jar
+wget http://www.antlr.org/download/antlr-4.13.2-complete.jar
 ```
 
 After cloning the project run
