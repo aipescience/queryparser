@@ -4,7 +4,6 @@ from __future__ import absolute_import
 
 import antlr4
 from antlr4.error.ErrorListener import ErrorListener
-import re
 
 from .ADQLLexer import ADQLLexer
 from .ADQLParser import ADQLParser
@@ -18,9 +17,9 @@ from ..exceptions import QueryError, QuerySyntaxError
 # between the name and left parenthesis is not allowed and needs to be
 # deleted.
 adql_function_names = ('ABS', 'ACOS', 'ASIN', 'ATAN', 'ATAN2', 'CEILING',
-                       'COS', 'DEGREES', 'EXP', 'FLOOR', 'LOG', 'LOG10',
-                       'MOD', 'PI', 'POWER', 'RADIANS', 'RAND', 'SIN',
-                       'SQRT', 'TAN', 'TRUNCATE')
+                       'COS', 'COT', 'DEGREES', 'EXP', 'FLOOR', 'LOG', 'LOG10',
+                       'LN', 'MOD', 'PI', 'POWER', 'RADIANS', 'RAND',
+                       'SIN', 'SQRT', 'TAN', 'TRUNCATE', 'TRUNC')
 
 
 def _removeFirstChild(ctx):
@@ -78,6 +77,7 @@ def _process_regular_identifier(ctx_text, sql_output):
     else:
         return ri
 
+
 def _get_ancestor_class_node(ctx, ancestor_class, depth=1):
     """ Returns the ancestor node at 'depth' level above the current node if 
     the node is of type 'ancestor_class'. Otherwise, returns None
@@ -113,15 +113,15 @@ class ADQLGeometryTranslationVisitor(ADQLParserVisitor):
        as a hash. This way we can return the hashed string instead the
        token so we effectively translate the rule.
 
-    :param conunits:
-        What should we be converting the units to. If no conversion is
-        necessary, just pass an empty string.
+    ADQL geometry coordinates and radii are specified in degrees. Native
+    pgSphere constructors use radians, so numeric geometry values are
+    converted when they cross into PostgreSQL. Geometry-valued expressions
+    are passed through unchanged.
 
     """
-    def __init__(self, output_sql, conunits="RADIANS"):
+    def __init__(self, output_sql):
         self.contexts = {}
         self.output_sql = output_sql
-        self.conunits = conunits
 
     def _convert_values(self, ctx, cidx):
         """
@@ -163,6 +163,10 @@ class ADQLGeometryTranslationVisitor(ADQLParserVisitor):
         ri = _process_regular_identifier(ctx.getText(), self.output_sql)
         self.contexts[ctx] = ri
 
+    def visitDelimited_identifier(self, ctx):
+        ri = _process_regular_identifier(ctx.getText(), self.output_sql)
+        self.contexts[ctx] = ri
+
     def visitSchema_name(self, ctx):
         ri = _process_regular_identifier(ctx.getText(), self.output_sql)
         self.contexts[ctx] = ri
@@ -197,14 +201,13 @@ class ADQLGeometryTranslationVisitor(ADQLParserVisitor):
             coords = coords[1:]
 
         if self.output_sql == 'mysql':
-            ctx_text = "spoint( %s(%s), %s(%s) )" % (self.conunits, coords[0],
-                                                     self.conunits, coords[1])
+            ctx_text = "spoint( RADIANS(%s), RADIANS(%s) )" %\
+                (coords[0], coords[1])
         elif self.output_sql == 'postgresql':
-            ctx_text = "spoint( %s(%s), %s(%s) )" % (self.conunits, coords[0],
-                                                     self.conunits, coords[1])
+            ctx_text = "spoint( RADIANS(%s), RADIANS(%s) )" %\
+                (coords[0], coords[1])
             derived_column = _get_ancestor_class_node(ctx, ADQLParser.Derived_columnContext, depth=3)
             if derived_column is not None:
-                ctx_text = f"spoint_to_array_deg({ctx_text})"
                 if not (any([isinstance(child, ADQLParser.As_clauseContext) for child in derived_column.children])):
                     ctx_text = f"{ctx_text} AS adql_point"
         else:
@@ -229,11 +232,10 @@ class ADQLGeometryTranslationVisitor(ADQLParserVisitor):
             raise QueryError('sbox values incorrect')
 
         if self.output_sql in ('mysql', 'postgresql'):
-            ctx_text = "sbox( spoint(%s(%s),%s(%s)),spoint(%s(%s),%s(%s)) )" %\
-                (self.conunits, '%.12f' % (pos_cent_ra - dra),
-                 self.conunits, '%.12f' % (pos_cent_dec - ddec),
-                 self.conunits, '%.12f' % (pos_cent_ra + dra),
-                 self.conunits, '%.12f' % (pos_cent_dec + ddec))
+            ctx_text = "sbox( spoint(RADIANS(%r),RADIANS(%r))," \
+                       "spoint(RADIANS(%r),RADIANS(%r)) )" %\
+                (pos_cent_ra - dra, pos_cent_dec - ddec,
+                 pos_cent_ra + dra, pos_cent_dec + ddec)
 
         else:
             ctx_text = ''
@@ -249,9 +251,8 @@ class ADQLGeometryTranslationVisitor(ADQLParserVisitor):
             circle_center = ctx.children[s]
             if isinstance(circle_center.children[0], ADQLParser.CoordinatesContext):
                 point_parameters = self._convert_values(circle_center, 0)
-                point_ctx_text = "spoint(%s(%s), %s(%s))" %\
-                    (self.conunits, point_parameters[0],
-                     self.conunits, point_parameters[1])
+                point_ctx_text = "spoint(RADIANS(%s), RADIANS(%s))" %\
+                    (point_parameters[0], point_parameters[1])
             else:
                 point_ctx = circle_center.children[0].children[0].children[0]
                 if isinstance(point_ctx, ADQLParser.PointContext):
@@ -263,12 +264,11 @@ class ADQLGeometryTranslationVisitor(ADQLParserVisitor):
                                      'the circle center. For instance, ' +
                                      'CIRCLE(POINT(t.ra, r.dec), 0.1)')
 
-            ctx_text = "scircle( %s, %s(%s) )" %\
-                (point_ctx_text, self.conunits, radius)
+            ctx_text = "scircle( %s, RADIANS(%s) )" %\
+                (point_ctx_text, radius)
             if self.output_sql == 'postgresql':
                 derived_column = _get_ancestor_class_node(ctx, ADQLParser.Derived_columnContext, depth=3)
                 if derived_column is not None:
-                    ctx_text = f"scircle_to_array_deg({ctx_text})"
                     if not (any([isinstance(child, ADQLParser.As_clauseContext) for child in derived_column.children])):
                         ctx_text = f"{ctx_text} AS circle"
         _remove_children(ctx)
@@ -284,19 +284,15 @@ class ADQLGeometryTranslationVisitor(ADQLParserVisitor):
             if len(par) > 1:
                 pars.append(par)
 
-        ustr = ''
-        if self.conunits == "RADIANS":
-            ustr = 'd'
-
         if self.output_sql in ('mysql', 'postgresql'):
             ctx_text = "spoly('{"
             for p in pars:
-                ctx_text += '(%s%s,%s%s),' % (str(p[0]), ustr, str(p[1]), ustr)
+                # The standard spoly input accepts degree-suffixed values.
+                ctx_text += '(%sd,%sd),' % (str(p[0]), str(p[1]))
             ctx_text = ctx_text[:-1] + "}')"
             if self.output_sql == 'postgresql':
                 derived_column = _get_ancestor_class_node(ctx, ADQLParser.Derived_columnContext, depth=3)
                 if derived_column is not None:
-                    ctx_text = f"spoly_to_array_deg({ctx_text})"
                     if not (any([isinstance(child, ADQLParser.As_clauseContext) for child in derived_column.children])):
                         ctx_text = f"{ctx_text} AS adql_polygon"
         else:
@@ -315,13 +311,35 @@ class ADQLFunctionsTranslationVisitor(ADQLParserVisitor):
         the replaced geometry chunks.
 
     """
-    def __init__(self, contexts, output_sql, conunits="DEGREES"):
+    def __init__(self, contexts, output_sql):
         self.contexts = contexts
         self.output_sql = output_sql
-        self.conunits = conunits
+
+    def _get_geometry_value(self, ctx, child_index):
+        value = ctx.children[child_index].children[0]
+        return self.contexts.get(value, value.getText())
+
+    def visitMath_function(self, ctx):
+        self.visitChildren(ctx)
+
+        if self.output_sql != 'postgresql':
+            return
+
+        function_name = ctx.children[0].getText().upper()
+        replacement = {
+            'LOG': 'LN',
+            'LOG10': 'LOG',
+            'TRUNCATE': 'trunc',
+        }.get(function_name)
+
+        if replacement is not None:
+            self.contexts[ctx.children[0]] = replacement
+        elif function_name == 'RAND':
+            self.contexts[ctx] = 'random()'
+            _remove_children(ctx)
 
     def visitArea(self, ctx):
-        arg = self.contexts[ctx.children[2].children[0]]
+        arg = self._get_geometry_value(ctx, 2)
         if self.output_sql == 'mysql':
             ctx_text = 'sarea(%s)' % arg
         elif self.output_sql == 'postgresql':
@@ -383,8 +401,7 @@ class ADQLFunctionsTranslationVisitor(ADQLParserVisitor):
 
 
     def visitContains(self, ctx):
-        arg = (self.contexts[ctx.children[2].children[0]],
-               self.contexts[ctx.children[4].children[0]])
+        arg = (self._get_geometry_value(ctx, 2), self._get_geometry_value(ctx, 4))
 
         if self.output_sql == 'mysql':
             ctx_text = 'srcontainsl(%s, %s)' % arg
@@ -396,34 +413,73 @@ class ADQLFunctionsTranslationVisitor(ADQLParserVisitor):
         _remove_children(ctx)
         self.contexts[ctx] = ctx_text
 
-    def visitDistance(self, ctx):
+    def visitComparison_predicate(self, ctx):
+        """Rewrite DISTANCE thresholds, which require the comparison's radius.
+
+        visitDistance handles the distance function itself; this method owns
+        the surrounding operator and radius needed for spoint_dwithin.
+        """
+        if self.output_sql != 'postgresql' or ctx.getChildCount() != 3:
+            return self.visitChildren(ctx)
+
+        left, operator, right = ctx.children
+        if operator.getText() not in ('<', '<='):
+            return self.visitChildren(ctx)
+
+        distance = left
+        while distance.getChildCount() == 1:
+            distance = distance.children[0]
+        if not isinstance(distance, ADQLParser.DistanceContext):
+            return self.visitChildren(ctx)
+        if 'DISTANCE' in right.getText().upper():
+            return self.visitChildren(ctx)
+
+        ancestor = ctx.parentCtx
+        while ancestor is not None and not isinstance(
+                ancestor, (ADQLParser.Where_clauseContext,
+                           ADQLParser.Join_conditionContext)):
+            ancestor = ancestor.parentCtx
+        if ancestor is None:
+            return self.visitChildren(ctx)
+
+        _remove_children(ctx)
+        self.visitDistance(distance, right.getText())
+
+    def visitDistance(self, ctx, dwithin_radius=None):
         arg = ('', '')
-        if isinstance(ctx.children[2],ADQLParser.Coord_valueContext):
-            if isinstance(ctx.children[2].children[0].children[0], ADQLParser.PointContext):
-                point_ctx1 = ctx.children[2].children[0].children[0]
-                point_ctx2 = ctx.children[4].children[0].children[0]
-                arg = (self.contexts[point_ctx1],
-                       self.contexts[point_ctx2])
-            else:
+        if isinstance(ctx.children[2], ADQLParser.Coord_valueContext):
+            values = (ctx.children[2].children[0], ctx.children[4].children[0])
+            if self.output_sql != 'postgresql' and not all(
+                    isinstance(value, ADQLParser.Point_valueContext) for value in values):
                 raise QueryError('Distance in the current implementation is ' +
                                  'possible only between two explicitly ' +
                                  'defined points. For instance, ' +
                                  'DISTANCE(POINT(t.ra, r.dec), POINT(0.0, 0.0)) ' +
                                  'or DISTANCE(t.ra, r.dec, 0.0, 0.0)')
+            arg = tuple(self.contexts.get(
+                value.children[0] if isinstance(value, ADQLParser.Point_valueContext) else value,
+                value.getText()) for value in values)
         else:
-            arg = (f"spoint(RADIANS({_convert_values(ctx, 2, self.output_sql)[0]}), " +
-                          f"RADIANS({_convert_values(ctx, 4, self.output_sql)[0]}))",
-                   f"spoint(RADIANS({_convert_values(ctx, 6, self.output_sql)[0]}), " +
-                          f"RADIANS({_convert_values(ctx, 8, self.output_sql)[0]}))")
+            arg = (
+                "spoint(RADIANS(%s), RADIANS(%s))" %
+                (_convert_values(ctx, 2, self.output_sql)[0],
+                 _convert_values(ctx, 4, self.output_sql)[0]),
+                "spoint(RADIANS(%s), RADIANS(%s))" %
+                (_convert_values(ctx, 6, self.output_sql)[0],
+                 _convert_values(ctx, 8, self.output_sql)[0]),
+            )
 
         if self.output_sql == 'mysql':
-            ctx_text = '%s(sdist(%s, %s))' % ((self.conunits, ) + arg)
+            ctx_text = 'DEGREES(sdist(%s, %s))' % arg
         elif self.output_sql == 'postgresql':
-            ctx_text = '%s(%s <-> %s)' % ((self.conunits, ) + arg)
+            ctx_text = 'DEGREES(%s <-> %s)' % arg
             derived_column = _get_ancestor_class_node(ctx, ADQLParser.Derived_columnContext, depth=9)
             if derived_column is not None:
                 if not (any([isinstance(child, ADQLParser.As_clauseContext) for child in derived_column.children])):
                     ctx_text = f"{ctx_text} AS distance"
+            if dwithin_radius is not None:
+                ctx_text = 'spoint_dwithin(%s, %s, %s)' %\
+                    (arg + ('RADIANS(%s)' % dwithin_radius, ))
         else:
             ctx_text = ''
 
@@ -458,8 +514,7 @@ class ADQLFunctionsTranslationVisitor(ADQLParserVisitor):
 
 
     def visitIntersects(self, ctx):
-        arg = (self.contexts[ctx.children[2].children[0]],
-               self.contexts[ctx.children[4].children[0]])
+        arg = (self._get_geometry_value(ctx, 2), self._get_geometry_value(ctx, 4))
 
         if self.output_sql == 'mysql':
             ctx_text = 'soverlaps(%s, %s)' % arg
@@ -542,13 +597,16 @@ class FormatListener(ADQLParserListener):
             pass
 
         try:
-            nd = self.contexts[node.parentCtx]
+            nd = self.contexts[node]
         except KeyError:
-            nd = node.getText()
-            if isinstance(node.parentCtx,
-                          ADQLParser.Character_string_literalContext):
-                if nd == "'":
-                    nd = None
+            try:
+                nd = self.contexts[node.parentCtx]
+            except KeyError:
+                nd = node.getText()
+                if isinstance(node.parentCtx,
+                              ADQLParser.Character_string_literalContext):
+                    if nd == "'":
+                        nd = None
 
         if nd is not None:
             if isinstance(node.parentCtx, ADQLParser.Set_function_typeContext)\
@@ -683,9 +741,5 @@ class ADQLQueryTranslator(object):
         translator_visitor.visit(self.tree)
 
         translated_query = self.translate(translator_visitor)
-
-        # Translate LOG10 to LOG and LOG to LN. It's not the most elegant solution but it works.
-        translated_query = re.sub(r'(?<=[\+\-\*/\(\s,])log\(', 'LN(', translated_query, flags=re.IGNORECASE)
-        translated_query = re.sub(r'(?<=[\+\-\*/\(\s,])log10\(', 'LOG(', translated_query, flags=re.IGNORECASE)
 
         return translated_query

@@ -23,7 +23,7 @@ box:
           ( coord_sys COMMA )?
           coordinates COMMA numeric_value_expression COMMA numeric_value_expression
           RPAREN ;
-catalog_name:                   ID ;
+catalog_name:                   ID | DELIMITED_ID ;
 // centroid:                       CENTROID LPAREN geometry_value_expression RPAREN ;
 // character_representation:       nonquote_character ;// | SQ SQ ;
 char_function:                  LOWER LPAREN character_string_literal RPAREN ;
@@ -52,7 +52,7 @@ coordinates:                    coordinate1 COMMA coordinate2 ;
 correlation_name:               identifier ;
 correlation_specification:      ( AS )? correlation_name ;
 //default_function_prefix:      // this is empty in the document!
-delimited_identifier:           DQ ID DQ ;
+delimited_identifier:           DELIMITED_ID ;
 derived_column:                 value_expression ( as_clause )? ;
 derived_table:                  table_subquery ;
 distance:
@@ -70,9 +70,9 @@ factor:                         ( sign )? numeric_primary ;
 from_clause:                    FROM table_reference ( COMMA table_reference )* ;
 general_literal:                character_string_literal ;
 general_set_function:           set_function_type LPAREN ( set_quantifier )? value_expression RPAREN ;
-geometry_value_expression:      box | circle | point | polygon | user_defined_function ; //| centroid | region
+geometry_value_expression:      value_expression_primary | box | circle | point | polygon | user_defined_function ; //| centroid | region
 group_by_clause:                GROUP BY grouping_column_reference_list ;
-grouping_column_reference:      column_reference ;
+grouping_column_reference:      value_expression ;
 grouping_column_reference_list: grouping_column_reference ( COMMA grouping_column_reference )* ;
 having_clause:                  HAVING search_condition ;
 identifier:                     regular_identifier | delimited_identifier ;
@@ -160,7 +160,7 @@ query_term:                     non_join_query_primary | query_term INTERSECT ( 
 radius:                         numeric_value_expression ;
 //region:                         REGION LPAREN string_value_expression RPAREN ;
 regular_identifier:             ID ;
-schema_name:                    ID ; //( catalog_name DOT )? unqualified_schema_name ;
+schema_name:                    ID | DELIMITED_ID ; //( catalog_name DOT )? unqualified_schema_name ;
 search_condition:               boolean_term | search_condition OR boolean_term ;
 select_list:                    ( select_sublist ( COMMA select_sublist )* ) | ( ASTERISK ( COMMA select_sublist ( COMMA select_sublist )* )? ) ;
 select_query:                   SELECT ( set_quantifier )? ( set_limit )? select_list table_expression ;
@@ -194,7 +194,6 @@ table_reference:
 table_subquery:                 subquery ;
 term:                           factor | term ASTERISK factor | term SOLIDUS factor | term MOD_SYM factor;
 trig_function:                  ACOS LPAREN numeric_value_expression RPAREN
-        | ACOS LPAREN numeric_value_expression RPAREN
         | ASIN LPAREN numeric_value_expression RPAREN
         | ATAN LPAREN numeric_value_expression RPAREN
         | ATAN2 LPAREN numeric_value_expression COMMA numeric_value_expression RPAREN
@@ -202,7 +201,7 @@ trig_function:                  ACOS LPAREN numeric_value_expression RPAREN
         | COT LPAREN numeric_value_expression RPAREN
         | SIN LPAREN numeric_value_expression RPAREN
         | TAN LPAREN numeric_value_expression RPAREN ;
-unqualified_schema_name:        ID ;
+unqualified_schema_name:        ID | DELIMITED_ID ;
 unsigned_decimal:               INT ;
 unsigned_hexadecimal:           HEX_DIGIT ;
 unsigned_literal:               unsigned_numeric_literal | general_literal ;
@@ -216,7 +215,8 @@ user_defined_function:
 user_defined_function_name:     regular_identifier ; //( default_function_prefix )? regular_identifier ;
 user_defined_function_param:    value_expression ;
 value_expression:
-          numeric_value_expression
+          NULL
+        | numeric_value_expression
         | string_value_expression
         | boolean_value_expression
         | geometry_value_expression ;

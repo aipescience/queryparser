@@ -42,7 +42,7 @@ To generate the parsers you need `python3` , `java` above version
 The current version of `antlr-4.*-complete.jar` can be downloaded via
 
 ```bash
-wget http://www.antlr.org/download/antlr-4.13.1-complete.jar
+wget http://www.antlr.org/download/antlr-4.13.2-complete.jar
 ```
 
 After cloning the project run
@@ -63,9 +63,9 @@ to install the generated parser in your virtual environment.
 Additional requirements
 -----------------------
 The queryparser assumes that the PostgreSQL database has the extension
-[pg_sphere](https://github.com/kimakan/pgsphere/tree/aiprdbms16) installed.
-Although the `pg_sphere` is not required for the python module, the PostgreSQL
-**queries will not run** without this extension installed on the database.
+[pg_sphere](https://github.com/postgrespro/pgsphere) installed.
+Although `pg_sphere` is not required for the Python module, PostgreSQL
+**queries will not run** without this extension installed in the database.
 
 
 Parsing MySQL and PostgreSQL
@@ -120,7 +120,7 @@ the `ADQLQueryTranslator` class
 
 ```python
 from queryparser.adql import ADQLQueryTranslator
-adql = "SELECT TOP 100 POINT('ICRS', ra, de) FROM db.tab;"
+adql = "SELECT TOP 100 POINT('ICRS', ra, dec) FROM db.tab;"
 adt = ADQLQueryTranslator(adql)
 ```
 
@@ -130,7 +130,7 @@ and calling
 adt.to_postgresql()
 ```
 
-which returns a translated string representing a valid MySQL query if
+which returns a translated string representing a valid PostgreSQL query if
 the ADQL query had no errors. The PostgreSQL query can then be parsed with the
 `PostgreSQLQueryProcessor` in the same way as shown above.
 
@@ -149,4 +149,3 @@ then run the test suite with
 ```bash
 python -m pytest lib/
 ```
-

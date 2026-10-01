@@ -50,7 +50,7 @@ number_functions:
 	  ABS | ACOS | ASIN | ATAN2 | ATAN | CBRT | CEIL | CEILING | COS | COT
     | DEGREES | DIV | EXP | FLOOR | LN | LOG | MOD | PI | POW
     | POWER | RADIANS | RANDOM | ROUND | SIGN | SIN | SQUARE_DEGREES | SQRT
-    | STERADIANS | TAN | TRUNCATE ;
+    | STERADIANS | TAN | TRUNC | TRUNCATE ;
 
 other_functions:
       ENCODE | MD5 ;
@@ -66,7 +66,7 @@ custom_functions:
       GAIA_HEALPIX_INDEX | PDIST | UDF_0 | UDF_1 | UDF_2 | UDF_3 | UDF_4 | UDF_5 | UDF_6 | UDF_7 | UDF_8 | UDF_9 ;
 
 pg_sphere_functions:
-      AREA ;
+      AREA | SPOINT_DWITHIN ;
 
 functionList:
 	  number_functions | char_functions | time_functions | other_functions
@@ -120,13 +120,7 @@ column_name:            ID;
 column_spec:            ( ( schema_name DOT )? table_name DOT )? column_name ( slice_spec )?;
 
 displayed_column :      ( table_spec DOT ASTERISK )
-                      | ( ( bit_expr | sbit_expr | displayed_column_arr ) ( ( LIKE_SYM | ILIKE_SYM ) TEXT_STRING )? ( alias )? ) ;
-
-displayed_column_arr :
-      ( spoint_to_array_deg | spoint_to_array
-      | sbox_to_array_deg | sbox_to_array
-      | scircle_to_array_deg | scircle_to_array
-      | spoly_to_array_deg | spoly_to_array);
+                      | ( ( bit_expr | sbit_expr ) ( ( LIKE_SYM | ILIKE_SYM ) TEXT_STRING )? ( alias )? ) ;
 
 exp_factor1:	        exp_factor2 ( AND_SYM exp_factor2 )* ;
 exp_factor2:	        ( NOT_SYM )? exp_factor3 ;
@@ -268,13 +262,5 @@ sbox:                   SBOX LPAREN spoint COMMA spoint RPAREN ;
 spoly:                  SPOLY TEXT_STRING| SPOLY LPAREN column_spec RPAREN | SPOLY LPAREN TEXT_STRING RPAREN;
 spath:                  SPATH TEXT_STRING | SPATH LPAREN column_spec RPAREN ;
 strans:                 STRANS LPAREN bit_expr COMMA bit_expr COMMA bit_expr COMMA TRANS RPAREN ;
-spoint_to_array:        SPOINT_TO_ARRAY LPAREN spoint RPAREN ;
-spoint_to_array_deg:    SPOINT_TO_ARRAY_DEG LPAREN spoint RPAREN ;
-sbox_to_array:          SBOX_TO_ARRAY LPAREN sbox RPAREN ;
-sbox_to_array_deg:      SBOX_TO_ARRAY_DEG LPAREN sbox RPAREN ;
-scircle_to_array:       SCIRCLE_TO_ARRAY LPAREN scircle RPAREN ;
-scircle_to_array_deg:   SCIRCLE_TO_ARRAY_DEG LPAREN scircle RPAREN ;
-spoly_to_array:         SPOLY_TO_ARRAY LPAREN spoly RPAREN ;
-spoly_to_array_deg:     SPOLY_TO_ARRAY_DEG LPAREN spoly RPAREN ;
 
 pg_sphere_object:       scircle | sline | sellipse | sbox | spoly | spath | simple_expr;

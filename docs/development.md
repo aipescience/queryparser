@@ -9,8 +9,7 @@ processed and can be used to check, for example, for permissions before the
 query is sent to the server.
 
 In addition, queryparser can also work with ADQL queries which can be translated
-to either MySQL or PostgreSQL language and then further processed the same
-way.
+to PostgreSQL and then further processed the same way.
 
 Below is a more detailed description along with instructions for anyone who is
 interested in further developing the package.
@@ -49,14 +48,14 @@ Individual dialect functionality (MySQL in this case) with increased verbosity
 can be tested with
 
 ```bash
-pytest /lib/queryparser/testing/test_mysql.py -v
+pytest lib/queryparser/testing/test_mysql.py -v
 ```
 
 Individual tests (20th MySQL test in this case, but otherwise any test
 that includes the string 't20') are ran with
 
 ```bash
-pytest /lib/queryparser/testing/test_mysql.py -k t20
+pytest lib/queryparser/testing/test_mysql.py -k t20
 ```
 
 If the package `pytest-cov` is installed then the detailed coverage report
@@ -120,7 +119,7 @@ and an ADQL translator. The processors accept any SELECT-like query and
 after the process_query() method has been executed, several elements of
 the query are extracted (all touch columns and tables, used keywords and functions).
 Before the processing the query is validated and invalid queries are rejected.
-The ADQL translator allows translating valid ADQL queries to MySQL or PostgreSQL.
+The ADQL translator allows translating valid ADQL queries to PostgreSQL.
 
 Most of the processor code is shared between MySQL and PostgreSQL and is
 therefore merged together inside of the `common.py`. This file consists

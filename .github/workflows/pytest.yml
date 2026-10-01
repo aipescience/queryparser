@@ -23,7 +23,7 @@ jobs:
 
       - name: Build queryparser
         run: |
-          wget http://www.antlr.org/download/antlr-4.13.1-complete.jar
+          wget http://www.antlr.org/download/antlr-4.13.2-complete.jar
           make
           pip install -I -e .[test]
           pip install pytest-cov
