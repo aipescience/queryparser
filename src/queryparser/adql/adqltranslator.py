@@ -414,7 +414,7 @@ class ADQLFunctionsTranslationVisitor(ADQLParserVisitor):
         self.contexts[ctx] = ctx_text
 
     def visitComparison_predicate(self, ctx):
-        """Rewrite DISTANCE thresholds, which require the comparison's radius.
+        """Rewrite equivalent DISTANCE thresholds, which require the radius.
 
         visitDistance handles the distance function itself; this method owns
         the surrounding operator and radius needed for spoint_dwithin.
@@ -423,15 +423,19 @@ class ADQLFunctionsTranslationVisitor(ADQLParserVisitor):
             return self.visitChildren(ctx)
 
         left, operator, right = ctx.children
-        if operator.getText() not in ('<', '<='):
+        distance_on_left = operator.getText() in ('<', '<=')
+        if distance_on_left:
+            distance, radius = left, right
+        elif operator.getText() in ('>', '>='):
+            distance, radius = right, left
+        else:
             return self.visitChildren(ctx)
 
-        distance = left
         while distance.getChildCount() == 1:
             distance = distance.children[0]
         if not isinstance(distance, ADQLParser.DistanceContext):
             return self.visitChildren(ctx)
-        if 'DISTANCE' in right.getText().upper():
+        if 'DISTANCE' in radius.getText().upper():
             return self.visitChildren(ctx)
 
         ancestor = ctx.parentCtx
@@ -442,8 +446,8 @@ class ADQLFunctionsTranslationVisitor(ADQLParserVisitor):
         if ancestor is None:
             return self.visitChildren(ctx)
 
-        _remove_children(ctx)
-        self.visitDistance(distance, right.getText())
+        _remove_children(ctx, reverse=not distance_on_left)
+        self.visitDistance(distance, radius.getText())
 
     def visitDistance(self, ctx, dwithin_radius=None):
         arg = ('', '')
