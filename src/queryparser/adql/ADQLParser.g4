@@ -107,8 +107,7 @@ math_function:
         | SQRT LPAREN numeric_value_expression RPAREN
         | TRUNCATE LPAREN numeric_value_expression ( COMMA signed_integer )? RPAREN ;
 named_columns_join:             USING LPAREN join_column_list RPAREN ;
-non_join_query_expression:      non_join_query_term | query_expression UNION ( ALL )? query_term
-        | query_expression EXCEPT ( ALL )? query_term ;
+non_join_query_expression:      query_expression ( order_by_clause )? ( offset_clause )? ;
 non_join_query_primary:         query_specification | LPAREN non_join_query_expression RPAREN ;
 non_join_query_term:            non_join_query_primary | query_term INTERSECT ( ALL )? query_expression ;
 non_predicate_geometry_function:area | distance ; //coord1 | coord2 |
@@ -154,7 +153,7 @@ query_expression:
         | query_expression EXCEPT ( ALL )? query_term
         | joined_table ;
 query_name:                     ID ;
-query:                          query_expression SEMI;
+query:                          non_join_query_expression SEMI;
 query_specification:            ( WITH with_query )? select_query ;
 query_term:                     non_join_query_primary | query_term INTERSECT ( ALL )? query_expression | joined_table ;
 radius:                         numeric_value_expression ;
@@ -177,14 +176,12 @@ sort_specification_list:        sort_specification ( COMMA sort_specification )*
 //string_geometry_function:       extract_coordsys ;
 string_value_expression:        character_value_expression ;
 string_value_function:          user_defined_function | char_function; //string_geometry_function |
-subquery:                       LPAREN query_expression RPAREN ;
+subquery:                       LPAREN non_join_query_expression RPAREN ;
 table_expression:
           from_clause
           ( where_clause )?
           ( group_by_clause )?
-          ( having_clause )?
-          ( order_by_clause )?
-          ( offset_clause )? ;
+          ( having_clause )? ;
 table_name:                     ( schema_name DOT )? identifier ;
 table_reference:
           table_name ( correlation_specification )?

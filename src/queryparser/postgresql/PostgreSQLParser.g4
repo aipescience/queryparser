@@ -194,7 +194,9 @@ select_list:            ( displayed_column ( COMMA displayed_column )* ) |
                         ( ASTERISK ( COMMA displayed_column ( COMMA displayed_column )* )? ) |
                         ( ON (subselect_list) ( COMMA displayed_column )* );
 subselect_list:         ( displayed_column ( COMMA displayed_column )* );
-select_statement:       select_expression ( (UNION_SYM ( ALL )? ) select_expression )* ;
+select_statement:       ( select_expression | subquery )
+                        ( UNION_SYM ( ALL )? ( select_expression | subquery ) )*
+                        ( orderby_clause )? ( offset_clause )? ;
 
 simple_expr:
       literal_value

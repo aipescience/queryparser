@@ -49,7 +49,7 @@ def test_adql_postgresql_parsing_common(t):
     _test_parsing(PostgreSQLQueryProcessor, t, translate=True)
 
 
-@pytest.mark.parametrize("t", tests['common_syntax_tests'])
+@pytest.mark.parametrize("t", tests['common_syntax_tests'] + tests['adql_syntax_tests'])
 def test_postgresql_syntax(t):
     with pytest.raises(QuerySyntaxError):
         ADQLQueryTranslator(t)

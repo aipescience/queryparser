@@ -532,8 +532,8 @@ class ADQLFunctionsTranslationVisitor(ADQLParserVisitor):
 
 
 class SelectQueryListener(ADQLParserListener):
-    def __init__(self):
-        self.limit_visitor = LimitVisitor()
+    def __init__(self, contexts):
+        self.limit_visitor = LimitVisitor(contexts)
         self.limit_contexts = {}
 
     def enterSelect_query(self, ctx):
@@ -542,7 +542,8 @@ class SelectQueryListener(ADQLParserListener):
 
 
 class LimitVisitor(ADQLParserVisitor):
-    def __init__(self, remove=False):
+    def __init__(self, contexts):
+        self.contexts = contexts
         self.limit_terminal_visitor = LimitTerminalVisitor()
         self.limit_contexts = {}
 
@@ -552,8 +553,18 @@ class LimitVisitor(ADQLParserVisitor):
             ctx.removeLastChild()
             ctx.removeLastChild()
 
-            self.limit_terminal_visitor.visit(ctx.parentCtx)
+            select = ctx.parentCtx
+            expression = select.parentCtx
+            while not isinstance(expression, ADQLParser.Non_join_query_expressionContext):
+                expression = expression.parentCtx
             lstr = 'LIMIT %d' % self.limit
+            if expression.query_expression().getText() == select.getText():
+                self.limit_terminal_visitor.visit(expression)
+            else:
+                # Parentheses keep an operand's LIMIT from limiting the UNION result.
+                self.contexts[select.SELECT()] = '(' + select.SELECT().getText()
+                self.limit_terminal_visitor.visit(select)
+                lstr += ')'
             self.limit_contexts[self.limit_terminal_visitor.terminal] = lstr
         except IndexError:
             pass
@@ -692,7 +703,7 @@ class ADQLQueryTranslator(object):
 
     def translate(self, translator_visitor):
 
-        select_query_listener = SelectQueryListener()
+        select_query_listener = SelectQueryListener(translator_visitor.contexts)
         self.walker.walk(select_query_listener, self.tree)
 
         format_listener = FormatListener(self.parser,

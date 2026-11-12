@@ -890,6 +890,18 @@ adql_mysql_tests:
 # later.
 adql_postgresql_tests:
     -
+        - SELECT TOP 1 id FROM db.tab1 UNION SELECT TOP 2 id FROM db.tab2 ORDER BY id OFFSET 3;
+        - (SELECT id FROM db.tab1 LIMIT 1) UNION (SELECT id FROM db.tab2 LIMIT 2) ORDER BY id OFFSET 3;
+
+    -
+        - SELECT TOP 5 id FROM
+          ((SELECT TOP 1 id FROM db.tab1 ORDER BY id DESC) UNION SELECT id FROM db.tab2) AS sub
+          ORDER BY id OFFSET 2;
+        - SELECT id FROM
+          ((SELECT id FROM db.tab1 ORDER BY id DESC LIMIT 1) UNION SELECT id FROM db.tab2) AS sub
+          ORDER BY id OFFSET 2 LIMIT 5;
+
+    -
         - SELECT RAND(), TRUNCATE(parallax, 2) FROM db.tab
         - SELECT random(), trunc(parallax, 2) FROM db.tab;
 
@@ -1055,6 +1067,9 @@ adql_postgresql_tests:
 # Each test below consists of:
 #
 # - syntactically incorrect query string
+
+adql_syntax_tests:
+    - SELECT id FROM db.tab1 ORDER BY id UNION SELECT id FROM db.tab2;
 
 common_syntax_tests:
     - SELECR a FROM db.tab;
